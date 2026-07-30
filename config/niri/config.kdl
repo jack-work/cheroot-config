@@ -158,7 +158,9 @@ spawn-at-startup "swayidle" "-w" "timeout" "600" "swaylock -f -c 000000" "before
 
 // Notes terminal: attaches (or creates) a persistent tmux session showing the
 // handoff notes in neovim. Survives logout because the tmux server does.
-spawn-at-startup "alacritty" "--title" "notes" "-e" "tmux" "new-session" "-A" "-s" "notes"
+// If the session does not exist yet it is created running nvim on the notes
+// file; if it already exists the trailing command is ignored and we just attach.
+spawn-at-startup "alacritty" "--title" "notes" "-e" "tmux" "new-session" "-A" "-s" "notes" "nvim ~/notes/HANDOFF.md"
 
 // systemd/dbus integration — required for portals and user services
 spawn-at-startup "sh" "-c" "systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP && dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=niri"
