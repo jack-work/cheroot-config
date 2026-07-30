@@ -102,6 +102,12 @@ in
       "niri/config.kdl".text =
         subHome ./config/niri/config.kdl + config.my.niriExtra;
 
+      # rofi — the picker, with the Kanagawa theme carried over from spain.
+      # NOTE: rofi comes from pacman (it is a Wayland client that draws), only
+      # its configuration is managed here.
+      "rofi/config.rasi".source = ./config/rofi/config.rasi;
+      "rofi/kanagawa.rasi".source = ./config/rofi/kanagawa.rasi;
+
       "mako/config".source = ./config/mako/config;
       "alacritty/alacritty.toml".source = ./config/alacritty/alacritty.toml;
 

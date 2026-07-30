@@ -170,7 +170,7 @@ binds {
     // ─── Launch ───
     Mod+Return { spawn "alacritty"; }
     Mod+E      { spawn "alacritty" "-e" "yazi"; }
-    Mod+Space  { spawn "fuzzel"; }
+    Mod+Space  { spawn "rofi" "-show" "combi" "-modi" "window,run,combi" "-combi-modi" "window,run"; }
     Mod+A      { spawn "sh" "-c" "grim -g \"$(slurp)\" - | swappy -f -"; }
     Mod+O      { toggle-overview; }
     Mod+G      { power-off-monitors; }
