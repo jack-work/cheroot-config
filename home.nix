@@ -77,6 +77,14 @@ in
       git
       gh
 
+      # Formatters used by conform.nvim (formatters_by_ft in lua/plugins/conform.lua).
+      # Without these, :w on a markdown/lua/python file reports "no formatters".
+      mdformat        # markdown
+      stylua          # lua
+      black           # python
+      sql-formatter   # sql
+      nodePackages.prettier
+
       (pkgs.callPackage ./pkgs/mako-term.nix { })
     ];
 

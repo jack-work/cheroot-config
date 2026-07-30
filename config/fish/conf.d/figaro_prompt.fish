@@ -19,6 +19,14 @@
 # Output looks like:  8d81fd0c ● 63.4%
 #   ● active (mid-turn)   ◐ idle (bound, waiting)   ○ dormant   ❄ frozen
 function __figaro_prompt_refresh --on-event fish_prompt --description 'Refresh the figaro aria segment for starship'
+    # GUARD: on hosts with no figaro daemon, `fig status` reaches for the hush
+    # secrets vault, which BLOCKS prompting for a passphrase on a TTY. The
+    # 2>/dev/null below swallows that prompt, so the shell just appears to hang
+    # forever. Bail out unless the daemon runtime dir exists. (Cheap: no fork.)
+    if not test -d /run/user/(id -u)/figaro
+        set -gx FIGARO_PROMPT ""
+        return
+    end
     set -gx FIGARO_PROMPT (
         fig status --json 2>/dev/null |
         jq -r 'select(.id) | [
