@@ -83,7 +83,6 @@ in
       stylua          # lua
       black           # python
       sql-formatter   # sql
-      nodePackages.prettier
 
       (pkgs.callPackage ./pkgs/mako-term.nix { })
     ];
