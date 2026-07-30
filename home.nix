@@ -101,23 +101,13 @@ in
       "waybar/style.css".source = ./config/waybar/style.css;
       "waybar/modules".source = ./config/waybar/modules;
       "waybar/config".text =
-        let
-          base = builtins.readFile ./config/waybar/config-niri;
-          oldList = ''
-    "modules-right": [
-        "custom/weather",
-        "custom/wifi",
-        "custom/storage",
-        "memory",
-        "cpu",
-        "wireplumber"
-    ],'';
-          newList = ''
-    "modules-right": [
-${lib.concatMapStringsSep ",\n" (m: "        \"${m}\"") config.my.waybarModulesRight}
-    ],'';
-        in
-        builtins.replaceStrings [ oldList ] [ newList ] base;
+        # A single unambiguous @MODULES_RIGHT@ placeholder, NOT a multi-line match.
+        # Nix '' strings strip common leading indentation, so matching a
+        # pretty-printed JSON block silently fails and replaceStrings no-ops.
+        builtins.replaceStrings
+          [ "@MODULES_RIGHT@" ]
+          [ (lib.concatMapStringsSep ", " (m: "\"${m}\"") config.my.waybarModulesRight) ]
+          (builtins.readFile ./config/waybar/config-niri);
 
       # fish — fisher deliberately dropped; nix provides fzf/zoxide/starship
       # integrations instead (see programs.* below).

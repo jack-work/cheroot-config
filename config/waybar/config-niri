@@ -11,14 +11,7 @@
     "modules-center": [
         "clock#date"
     ],
-    "modules-right": [
-        "custom/weather",
-        "custom/wifi",
-        "custom/storage",
-        "memory",
-        "cpu",
-        "wireplumber"
-    ],
+    "modules-right": [@MODULES_RIGHT@],
 
 
     // -------------------------------------------------------------------------
