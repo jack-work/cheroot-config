@@ -1,6 +1,7 @@
 export CRYPTOGRAPHY_OPENSSL_NO_LEGACY=1
 # Skip global tool prepends inside a nix shell so the dev env's tools win.
-if not set -q IN_NIX_SHELL
+# Portability: go is not installed on every host.
+if not set -q IN_NIX_SHELL; and command -q go
     export PATH="$(go env GOPATH)/bin:$PATH"
 end
 
@@ -9,7 +10,10 @@ if set -q SSH_CONNECTION; and not set -q SSH_TTY
     set -gx SSH_TTY (tty)
 end
 
-source /usr/share/cachyos-fish-config/cachyos-config.fish
+# Portability: CachyOS-only. Absent on plain Arch.
+if test -f /usr/share/cachyos-fish-config/cachyos-config.fish
+    source /usr/share/cachyos-fish-config/cachyos-config.fish
+end
 # In config.fish
 starship init fish | source
 zoxide init fish | source
