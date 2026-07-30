@@ -19,16 +19,35 @@
 # Output looks like:  8d81fd0c ● 63.4%
 #   ● active (mid-turn)   ◐ idle (bound, waiting)   ○ dormant   ❄ frozen
 function __figaro_prompt_refresh --on-event fish_prompt --description 'Refresh the figaro aria segment for starship'
-    # GUARD: on hosts with no figaro daemon, `fig status` reaches for the hush
-    # secrets vault, which BLOCKS prompting for a passphrase on a TTY. The
-    # 2>/dev/null below swallows that prompt, so the shell just appears to hang
-    # forever. Bail out unless the daemon runtime dir exists. (Cheap: no fork.)
+    # GUARD 1: no fig on this host at all -> nothing to ask. (Cheap: builtin.)
+    if not command -q fig
+        set -gx FIGARO_PROMPT ""
+        return
+    end
+    # GUARD 2: no daemon runtime dir -> nothing to ask. (Cheap: no fork.)
     if not test -d /run/user/(id -u)/figaro
         set -gx FIGARO_PROMPT ""
         return
     end
+    # GUARD 3 (the important one): `fig status` unlocks the hush secrets vault.
+    # On a host with no OS keyring (plain Arch, no gnome-keyring/KWallet —
+    # i.e. cheroot) hush falls back to a passphrase prompt READ FROM THE
+    # CONTROLLING TTY. The 2>/dev/null below hides the prompt text, so every
+    # fish prompt silently swallowed a line of input: the shell looked dead
+    # until you hit Enter, once per prompt, forever.
+    #
+    # GUARD 2 does not help — cheroot *does* have a running daemon, so the
+    # runtime dir exists. The portable fix is to deny hush a terminal:
+    # with stdin on /dev/null it cannot prompt, and errors out in ~15ms
+    # ("requires a controlling terminal; none available"), which 2>/dev/null
+    # discards. Where the vault unlocks without a TTY (keyring hosts, e.g.
+    # the gluck desktop) the call still succeeds normally.
+    #
+    # NOTE: a redirection is safe here where an exec wrapper is not — fish
+    # still forks the process itself, so the parent-pid binding of trap 2
+    # above survives.
     set -gx FIGARO_PROMPT (
-        fig status --json 2>/dev/null |
+        fig status --json </dev/null 2>/dev/null |
         jq -r 'select(.id) | [
                  .id,
                  (if   .frozen          then "❄"
