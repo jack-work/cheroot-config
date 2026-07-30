@@ -1,0 +1,133 @@
+* {
+    font-family: "GoMono Nerd Font", "GoMono Nerd Font Mono", monospace;
+    font-size: 16px;
+    font-weight: 400;
+    margin: 0;
+    padding: 0;
+    border: none;
+    min-height: 0;
+}
+
+#waybar {
+    background: #1a1a24;
+    color: #C8C093;
+    border: none;
+    margin: 0;
+    border-radius: 0;
+}
+
+window#waybar.hidden {
+    opacity: 0.2;
+}
+
+/* ── Workspaces: plain numbers, active = underlined ── */
+#workspaces {
+    background: transparent;
+    border-radius: 0;
+    padding: 0 2px;
+    margin: 2px 2px;
+}
+
+#workspaces button {
+    padding: 4px 3px;
+    margin: 0 1px;
+    border-radius: 0;
+    color: #54546D;
+    background: transparent;
+    border-bottom: 2px solid transparent;
+}
+
+#workspaces button.active {
+    color: #DCD7BA;
+    background: transparent;
+    border-bottom: 2px solid #7E9CD8;
+}
+
+#workspaces button:hover {
+    background: transparent;
+    color: #C8C093;
+}
+
+/* ── Clock (non-date instances) ── */
+#clock {
+    background: transparent;
+    padding: 2px 8px;
+    margin: 1px 2px;
+    color: #727169;
+}
+
+/* ── Weather — autumnRed (rust) ── */
+#custom-weather {
+    background: transparent;
+    border-bottom: 2px solid rgba(195, 64, 67, 0.4);
+    padding: 2px 10px;
+    margin: 3px 8px 6px 3px;
+    color: #C34043;
+}
+
+/* ── Wifi — springGreen ── */
+#custom-wifi {
+    background: transparent;
+    border-bottom: 2px solid rgba(152, 187, 108, 0.4);
+    padding: 2px 10px;
+    margin: 3px 8px 6px 3px;
+    color: #98BB6C;
+}
+
+/* ── Temperature ── */
+#temperature {
+    background: transparent;
+    padding: 2px 8px;
+    margin: 1px 2px;
+    color: #727169;
+}
+
+#temperature.critical {
+    color: #E82424;
+}
+
+/* ── Storage — carpYellow ── */
+#custom-storage {
+    background: transparent;
+    border-bottom: 2px solid rgba(230, 195, 132, 0.4);
+    padding: 2px 10px;
+    margin: 3px 8px 6px 3px;
+    color: #E6C384;
+}
+
+/* ── Memory — crystalBlue ── */
+#memory {
+    background: transparent;
+    border-bottom: 2px solid rgba(126, 156, 216, 0.4);
+    padding: 2px 10px;
+    margin: 3px 8px 6px 3px;
+    color: #7E9CD8;
+}
+
+/* ── CPU — springViolet2 ── */
+#cpu {
+    background: transparent;
+    border-bottom: 2px solid rgba(156, 171, 202, 0.4);
+    padding: 2px 10px;
+    margin: 3px 8px 6px 3px;
+    color: #9CABCA;
+}
+
+/* ── Volume — oniViolet ── */
+#pulseaudio,
+#wireplumber {
+    background: transparent;
+    border-bottom: 2px solid rgba(149, 127, 184, 0.4);
+    padding: 2px 10px;
+    margin: 3px 12px 6px 3px;
+    color: #957FB8;
+}
+
+/* ── Clock/date — sakuraPink ── */
+#clock#date {
+    background: transparent;
+    border-bottom: 2px solid rgba(210, 126, 153, 0.4);
+    padding: 2px 10px;
+    margin: 3px 8px 6px 3px;
+    color: #D27E99;
+}
