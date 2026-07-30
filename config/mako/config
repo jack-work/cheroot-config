@@ -9,3 +9,7 @@ max-icon-size=48
 default-timeout=10000
 anchor=top-right
 margin=20
+
+# Click a notification to open a terminal (see mako-term.sh).
+# The script holds ALL the logic, so this line never needs to change.
+on-button-right=exec /home/marlowe/.config/mako/mako-term.sh "$id"
