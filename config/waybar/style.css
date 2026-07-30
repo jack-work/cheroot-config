@@ -60,9 +60,10 @@ window#waybar.hidden {
           and matches nothing — style the clock HERE, not there.
        Measured on cheroot @1920px: left group ended x=137, clock 733-970,
        weather began x=996 => 596px slack left, 26px right. Equalising at 311px
-       needs a 285px leftward shift => margin-right 2 + 570 = 572.
+       needs a 285px leftward shift. MEASURED: margin-right shifts the widget 1:1
+       (NOT half), so margin-right = 2 + 285 = 287.
        TUNED TO THE CURRENT MODULE SET; re-measure if you add/remove modules. */
-    margin: 1px 572px 1px 2px;
+    margin: 1px 287px 1px 2px;
     color: #727169;
 }
 
