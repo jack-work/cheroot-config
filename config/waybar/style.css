@@ -52,7 +52,17 @@ window#waybar.hidden {
 #clock {
     background: transparent;
     padding: 2px 8px;
-    margin: 1px 2px;
+    /* CENTRING — read before touching.
+       1. waybar centres modules-center in the FULL bar width, and GTK centres a
+          widget INCLUDING its margins, so a SYMMETRIC margin moves it by zero.
+          Only an asymmetric margin shifts it: margin-right R moves it left R/2.
+       2. The rule "#clock#date" further down this file is INVALID CSS (two ids)
+          and matches nothing — style the clock HERE, not there.
+       Measured on cheroot @1920px: left group ended x=137, clock 733-970,
+       weather began x=996 => 596px slack left, 26px right. Equalising at 311px
+       needs a 285px leftward shift => margin-right 2 + 570 = 572.
+       TUNED TO THE CURRENT MODULE SET; re-measure if you add/remove modules. */
+    margin: 1px 572px 1px 2px;
     color: #727169;
 }
 
