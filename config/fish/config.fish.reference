@@ -1,0 +1,19 @@
+# fish configuration.
+#
+# Everything lives in conf.d/, sourced automatically in filename order BEFORE
+# this file. Numbered so the order is explicit rather than accidental:
+#
+#   10-env         environment variables
+#   15-brew        homebrew shellenv (before user paths, so ours win)
+#   20-cachyos     distro defaults: aliases, greeting, MANPAGER, `done`
+#   30-path        PATH assembly (fish_add_path, deduplicating)
+#   40-aliases     dotfiles + figaro shortcuts
+#   50-conda       lazy miniconda
+#   60-prompt      starship + zoxide
+#   65-figaro-prompt   $FIGARO_PROMPT for starship's [custom.figaro]
+#   70-fzf         fzf.fish key bindings
+#
+#   fish_frozen_theme / fish_frozen_key_bindings   written by fish itself (4.3
+#   migration). Edit the theme there or via `fish_config`.
+#
+# Nothing else belongs in this file. Add a new numbered module instead.

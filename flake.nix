@@ -1,46 +1,26 @@
 {
-  description = "cheroot / spain — portable home-manager configuration";
+  description = "gluck / cheroot — dendritic home-manager configuration";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
+    flake-parts = {
+      url = "github:hercules-ci/flake-parts";
+      inputs.nixpkgs-lib.follows = "nixpkgs";
+    };
+
+    # Every .nix file under ./modules becomes a flake-parts module, imported
+    # automatically. This is what makes file paths non-structural: move and
+    # rename freely, nothing references them.
+    import-tree.url = "github:vic/import-tree";
+
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }:
-    let
-      system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
-
-      mkHome = hostModule: username:
-        home-manager.lib.homeManagerConfiguration {
-          inherit pkgs;
-          modules = [
-            ./home.nix
-            hostModule
-            {
-              home.username = username;
-              home.homeDirectory = "/home/${username}";
-            }
-          ];
-        };
-    in
-    {
-      packages.${system} = {
-        mako-term = pkgs.callPackage ./pkgs/mako-term.nix { };
-        default = self.packages.${system}.mako-term;
-      };
-
-      homeConfigurations = {
-        "marlowe@cheroot" = mkHome ./hosts/cheroot.nix "marlowe";
-        # desktop, added later:
-        # "gluck@spain" = mkHome ./hosts/spain.nix "gluck";
-      };
-
-      devShells.${system}.default = pkgs.mkShell {
-        packages = with pkgs; [ home-manager nixfmt-rfc-style shellcheck ];
-      };
-    };
+  # The whole flake is one import-tree call. Nothing else belongs in this file —
+  # add a module under ./modules instead.
+  outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
 }

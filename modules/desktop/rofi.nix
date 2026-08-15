@@ -1,0 +1,14 @@
+# rofi — the picker, Kanagawa theme.
+#
+# NOTE: rofi comes from pacman (a Wayland client that draws); only its
+# configuration is managed here. A previous port substituted fuzzel because
+# rofi was missing from a minimal Arch install, and it rendered bare defaults —
+# if the picker ever looks unstyled, check which program is actually bound.
+{
+  flake.modules.homeManager.rofi = {
+    xdg.configFile = {
+      "rofi/config.rasi".source = ../../config/rofi/config.rasi;
+      "rofi/kanagawa.rasi".source = ../../config/rofi/kanagawa.rasi;
+    };
+  };
+}

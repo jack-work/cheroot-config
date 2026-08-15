@@ -1,0 +1,202 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Kanagawa — after Hokusai's "The Great Wave off Kanagawa" (rebelot/kanagawa).
+#
+# The "wave" variant, verbatim from the theme's colors.lua. Starship treats
+# palette keys as color names, so any `style` below may use them. NOTE: an
+# unrecognized color name does not warn — it silently renders unstyled (this is
+# how the figaro segment sat colorless for weeks under "bold magenta", which
+# starship spells "purple"). If a segment loses its color, suspect a typo here.
+# ─────────────────────────────────────────────────────────────────────────────
+palette = 'kanagawa'
+
+# ── Timeouts ─────────────────────────────────────────────────────────────────
+# Both of these are TOP-LEVEL keys only. Starship's schema sets
+# additionalProperties=false nowhere, so a `command_timeout` placed inside a
+# module table (e.g. [golang]) is parsed, ignored, and never warned about.
+#
+# scan_timeout (default 30ms) budgets the directory walk that decides which
+# language modules fire. ~/dev/gluck blew it -- "Scanning current directory
+# timed out" -- because of a deep worktrees/ tree. 100ms is still invisible.
+# command_timeout (default 500ms) budgets each external version probe.
+scan_timeout = 100
+command_timeout = 1000
+
+[palettes.kanagawa]
+# Ink — the sumi-e blacks, for backgrounds and dim text.
+sumi_ink       = '#1f1f28'
+sumi_ink_light = '#2a2a37'
+wave_blue      = '#223249'
+fuji_gray      = '#727169'
+katana_gray    = '#717c7c'
+# Paper — the foreground whites.
+fuji_white     = '#dcd7ba'
+old_white      = '#c8c093'
+# Ink-wash blues and violets — the wave itself.
+crystal_blue   = '#7e9cd8'
+spring_blue    = '#7fb4ca'
+light_blue     = '#a3d4d5'
+dragon_blue    = '#658594'
+oni_violet     = '#957fb8'
+spring_violet  = '#9cabca'
+# Greens — pine and spring.
+spring_green   = '#98bb6c'
+wave_aqua      = '#7aa89f'
+autumn_green   = '#76946a'
+# Yellows — autumn leaves, boat lanterns.
+carp_yellow    = '#e6c384'
+boat_yellow    = '#c0a36e'
+ronin_yellow   = '#ff9e3b'
+surimi_orange  = '#ffa066'
+# Reds — sakura, carp, samurai.
+sakura_pink    = '#d27e99'
+wave_red       = '#e46876'
+peach_red      = '#ff5d62'
+samurai_red    = '#e82424'
+
+# ── Identity ─────────────────────────────────────────────────────────────────
+[username]
+style_user = 'bold carp_yellow'
+style_root = 'bold samurai_red'
+
+[hostname]
+style = 'bold wave_aqua'
+
+[directory]
+style = 'bold crystal_blue'
+read_only_style = 'bold peach_red'
+
+# ── Git ──────────────────────────────────────────────────────────────────────
+[git_branch]
+style = 'bold oni_violet'
+
+[git_commit]
+style = 'bold spring_violet'
+
+[git_state]
+style = 'bold ronin_yellow'
+
+[git_status]
+style = 'bold wave_red'
+
+[git_metrics]
+added_style = 'bold spring_green'
+deleted_style = 'bold peach_red'
+
+# ── Languages and runtimes ───────────────────────────────────────────────────
+# Cool tones for compiled/systems, warm for scripting — so the eye can sort a
+# crowded prompt by temperature rather than by reading every version string.
+[c]
+style = 'bold spring_blue'
+
+[golang]
+style = 'bold light_blue'
+
+[rust]
+style = 'bold surimi_orange'
+
+[python]
+style = 'bold carp_yellow'
+
+[nodejs]
+style = 'bold spring_green'
+
+[lua]
+style = 'bold crystal_blue'
+
+[java]
+style = 'bold wave_red'
+
+[kotlin]
+style = 'bold oni_violet'
+
+[ruby]
+style = 'bold sakura_pink'
+
+[haskell]
+style = 'bold spring_violet'
+
+[zig]
+style = 'bold ronin_yellow'
+
+[package]
+style = 'bold boat_yellow'
+
+# ── Environment and context ──────────────────────────────────────────────────
+[nix_shell]
+style = 'bold spring_violet'
+
+[docker_context]
+style = 'bold dragon_blue'
+
+[conda]
+style = 'bold wave_aqua'
+
+[kubernetes]
+style = 'bold dragon_blue'
+
+[aws]
+style = 'bold surimi_orange'
+
+# Show that we're authed to gcloud, but never the email/domain — screenshare
+# safe. Uses the Nerd Font google-cloud glyph (nf-md-google_cloud, U+F11F6)
+# instead of the ☁️ emoji so it renders crisply in GoMono Nerd Font.
+[gcloud]
+format = 'on [$symbol]($style)'
+symbol = '󱇶 '
+style = 'bold dragon_blue'
+disabled = false
+
+# ── Meta ─────────────────────────────────────────────────────────────────────
+[cmd_duration]
+style = 'bold boat_yellow'
+
+[jobs]
+style = 'bold spring_violet'
+
+[time]
+style = 'bold fuji_gray'
+
+[status]
+style = 'bold samurai_red'
+
+[memory_usage]
+style = 'bold fuji_gray'
+
+[character]
+success_symbol = '[❯](bold spring_green)'
+error_symbol = '[❯](bold peach_red)'
+vimcmd_symbol = '[❮](bold crystal_blue)'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Figaro: the aria bound to this shell — id, liveness glyph, context usage.
+#
+#   󱌃 8d81fd0c ● 63.4%
+#
+# Glyphs: ● active (mid-turn)  ◐ idle (bound, waiting)  ○ dormant  ❄ frozen.
+# The percentage is elided when the provider reports no effective context cap.
+#
+# The symbol is nf-md-fleur_de_lis (U+F1303) — the giglio, the lily of
+# Florence. Note the plain Unicode ⚜ (U+269C) is NOT in GoMono Nerd Font and
+# renders as tofu; the Material Design glyph in the Nerd Font private-use range
+# is the one that actually draws. Verify any replacement with:
+#   fc-list ':charset=<hex>:family=GoMono Nerd Font' family
+#
+# The value is computed by fish, not here: figaro resolves its shell binding
+# from the *immediate* parent pid, and any wrapper process (starship's shell,
+# `timeout`, ...) breaks that chain, so the module could only ever print an
+# empty id. See ~/.config/fish/conf.d/figaro_prompt.fish; this module is a pure
+# echo, so it costs nothing and can never stall the prompt.
+#
+# NOTE: when `shell` is set, starship feeds `command`/`when` to it on *stdin* —
+# a trailing `-c` therefore leaves bash with no script argument, and it exits 2
+# before reading anything. No `-c` here, deliberately.
+[custom.figaro]
+command = 'printf %s "$FIGARO_PROMPT"'
+when = 'test -n "$FIGARO_PROMPT"'
+shell = ['bash', '--noprofile', '--norc']
+format = 'on [$symbol$output ]($style)'
+symbol = '󱌃 '
+style = 'bold oni_violet'
+description = 'Figaro aria bound to this shell'
