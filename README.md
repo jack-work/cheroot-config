@@ -37,8 +37,66 @@ modules/
 config/                verbatim config files, referenced by the modules
 ```
 
-A **host is a list of aspect names**. `cheroot` and `gluck` differ by one role
-name and their niri output blocks — nothing else.
+## One flake, many machines
+
+Everything independent of the machine lives in an **aspect** and is shared. A
+host file declares only what is true of that machine. Three tiers, and the tier
+is chosen by *audience*:
+
+| Tier | Audience | Lives in | Examples |
+|---|---|---|---|
+| **Aspect** | every machine | `modules/**` | shell aliases, figaro, tmux, fonts |
+| **Role** | a *class* of machine | `modules/roles/` | `laptop` — battery, backlight, trackpad |
+| **Host** | exactly one machine | `modules/hosts/` | monitor layout, username, platform flags |
+
+The rule: **if a second machine could ever want it, it is not host-specific.**
+A thing used by two machines is a role, not a copy-paste.
+
+Adding a machine is one small file:
+
+```nix
+{ config, ... }:
+{
+  flake.homeConfigurations = config.flake.lib.mkHost {
+    user = "gluck";
+    host = "spain";
+    aspects = config.flake.lib.coreAspects;   # headless: no GUI aspects at all
+    roles   = [ ];
+    settings = {
+      my.platform.toolchainFromNix = true;
+    };
+  };
+}
+```
+
+`mkHost` takes machines that need **less** as readily as more:
+`aspects` defaults to everything, and a headless box narrows it to
+`coreAspects`, dropping fonts, niri, waybar, mako, rofi and alacritty — not
+merely unconfigured but never evaluated. `roles` layers extras on top, and
+`settings` is an inline module with an audience of one.
+
+**The `<user>@<hostname>` naming is load-bearing.** home-manager's CLI resolves
+a bare `--flake .` by probing `$USER@$(hostname -f)`, `$USER@$(hostname)`, then
+`$USER@$(hostname -s)`. Name the attribute correctly and every machine runs the
+identical command, with no host argument to get wrong:
+
+```sh
+home-manager switch --flake .
+```
+
+Two mechanisms make the sharing work, and both are worth knowing:
+
+- **`types.lines` merges by concatenation.** `my.niri.extra` can be appended by
+  the host *and* the laptop role *and* any future aspect; they concatenate
+  rather than conflict. That is why the shared niri config never needs to know
+  which machines exist.
+- **An option's `default` is not a definition.** `my.waybar.modulesRight`
+  carries the desktop list as a default, so `roles/laptop.nix` simply *sets* it
+  — no `mkForce`, no `mkIf`, and the base file never mentions laptops.
+
+Finally: **import-tree ignores paths beginning with `_`.** Handy for scratch
+files under `modules/`; confusing if you do it by accident and wonder why your
+new host never appears.
 
 ## Both shells, one source
 

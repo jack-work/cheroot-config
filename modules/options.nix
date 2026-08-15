@@ -37,4 +37,14 @@
     default = { };
     description = "home-manager configurations, one per user@host.";
   };
+
+  # Same story as the two above. Once helpers live in more than one file —
+  # lib.nix contributes linkDir, host-builder.nix contributes mkHost — an
+  # undeclared `flake.lib` collides. Declaring it lets each file add its own
+  # helpers without knowing what the others provide.
+  options.flake.lib = lib.mkOption {
+    type = lib.types.lazyAttrsOf lib.types.raw;
+    default = { };
+    description = "Helpers shared across modules, reachable as config.flake.lib.*";
+  };
 }
