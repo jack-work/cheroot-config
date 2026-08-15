@@ -21,9 +21,8 @@ path_prepend() {
 
 if [ -z "$IN_NIX_SHELL" ]; then
     # Order is bottom-up: the LAST path_prepend ends up FIRST in PATH.
-    if command -v go >/dev/null 2>&1; then
-        path_prepend "$(go env GOPATH)/bin"
-    fi
+    # $GOPATH/bin is added earlier, by ~/.bashrc.d/25-go.sh, so that it lands
+    # BEHIND these entries. See modules/go.nix.
     path_prepend "$HOME/.bun/bin"
     path_prepend "$HOME/.cargo/bin"
     path_prepend "$HOME/.local/bin"

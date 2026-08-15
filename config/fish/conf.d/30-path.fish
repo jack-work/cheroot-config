@@ -13,10 +13,8 @@
 # Order is bottom-up: the LAST fish_add_path ends up FIRST in PATH.
 
 if not set -q IN_NIX_SHELL
-    # go is not installed on every host — `go env` would error and print noise.
-    if command -q go
-        fish_add_path -gmp (go env GOPATH)/bin
-    end
+    # $GOPATH/bin is added earlier, by conf.d/25-go.fish, so that it lands
+    # BEHIND these entries. See modules/go.nix.
     fish_add_path -gmp $HOME/.bun/bin
     fish_add_path -gmp $HOME/.cargo/bin
     fish_add_path -gmp $HOME/.local/bin

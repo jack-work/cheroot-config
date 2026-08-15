@@ -3,9 +3,9 @@
 
 set -gx CRYPTOGRAPHY_OPENSSL_NO_LEGACY 1
 
-# Go: skip the VCS stamp. Was a stray universal variable (`set -Ux`), which
-# meant it was invisible in this repo and survived config rollbacks. Declared.
-set -gx GOFLAGS -buildvcs=false
+# Go configuration lives in modules/go.nix -> ~/.config/go/env, which the go
+# tool reads directly. It is NOT a shell variable any more, so it also applies
+# to editors and IDEs that never source a shell.
 
 # ssh-agent socket, published by the systemd user unit.
 # Was hardcoded /run/user/1000 — correct on this box, wrong on any other.

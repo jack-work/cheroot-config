@@ -4,7 +4,8 @@
 # Mirrors config/fish/conf.d/10-env.fish — keep the two in step.
 
 export CRYPTOGRAPHY_OPENSSL_NO_LEGACY=1
-export GOFLAGS=-buildvcs=false
+# GOFLAGS/GOPATH: see modules/go.nix -> ~/.config/go/env (read by the go tool
+# itself, so it applies to editors and IDEs too, not just shells).
 
 # ssh-agent socket, published by the systemd user unit.
 # XDG_RUNTIME_DIR rather than a hardcoded /run/user/1000: correct on any host.

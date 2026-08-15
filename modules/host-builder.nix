@@ -35,6 +35,7 @@
       "prompt"
       "cli"
       "git"
+      "go"
       "editor"
       "tmux"
     ];
