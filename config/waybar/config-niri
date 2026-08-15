@@ -95,6 +95,15 @@
             ""
         ]
     },
+    "custom/kbdinhibit": {
+        "format": "{}",
+        "return-type": "json",
+        "interval": "once",
+        "signal": 9,
+        "exec": "~/.config/waybar/modules/kbd-inhibit.sh",
+        "on-click": "~/.config/niri/scripts/kbd-inhibit.sh toggle"
+    },
+
     "custom/storage": {
         "format": " {}",
         "format-alt": "{percentage}% ",

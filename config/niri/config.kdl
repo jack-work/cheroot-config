@@ -1,48 +1,39 @@
 // ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-// ┃  niri — MACHINE-AGNOSTIC BASE                               ┃
-// ┃  Managed by home-manager. Do not edit in place: this file is ┃
-// ┃  a read-only symlink into /nix/store. Edit the source in     ┃
-// ┃  cheroot-config/config/niri/config.kdl and re-switch.        ┃
+// ┃          Niri Configuration (mirrored from Hyprland)        ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-//
-// @HOME@ is substituted with the real home directory at build time.
-//
-// NOTE ON OUTPUTS: there are deliberately NO `output` blocks here.
-// niri enables every connected output at its preferred mode by default, which
-// is exactly the portable behaviour we want across laptop and desktop. Adding
-// output blocks is what BREAKS portability. Host-specific overrides (e.g. a
-// scale for the internal panel) are appended by hosts/<host>.nix.
-// Do not add kanshi: it races with niri (niri-wm/niri#676).
 
 // ======= Input =======
 input {
     keyboard {
-        repeat-rate 35
-        repeat-delay 250
+	    repeat-rate 35
+	    repeat-delay 250
+
         xkb {
         }
     }
 
-    // Laptop trackpad. Harmless on a desktop with no touchpad.
-    touchpad {
-        tap
-        natural-scroll
-        dwt                    // disable-while-typing
-        accel-profile "adaptive"
-        scroll-method "two-finger"
-    }
-
     mouse {
+        // off disables all acceleration
         // accel-speed 0.0
     }
 
+    // Follow mouse focus (like Hyprland follow_mouse = 2)
     focus-follows-mouse max-scroll-amount="0%"
     warp-mouse-to-focus
 }
 
+// ======= Outputs (Monitors) =======
+// DELIBERATELY EMPTY. niri enables every connected output at its preferred
+// mode by default, which is the portable behaviour we want across every host.
+// Adding output blocks here is what BREAKS portability -- they are appended
+// per machine by modules/hosts/<host>.nix via `my.niri.extra`.
+// Do not add kanshi: it races with niri (niri-wm/niri#676).
+
 // ======= Layout =======
 layout {
+    // gaps = space between windows (like Hyprland gaps_in)
     gaps 5
+
     center-focused-column "never"
 
     preset-column-widths {
@@ -65,6 +56,7 @@ layout {
         inactive-color "#4a2222"
     }
 
+    // Struts = outer gaps (like Hyprland gaps_out)
     struts {
         left 5
         right 5
@@ -73,13 +65,17 @@ layout {
     }
 }
 
-// ======= Visual =======
+// ======= Visual / Decorations =======
 prefer-no-csd
 
+// ======= Animations =======
 animations {
+    // niri has smooth defaults; customize if desired
+    // slowdown 1.0
 }
 
 // ======= Window Rules =======
+// Float equivalent windows (niri uses open-floating)
 window-rule {
     match app-id=r#"^blueman-manager$"#
     open-floating true
@@ -101,6 +97,10 @@ window-rule {
     open-floating true
 }
 window-rule {
+    match app-id=r#"^gnome-calculator$"#
+    open-floating true
+}
+window-rule {
     match title="Picture-in-Picture"
     open-floating true
 }
@@ -117,14 +117,20 @@ window-rule {
     open-floating true
 }
 
-// Opacity
+// Opacity rules
 window-rule {
-    match app-id=r#"^(thunar|nemo|nautilus)$"#
+    match app-id=r#"^(thunar|nemo)$"#
     opacity 0.97
 }
 window-rule {
     match app-id=r#"^(discord|armcord|webcord)$"#
     opacity 0.96
+}
+
+// Wiremix: tiled, quarter-width
+window-rule {
+    match title="wiremix"
+    default-column-width { proportion 0.25; }
 }
 
 // Corner radius for all windows
@@ -134,65 +140,67 @@ window-rule {
 }
 
 // ======= Cursor =======
-// Default Adwaita theme — the vimix-kanagawa theme is not installed everywhere,
-// and a missing cursor theme yields an invisible pointer.
 cursor {
-    xcursor-theme "Adwaita"
-    xcursor-size 24
+    xcursor-theme "vimix-kanagawa-cursors-lotus"
+    xcursor-size 16
 }
 
 // ======= Environment =======
 environment {
-    DISPLAY ":0"
-    QT_CURSOR_SIZE "24"
-    XCURSOR_SIZE "24"
+    // xwayland-satellite runs on :1 — SDDM's Xorg greeter owns :0.
+    // Pointing at :0 gets "Authorization required" (root-owned, its own xauth).
+    DISPLAY ":1"
+    QT_CURSOR_SIZE "16"
+    XCURSOR_THEME "vimix-kanagawa-cursors-lotus"
+    XCURSOR_SIZE "16"
 }
 
 // ======= Autostart =======
-spawn-at-startup "xwayland-satellite"
-spawn-at-startup "swaybg" "-o" "*" "-i" "@HOME@/.local/share/wallpaper/wallpaper.jpg" "-m" "fill"
-spawn-at-startup "waybar"
+spawn-at-startup "xwayland-satellite" ":1"
+spawn-at-startup "swaybg" "-o" "*" "-i" "@WALLPAPER@" "-m" "stretch"
+spawn-at-startup "waybar" "-c" "@HOME@/.config/waybar/config-niri" "-s" "@HOME@/.config/waybar/style.css"
+spawn-at-startup "@HOME@/.config/niri/scripts/kbd-inhibit.sh" "watch"
+spawn-at-startup "fcitx5" "-d"
 spawn-at-startup "mako"
-spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
-spawn-at-startup "swayidle" "-w" "timeout" "600" "swaylock -f -c 000000" "before-sleep" "swaylock -f -c 000000"
+// nm-applet removed — using iwd/iwctl via custom waybar module instead
+spawn-at-startup "/usr/lib/polkit-kde-authentication-agent-1"
+spawn-at-startup "swayidle" "-w" "timeout" "300" "swaylock -f -c 000000" "before-sleep" "swaylock -f -c 000000"
 
-// Notes terminal: attaches (or creates) a persistent tmux session showing the
-// handoff notes in neovim. Survives logout because the tmux server does.
-// If the session does not exist yet it is created running nvim on the notes
-// file; if it already exists the trailing command is ignored and we just attach.
-spawn-at-startup "alacritty" "--title" "notes" "-e" "tmux" "new-session" "-A" "-s" "notes" "nvim ~/notes/HANDOFF.md"
-
-// systemd/dbus integration — required for portals and user services
-spawn-at-startup "sh" "-c" "systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP && dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=niri"
+// systemd/dbus integration
+spawn-at-startup "sh" "-c" "systemctl --user import-environment && dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=niri"
 
 // ======= Key Bindings =======
 binds {
-    // ─── Launch ───
+    // ─── Escape a keyboard-grabbing window (RDP / Chromium keyboard lock) ───
+    Mod+Escape allow-inhibiting=false { spawn "@HOME@/.config/niri/scripts/kbd-inhibit.sh" "toggle"; }
+
+    // ─── Launch Programs ───
     Mod+Return { spawn "alacritty"; }
-    Mod+E      { spawn "alacritty" "-e" "yazi"; }
+    Mod+E      { spawn "nemo"; }
     Mod+Space  { spawn "rofi" "-show" "combi" "-modi" "window,run,combi" "-combi-modi" "window,run"; }
     Mod+A      { spawn "sh" "-c" "grim -g \"$(slurp)\" - | swappy -f -"; }
-    Mod+O      { toggle-overview; }
+    Mod+W      { spawn "gnome-calculator"; }
+    Mod+M      { spawn "sh" "-c" "wl-paste > /tmp/clipboard.md && bunx markdown-to-html-cli -s /tmp/clipboard.md -o /tmp/clipboard.html --no-dark-mode && zen-browser /tmp/clipboard.html"; }
     Mod+G      { power-off-monitors; }
-
-    // ─── Notifications (Mod+Alt namespace) ───
-    Mod+Alt+N       { spawn "@HOME@/.config/mako/mako-term.sh"; }
-    Mod+Alt+D       { spawn "makoctl" "dismiss"; }
-    Mod+Alt+Shift+D { spawn "makoctl" "dismiss" "-a"; }
-    Mod+Alt+R       { spawn "makoctl" "restore"; }
+    Mod+O      { toggle-overview; }
+    Mod+Shift+Grave { spawn "alacritty" "--title" "wiremix" "-e" "wiremix"; }
+    Mod+Shift+O { spawn "sh" "-c" "killall waybar; sleep 0.3; waybar -c @HOME@/.config/waybar/config-niri -s @HOME@/.config/waybar/style.css &"; }
 
     // ─── Window Actions ───
-    Mod+Q       { close-window; }
-    Mod+Shift+M { quit skip-confirmation=true; }
-    Mod+F       { maximize-column; }
-    Mod+Shift+F { fullscreen-window; }
-    Mod+V       { toggle-window-floating; }
+    Mod+Q           { close-window; }
+    Mod+Shift+M     { quit skip-confirmation=true; }
+    Mod+F           { maximize-column; }
+    Mod+Shift+F     { fullscreen-window; }
+    Mod+V           { toggle-window-floating; }
 
-    // ─── Focus ───
+    // ─── Focus (vim keys + arrows) ───
+    // H/L navigate between columns on the horizontal strip
     Mod+H     { focus-column-left; }
     Mod+L     { focus-column-right; }
+    // J/K navigate windows in column, then workspaces
     Mod+J     { focus-window-or-workspace-down; }
     Mod+K     { focus-window-or-workspace-up; }
+    // N/P toggle between monitors (vertically stacked)
     Mod+N     { focus-monitor-down; }
     Mod+P     { focus-monitor-up; }
     Mod+Left  { focus-column-left; }
@@ -200,11 +208,12 @@ binds {
     Mod+Down  { focus-window-or-workspace-down; }
     Mod+Up    { focus-window-or-workspace-up; }
 
-    // ─── Move Windows ───
+    // ─── Move Windows (niri way: consume/expel on H/L, workspace on J/K) ───
     Mod+Shift+H     { spawn "sh" "-c" "niri msg action reset-window-height; niri msg action consume-or-expel-window-left"; }
     Mod+Shift+L     { spawn "sh" "-c" "niri msg action reset-window-height; niri msg action consume-or-expel-window-right"; }
     Mod+Shift+J     { move-window-down-or-to-workspace-down; }
     Mod+Shift+K     { move-window-up-or-to-workspace-up; }
+    // Shift+N/P: move window to other monitor
     Mod+Shift+N     { move-column-to-monitor-down; }
     Mod+Shift+P     { move-column-to-monitor-up; }
     Mod+Shift+Left  { spawn "sh" "-c" "niri msg action reset-window-height; niri msg action consume-or-expel-window-left"; }
@@ -221,12 +230,11 @@ binds {
     Mod+Ctrl+Shift+Right { set-column-width "+5%"; }
     Mod+Ctrl+Shift+Up    { set-window-height "-5%"; }
     Mod+Ctrl+Shift+Down  { set-window-height "+5%"; }
-    Mod+R                { switch-preset-column-width; }
-    Mod+Minus            { set-column-width "-10%"; }
-    Mod+Equal            { set-column-width "+10%"; }
-    Mod+C                { center-column; }
 
-    // ─── Workspaces ───
+    // Preset column widths (cycle through 1/3, 1/2, 2/3)
+    Mod+R { switch-preset-column-width; }
+
+    // ─── Workspaces (1-10) ───
     Mod+1 { focus-workspace 1; }
     Mod+2 { focus-workspace 2; }
     Mod+3 { focus-workspace 3; }
@@ -238,6 +246,7 @@ binds {
     Mod+9 { focus-workspace 9; }
     Mod+0 { focus-workspace 10; }
 
+    // Move window to workspace (follows, like Hyprland Ctrl+N)
     Mod+Ctrl+1 { move-column-to-workspace 1; }
     Mod+Ctrl+2 { move-column-to-workspace 2; }
     Mod+Ctrl+3 { move-column-to-workspace 3; }
@@ -249,6 +258,7 @@ binds {
     Mod+Ctrl+9 { move-column-to-workspace 9; }
     Mod+Ctrl+0 { move-column-to-workspace 10; }
 
+    // Move window to workspace silently (like Hyprland Shift+N)
     Mod+Shift+1 { move-column-to-workspace 1; }
     Mod+Shift+2 { move-column-to-workspace 2; }
     Mod+Shift+3 { move-column-to-workspace 3; }
@@ -260,37 +270,56 @@ binds {
     Mod+Shift+9 { move-column-to-workspace 9; }
     Mod+Shift+0 { move-column-to-workspace 10; }
 
+    // Scroll through workspaces (mouse wheel)
     Mod+WheelScrollDown cooldown-ms=150 { focus-workspace-down; }
     Mod+WheelScrollUp   cooldown-ms=150 { focus-workspace-up; }
-    Mod+Slash { focus-workspace-previous; }
 
-    // ─── Monitors ───
+
+
+    // ─── Volume Control ───
+    XF86AudioRaiseVolume allow-when-locked=true { spawn "sh" "-c" "pactl set-sink-volume @DEFAULT_SINK@ +5%"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn "sh" "-c" "pactl set-sink-volume @DEFAULT_SINK@ -5%"; }
+    XF86AudioMute        allow-when-locked=true { spawn "sh" "-c" "amixer sset Master toggle"; }
+
+    // ─── Playback Control ───
+    XF86AudioPlay allow-when-locked=true { spawn "playerctl" "play-pause"; }
+    XF86AudioNext allow-when-locked=true { spawn "playerctl" "next"; }
+    XF86AudioPrev allow-when-locked=true { spawn "playerctl" "previous"; }
+
+    // ─── Screen Brightness ───
+    XF86MonBrightnessUp   { spawn "brightnessctl" "s" "+5%"; }
+    XF86MonBrightnessDown { spawn "brightnessctl" "s" "5%-"; }
+
+    // ─── Reload Config ───
+    Mod+Shift+R { spawn "niri" "msg" "action" "load-config-file"; }
+
+    // ─── Niri-Specific Extras ───
+    // Toggle between column widths
+    Mod+Minus         { set-column-width "-10%"; }
+    Mod+Equal         { set-column-width "+10%"; }
+
+    // Screenshot the whole screen
+    Print { screenshot; }
+    // Screenshot a specific window
+    Ctrl+Print { screenshot-window; }
+    // Screenshot a region
+    Alt+Print { screenshot-screen; }
+
+    // Move entire workspace between monitors
     Mod+Ctrl+Left  { move-workspace-to-monitor-left; }
     Mod+Ctrl+Right { move-workspace-to-monitor-right; }
     Mod+Ctrl+Up    { move-workspace-to-monitor-up; }
     Mod+Ctrl+Down  { move-workspace-to-monitor-down; }
 
-    // ─── Volume ───
-    XF86AudioRaiseVolume allow-when-locked=true { spawn "sh" "-c" "pactl set-sink-volume @DEFAULT_SINK@ +5%"; }
-    XF86AudioLowerVolume allow-when-locked=true { spawn "sh" "-c" "pactl set-sink-volume @DEFAULT_SINK@ -5%"; }
-    XF86AudioMute        allow-when-locked=true { spawn "sh" "-c" "pactl set-sink-mute @DEFAULT_SINK@ toggle"; }
-    XF86AudioMicMute     allow-when-locked=true { spawn "sh" "-c" "pactl set-source-mute @DEFAULT_SOURCE@ toggle"; }
+    // Center the focused column
+    Mod+C { center-column; }
 
-    // ─── Playback ───
-    XF86AudioPlay allow-when-locked=true { spawn "playerctl" "play-pause"; }
-    XF86AudioNext allow-when-locked=true { spawn "playerctl" "next"; }
-    XF86AudioPrev allow-when-locked=true { spawn "playerctl" "previous"; }
+    // Toggle between tiling and floating for window
+    Mod+Slash { focus-workspace-previous; }
 
-    // ─── Brightness (laptop) ───
-    XF86MonBrightnessUp   allow-when-locked=true { spawn "brightnessctl" "s" "+5%"; }
-    XF86MonBrightnessDown allow-when-locked=true { spawn "brightnessctl" "s" "5%-"; }
-
-    // ─── Screenshots ───
-    Print      { screenshot; }
-    Ctrl+Print { screenshot-window; }
-    Alt+Print  { screenshot-screen; }
-
-    // ─── Session ───
-    Mod+Shift+R { spawn "niri" "msg" "action" "load-config-file"; }
-    Mod+Shift+E { spawn "swaylock" "-f" "-c" "000000"; }
+    // ─── Notifications (mako) ───
+    Mod+Shift+D      { spawn "sh" "-c" "date >> /tmp/mako-bind.log; makoctl dismiss"; }
+    Mod+Ctrl+Shift+D { spawn "makoctl" "dismiss" "--all"; }
+    Mod+Shift+Comma  { spawn "makoctl" "restore"; }
+    Mod+Shift+Period { spawn "makoctl" "menu" "rofi" "-dmenu" "-p" "Action"; }
 }

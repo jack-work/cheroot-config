@@ -52,18 +52,7 @@ window#waybar.hidden {
 #clock {
     background: transparent;
     padding: 2px 8px;
-    /* CENTRING — read before touching.
-       1. waybar centres modules-center in the FULL bar width, and GTK centres a
-          widget INCLUDING its margins, so a SYMMETRIC margin moves it by zero.
-          Only an asymmetric margin shifts it: margin-right R moves it left R/2.
-       2. The rule "#clock#date" further down this file is INVALID CSS (two ids)
-          and matches nothing — style the clock HERE, not there.
-       Measured on cheroot @1920px: left group ended x=137, clock 733-970,
-       weather began x=996 => 596px slack left, 26px right. Equalising at 311px
-       needs a 285px leftward shift. MEASURED: margin-right shifts the widget 1:1
-       (NOT half), so margin-right = 2 + 285 = 287.
-       TUNED TO THE CURRENT MODULE SET; re-measure if you add/remove modules. */
-    margin: 1px 287px 1px 2px;
+    margin: 1px 2px;
     color: #727169;
 }
 
@@ -139,19 +128,26 @@ window#waybar.hidden {
     background: transparent;
     border-bottom: 2px solid rgba(210, 126, 153, 0.4);
     padding: 2px 10px;
-    /* CENTRING NOTE — do not "simplify" this to a symmetric margin.
-       waybar centres modules-center absolutely in the FULL bar width, and GTK
-       centres a widget INCLUDING its margins. Symmetric margins therefore move
-       the clock by exactly zero pixels. Only an ASYMMETRIC margin shifts it:
-       margin-right R moves the widget left by R/2.
-
-       Measured on cheroot (1920px): left group ended x=161, clock 733→970,
-       weather began x=996 → 572px of slack on the left, 26px on the right.
-       Equalising at 299px each side needs a 273px leftward shift → +546 margin.
-
-       This value is TUNED TO THE CURRENT MODULE SET. Adding or removing a
-       right-hand module, or a big change in battery/temperature digit width,
-       will need it re-measured. */
-    margin: 3px 574px 6px 28px;
+    margin: 3px 8px 6px 3px;
     color: #D27E99;
+}
+
+/* ── Keyboard-shortcuts inhibitor dot (Mod+Escape) ── */
+#custom-kbdinhibit {
+    background: transparent;
+    padding: 2px 4px;
+    margin: 3px 2px 6px 3px;
+    font-size: 9px;
+}
+
+#custom-kbdinhibit.eaten {
+    color: #C34043;   /* autumnRed  — window is eating your Mod key */
+}
+
+#custom-kbdinhibit.free {
+    color: #98BB6C;   /* springGreen — niri keeps your binds */
+}
+
+#custom-kbdinhibit.unknown {
+    color: transparent;
 }

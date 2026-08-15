@@ -13,7 +13,12 @@
 #           shells' integration from a single `enable`.
 {
   flake.modules.homeManager.shell =
-    { ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       shellAliases = {
         # figaro shortcuts — these replace the in-binary multi-call symlinks.
@@ -34,14 +39,35 @@
         # Was a stray `set -Ux` universal on gluck: invisible to this repo and
         # surviving every config rollback. Declared.
         GOFLAGS = "-buildvcs=false";
+
+        # Rescued from gluck's hand-written ~/.profile, which home-manager
+        # replaces wholesale. Without these three the desktop session quietly
+        # loses its browser, its Qt theming, and its TERM — a good example of
+        # why the collision report matters more than the file count.
+        BROWSER = "cachy-browser";
+        QT_QPA_PLATFORMTHEME = "qt5ct";
+        # NOTE: setting TERM from a profile is questionable — it properly comes
+        # from the terminal, and alacritty.toml already exports
+        # TERM=xterm-256color for its own windows. Carried over verbatim to
+        # preserve current behaviour; drop it if anything renders oddly over
+        # ssh or on a tty.
+        TERM = "alacritty";
       };
     in
     {
       home = { inherit sessionVariables; };
 
-      # Both shells come from the distro (a login shell needs /etc/shells and a
-      # stable path); nix only configures them. `enable` here does not install
-      # a shell, it turns on home-manager's rc-file generation.
+      # NOTE ON THE FISH BINARY. home-manager's fish module runs `fish_indent`
+      # to format the config.fish it generates, and invokes `fish` to build
+      # completions — so enabling fish config management NECESSARILY installs a
+      # nix fish. Pointing `package` at an empty derivation was tried and fails
+      # the build outright ("fish_indent: No such file or directory").
+      #
+      # On Arch that is benign today: the distro ships fish 4.8.1 and nixpkgs
+      # pins 4.8.1, and /etc/passwd launches /bin/fish by ABSOLUTE path, so the
+      # login shell is always the system one. Be aware only that `fish` invoked
+      # from PATH resolves to the nix copy, since ~/.nix-profile/bin precedes
+      # /usr/bin. If the two versions ever diverge, that is where it will show.
       programs.fish = {
         inherit shellAliases;
         enable = true;

@@ -10,6 +10,12 @@ default-timeout=10000
 anchor=top-right
 margin=20
 
-# Click a notification to open a terminal (see mako-term.sh).
-# The script holds ALL the logic, so this line never needs to change.
-on-button-right=exec /home/marlowe/.config/mako/mako-term.sh "$id"
+# --- figaro: supervisor pings ------------------------------------------
+# left-click  -> default action (copy code + open sign-in page)
+# right-click -> invoke "term" action (focus the alacritty running tmux)
+[app-name=figaro]
+default-timeout=0
+background-color=#bf616add
+border-color=#d08770
+on-button-left=invoke-default-action
+on-button-right=invoke-action term
