@@ -12,10 +12,9 @@
 # in pacman is shadowed rather than replaced: two copies on disk, the nix one
 # winning silently, and pacman upgrades that appear to do nothing.
 #
-#     sudo pacman -Rns github-cli lazygit fzf
+#     sudo pacman -Rns github-cli fzf
 #
 #   github-cli  superseded by `gh` below (nix 2.96.0 vs pacman 2.97.0)
-#   lazygit     REPLACED BY gitui at your request -- see the warning below
 #   fzf         superseded by nix's. Verified safe: the generated .bashrc calls
 #               `<nix fzf>/bin/fzf --bash` directly rather than sourcing
 #               /usr/share/fzf/*, and nix's fzf ships fzf-tmux, which
@@ -27,19 +26,24 @@
 #               PATH and `fzf-tmux` will not resolve. `tmux kill-server` (or a
 #               reboot) once after switching fixes it permanently.
 #
+#   lazygit     DELIBERATELY NOT REMOVED. It is kept because the nvim config
+#               drives it by name (see below). nix's 0.63.1 will shadow pacman's
+#               0.64.1 — a silent minor downgrade, noted so it is not a
+#               surprise. Remove pacman's whenever you like; nothing needs it.
+#
 # ---------------------------------------------------------------------------
-# WARNING: REMOVING lazygit BREAKS THREE NEOVIM BINDINGS
+# WHY lazygit IS STILL HERE
 # ---------------------------------------------------------------------------
-# lazygit is not a standalone tool here; the nvim config drives it:
+# lazygit is not a standalone tool on this machine; the nvim config drives it:
 #
 #   ~/.config/nvim/lua/plugins/snacks.lua   <leader>gg / <leader>gl / <leader>gf
 #                                           (Snacks.lazygit, log, log_file)
 #   ~/.config/nvim/lua/plugins/tree-bear.lua  require("tree-bear").lazygit_worktree()
 #
 # gitui is NOT a drop-in: snacks.nvim has no gitui provider, and tree-bear's
-# worktree helper shells out to lazygit by name. Those bindings will error until
-# the nvim config is updated. Nothing here can fix that -- ~/.config/nvim is
-# deliberately not managed by this flake (lazy.nvim and mason write into it).
+# worktree helper shells out to lazygit by name. So gitui is ADDITIVE for now.
+# Drop lazygit from this list once ~/.config/nvim no longer names it — that
+# config is deliberately unmanaged here (lazy.nvim and mason write into it).
 {
   flake.modules.homeManager.cli =
     { pkgs, ... }:
@@ -50,11 +54,13 @@
         jq
         eza
         bat
-        delta
         gitui
+        # lazygit stays for now: snacks.nvim binds <leader>gg/gl/gf to it and
+        # tree-bear.lua calls lazygit_worktree(). gitui is additive until the
+        # nvim config stops depending on lazygit by name.
+        lazygit
         yazi
         tree
-        git
         gh
       ];
 

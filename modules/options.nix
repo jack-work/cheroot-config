@@ -51,7 +51,7 @@
   # Declared for the same reason as homeConfigurations, so that NixOS hosts can
   # each contribute one. Empty until a NixOS machine exists — declaring the
   # option costs nothing and means the first one is a new file rather than a
-  # refactor. See modules/system/packages.nix for the `nixos` module class.
+  # refactor. See modules/system/nixos.nix for the `nixos` module class.
   options.flake.nixosConfigurations = lib.mkOption {
     type = lib.types.lazyAttrsOf lib.types.raw;
     default = { };

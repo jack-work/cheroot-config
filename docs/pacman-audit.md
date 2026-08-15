@@ -23,26 +23,81 @@ The flake already installs these; pacman's copies must go or they will be
 shadowed:
 
 ```sh
-sudo pacman -Rns github-cli lazygit fzf
+sudo pacman -Rns github-cli fzf
 ```
 
 | package | why |
 |---|---|
 | `github-cli` | flake provides `gh` |
-| `lazygit` | **replaced by `gitui` at your request — see the warning below** |
 | `fzf` | flake provides it; verified `fzf-tmux` ships with nix's build, which `tmux.conf`'s `prefix + B` needs |
 
-> **`lazygit` removal breaks three neovim bindings.** `snacks.nvim` binds
-> `<leader>gg`, `<leader>gl` and `<leader>gf` to `Snacks.lazygit`, and
-> `tree-bear.lua` calls `require("tree-bear").lazygit_worktree()`. `gitui` is
-> **not** a drop-in: snacks has no gitui provider, and tree-bear shells out to
-> lazygit by name. Those bindings will error until `~/.config/nvim` is updated —
-> which this flake deliberately does not manage. Either update the nvim config
-> first, or keep lazygit installed alongside gitui until you do.
+> **Removing `github-cli` breaks git auth unless `.gitconfig` is fixed first.**
+> Your hand-written `~/.gitconfig` set
+> `helper = !/usr/bin/gh auth git-credential` — an **absolute path** into
+> pacman's copy. `modules/git.nix` now declares the helper unqualified, so it
+> resolves through PATH from any source. But see the next warning.
+
+> **Delete `~/.gitconfig` by hand after switching.** home-manager writes to
+> `$XDG_CONFIG_HOME/git/config`, and git reads *both* files, last value winning.
+> `-b bak` will not back up `~/.gitconfig` because home-manager does not manage
+> that path. Measured with both present, the **stale** `/usr/bin/gh` helper
+> wins. Once: `mv ~/.gitconfig ~/.gitconfig.pre-nix`.
+
+`lazygit` is **kept** for now: `snacks.nvim` binds `<leader>gg/gl/gf` to it and
+`tree-bear.lua` calls `lazygit_worktree()`. `gitui` is additive until the nvim
+config stops naming lazygit. nix's 0.63.1 will shadow pacman's 0.64.1 — a silent
+minor downgrade, noted so it is not a surprise.
 
 After switching, run `tmux kill-server` once. `run-shell` inherits the tmux
 *server's* environment, captured at server start; a server predating the switch
 has no `~/.nix-profile/bin` on PATH and will not find `fzf-tmux`.
+
+---
+
+## Candidates for home *management*, not just installation
+
+Installing a package from nix is the small half. The larger half is
+home-manager's `programs.*` / `services.*` modules, which manage the tool's
+**configuration** as well. home-manager ships **350 program modules** and **162
+service modules**; **39** of them match something you have installed via pacman:
+
+| worth adopting | why |
+|---|---|
+| `programs.git` | **done** — `.gitconfig` was unmanaged and carried the `/usr/bin/gh` trap |
+| `programs.gh` | gh aliases and settings, currently unmanaged |
+| `programs.go` | `env.GOPATH` / `GOBIN` / `GOFLAGS` — would replace the hand-rolled `GOFLAGS` in `10-env` and the `go env GOPATH` shelling-out in `30-path` |
+| `programs.btop`, `programs.htop` | small configs, currently hand-tuned or default |
+| `programs.less`, `programs.ripgrep` | `LESS` opts, ripgrep ignore rules |
+| `programs.fastfetch` | the shell greeting, currently distro default |
+| `programs.bun`, `programs.uv`, `programs.npm` | registry/config files |
+| `programs.aichat`, `programs.claude-code` | both already installed via pacman |
+
+| deliberately NOT adopting | why |
+|---|---|
+| `programs.tmux` | generates tmux.conf from Nix attrs. Yours is 185 tuned lines incl. the 3.7b workaround — a rewrite with no gain |
+| `programs.neovim` | config is a git clone that lazy.nvim and mason write into |
+| `programs.waybar`, `services.mako`, `programs.alacritty`, `programs.rofi`, `programs.wofi`, `programs.swaylock`, `programs.wlogout` | we manage these as verbatim files, and enabling the module also installs a nix build of something that draws — see Tier 3 |
+| `programs.chromium`, `programs.obs-studio`, `programs.vesktop`, `programs.freetube` | GPU / Electron; keep on pacman |
+
+### The `package = null` trick
+
+Many home-manager modules declare their package option **nullable**, which lets
+you take the configuration management while leaving the *binary* to the distro —
+exactly the right split on Arch. Verified nullable in this home-manager revision:
+
+`git` `go` `btop` `less` `ripgrep` `fastfetch` `bun` `uv` `npm` `micro`
+`aichat` `lazygit` `tmux`
+
+```nix
+programs.btop = {
+  enable = true;
+  package = null;      # pacman keeps the binary; nix owns ~/.config/btop
+  settings = { ... };
+};
+```
+
+This is the answer for anything heavy, or anything where the distro's version
+should win.
 
 ---
 
@@ -92,7 +147,7 @@ renders in software, or not at all.
 
 On **NixOS** every one of these flips to nix, via
 `my.platform.desktopFromNix = true` for the graphical stack and
-`modules/system/packages.nix` for the system half.
+`modules/system/nixos.nix` for the system half.
 
 ## Fonts
 

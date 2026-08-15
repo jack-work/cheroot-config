@@ -34,6 +34,7 @@
       "figaro"
       "prompt"
       "cli"
+      "git"
       "editor"
       "tmux"
     ];
