@@ -5,7 +5,8 @@
 # configuration therefore lives entirely in numbered conf.d/ modules, which
 # fish sources in filename order BEFORE config.fish:
 #
-#   10-env  15-brew  20-cachyos  30-path  50-conda  65-figaro-prompt  70-fzf
+#   10-env  12-wayland  15-brew  20-cachyos  30-path  50-conda
+#   65-figaro-prompt  70-fzf
 #
 # Aliases (40-) and prompt init (60-) are absent on purpose — home-manager
 # generates those from shell/core.nix and prompt.nix.

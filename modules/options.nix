@@ -48,13 +48,19 @@
     description = "Helpers shared across modules, reachable as config.flake.lib.*";
   };
 
-  # Declared for the same reason as homeConfigurations, so that NixOS hosts can
-  # each contribute one. Empty until a NixOS machine exists — declaring the
-  # option costs nothing and means the first one is a new file rather than a
-  # refactor. See modules/system/nixos.nix for the `nixos` module class.
-  options.flake.nixosConfigurations = lib.mkOption {
-    type = lib.types.lazyAttrsOf lib.types.raw;
-    default = { };
-    description = "NixOS system configurations, one per host.";
-  };
+  # `flake.nixosConfigurations` is deliberately NOT declared here.
+  #
+  # flake-parts ships modules/nixosConfigurations.nix, which already declares it
+  # as `lazyAttrsOf raw` with `default = {}` — identical to what we would write.
+  # Redeclaring it is not a harmless duplicate: two declarations of one option
+  # is an error, and it surfaced only under `nix flake check`, because that is
+  # the one command that evaluates the nixosConfigurations output.
+  #
+  #   error: The option `flake.nixosConfigurations' in
+  #   `.../modules/nixosConfigurations.nix' is already declared in
+  #   `.../modules/options.nix'.
+  #
+  # `homeConfigurations` above still needs our declaration — home-manager is not
+  # a flake-parts module and ships no equivalent. The rule: declare a `flake.*`
+  # option only after checking flake-parts does not already own it.
 }

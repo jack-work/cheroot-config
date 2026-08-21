@@ -4,6 +4,7 @@
 # this file. Numbered so the order is explicit rather than accidental:
 #
 #   10-env         environment variables
+#   12-wayland     repair a lost/stale Wayland session env (tmux TTY clobber)
 #   15-brew        homebrew shellenv (before user paths, so ours win)
 #   20-cachyos     distro defaults: aliases, greeting, MANPAGER, `done`
 #   30-path        PATH assembly (fish_add_path, deduplicating)
