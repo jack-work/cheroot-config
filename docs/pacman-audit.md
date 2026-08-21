@@ -23,13 +23,25 @@ The flake already installs these; pacman's copies must go or they will be
 shadowed:
 
 ```sh
-sudo pacman -Rns github-cli fzf
+sudo pacman -Rns github-cli
 ```
 
 | package | why |
 |---|---|
-| `github-cli` | flake provides `gh` |
-| `fzf` | flake provides it; verified `fzf-tmux` ships with nix's build, which `tmux.conf`'s `prefix + B` needs |
+| `github-cli` | flake provides `gh`. Explicit, `Required By: None` — removes cleanly |
+
+> **CORRECTION (2026-08-21).** This section originally read
+> `pacman -Rns github-cli fzf`. **`fzf` cannot be removed**: it is not an
+> explicit install but a dependency of `cachyos-fish-config` and
+> `cachyos-zsh-config`. `-Rns` would refuse (or, if forced, take the cachyos
+> config packages with it). Leave pacman's `fzf` in place and let nix's shadow
+> it — 0.74.1 vs 0.74.2, and `fzf-tmux` ships in nix's build, so `prefix + B`
+> works either way.
+>
+> The general rule stated above — *"every migration is a pair: add to the flake,
+> and `pacman -Rns` the old one"* — **does not hold** for anything another
+> package depends on. See "Shadowing is the norm, not the exception" below for
+> the measured list.
 
 > **Removing `github-cli` breaks git auth unless `.gitconfig` is fixed first.**
 > Your hand-written `~/.gitconfig` set
@@ -54,6 +66,60 @@ has no `~/.nix-profile/bin` on PATH and will not find `fzf-tmux`.
 
 ---
 
+## Shadowing is the norm, not the exception
+
+*(Measured 2026-08-21 against the built generation, not predicted.)*
+
+The built profile puts **54 binaries** on `PATH` ahead of `/usr/bin`. **19
+pacman packages** are shadowed by them — not the two this document originally
+implied:
+
+| pacman package | shadowed binaries | removable? |
+|---|---|---|
+| `github-cli` | `gh` | **yes** — explicit, no dependents |
+| `lazygit` | `lazygit` | yes, but see the 0.63.1 note above |
+| `starship` `stylua` `tree` `zoxide` `neovim` `tmux` `man-db` | one each | yes — explicit, `Required By: None` |
+| `fzf` | `fzf` `fzf-tmux` | **no** — `cachyos-fish-config`, `cachyos-zsh-config` |
+| `bat` `eza` | `bat`, `exa`+`eza` | **no** — `cachyos-fish-config` |
+| `fd` `ripgrep` | `fd`, `rg` | **no** — `hwdetect` |
+| `jq` | `jq` | **no** — `scx-scheds`, `swaylock-fancy-git` |
+| `fish` | `fish` `fish_indent` `fish_key_reader` | **no** — `cachyos-fish-config`, `fisher`, … |
+| `git` | `git` + 6 helpers | **no** — `paru`, `yay`, `zed`, `lazygit` |
+| `shared-mime-info` | `update-mime-database` | **no** — GTK 2/3/4, Qt 5/6, `colord` |
+| `bash` | `bash` `sh` `bashbug` | **NEVER** — `base`, `pacman`, `systemd`, ~100 more |
+
+**`bash` is the one to understand.** The flake installs it (`programs.bash`), so
+it shadows pacman's. Applying this document's original "add + remove" rule to it
+would take out `base`, `pacman` and `systemd`. Shadowing a package and retiring
+it are *different decisions*, and only the first is automatic.
+
+The good news, also measured: **shadowing is almost entirely version-neutral.**
+Of the 16 shadowed pairs that report a version, 13 are byte-identical
+(`bat` `fd` `jq` `rg` `starship` `tree` `zoxide` `nvim` `fish` `git` `stylua` …).
+Only three differ, all trivially and all downgrades already known:
+
+| tool | nix | pacman |
+|---|---|---|
+| `lazygit` | 0.63.1 | 0.64.1 |
+| `gh` | 2.96.0 | 2.97.0 |
+| `fzf` | 0.74.1 | 0.74.2 |
+
+So the practical stance is: **let nix shadow, remove almost nothing.** Removal
+buys disk and tidiness; it costs the risk above. `github-cli` is worth removing
+because the stale `/usr/bin/gh` path in `~/.gitconfig` is a real trap. The rest
+can sit.
+
+## `man-db` deserves its own note
+
+`man-db` appears in the shadow list without ever being asked for — home-manager's
+`programs.man` is **enabled by default** and pulls it in. It is explicit in
+pacman with no dependents, so it *looks* removable, but this document's Tier 3
+rightly classes `man-db` as a core distro utility the system expects at a system
+path. Recommended: leave pacman's installed, and consider
+`programs.man.enable = false` if the nix copy ever misreads `/usr/share/man`.
+
+---
+
 ## Candidates for home *management*, not just installation
 
 Installing a package from nix is the small half. The larger half is
@@ -64,8 +130,8 @@ service modules**; **39** of them match something you have installed via pacman:
 | worth adopting | why |
 |---|---|
 | `programs.git` | **done** — `.gitconfig` was unmanaged and carried the `/usr/bin/gh` trap |
-| `programs.gh` | gh aliases and settings, currently unmanaged |
-| `programs.go` | `env.GOPATH` / `GOBIN` / `GOFLAGS` — would replace the hand-rolled `GOFLAGS` in `10-env` and the `go env GOPATH` shelling-out in `30-path` |
+| `programs.gh` | **next up** — pairs with the `.gitconfig` credential-helper fix already in, and `github-cli` is the one package worth actually removing |
+| `programs.go` | **done** — `~/.config/go/env` via `modules/go.nix`, `package = null` unless `toolchainFromNix`. Retired the hand-rolled `GOFLAGS` in `10-env` and the `go env GOPATH` shell-out in `30-path`. Open question left over: `~/.config/go/env` had `GOFLAGS=-mod=mod`, silently dead because the shell export beat it — only `-buildvcs=false` was carried forward. Reinstating `-mod=mod` is a decision, not a migration |
 | `programs.btop`, `programs.htop` | small configs, currently hand-tuned or default |
 | `programs.less`, `programs.ripgrep` | `LESS` opts, ripgrep ignore rules |
 | `programs.fastfetch` | the shell greeting, currently distro default |
