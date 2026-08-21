@@ -1,9 +1,10 @@
-{ lib
-, writeShellApplication
-, jq
-, tmux
-, coreutils
-, procps
+{
+  lib,
+  writeShellApplication,
+  jq,
+  tmux,
+  coreutils,
+  procps,
 }:
 
 # mako-term — open a terminal (optionally a tmux pane) from a notification.
@@ -16,7 +17,12 @@
 writeShellApplication {
   name = "mako-term";
 
-  runtimeInputs = [ jq tmux coreutils procps ];
+  runtimeInputs = [
+    jq
+    tmux
+    coreutils
+    procps
+  ];
 
   text = builtins.readFile ../config/mako/mako-term.sh;
 
