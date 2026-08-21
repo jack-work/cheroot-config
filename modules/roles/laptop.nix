@@ -6,7 +6,6 @@
 {
   flake.modules.homeManager.laptop = {
     my.waybar.modulesRight = [
-      "custom/kbdinhibit"
       "custom/weather"
       "custom/wifi"
       "custom/storage"

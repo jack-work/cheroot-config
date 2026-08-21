@@ -48,12 +48,9 @@
 
         home.file.".local/share/wallpaper/wallpaper.jpg".source = config.my.wallpaper;
 
-        # Helper scripts niri spawns. Kept executable and out of conf.d so the
-        # compositor can exec them directly.
-        home.file.".config/niri/scripts/kbd-inhibit.sh" = {
-          source = ../../config/niri/scripts/kbd-inhibit.sh;
-          executable = true;
-        };
+        # No helper scripts. `.config/niri/scripts/kbd-inhibit.sh` lived here
+        # until 2026-08-21; Mod+Escape now calls niri's own
+        # toggle-keyboard-shortcuts-inhibit action directly.
 
         xdg.configFile."niri/config.kdl".text =
           builtins.replaceStrings

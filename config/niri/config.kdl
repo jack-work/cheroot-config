@@ -159,7 +159,6 @@ environment {
 spawn-at-startup "xwayland-satellite" ":1"
 spawn-at-startup "swaybg" "-o" "*" "-i" "@WALLPAPER@" "-m" "stretch"
 spawn-at-startup "waybar" "-c" "@HOME@/.config/waybar/config-niri" "-s" "@HOME@/.config/waybar/style.css"
-spawn-at-startup "@HOME@/.config/niri/scripts/kbd-inhibit.sh" "watch"
 spawn-at-startup "fcitx5" "-d"
 spawn-at-startup "mako"
 // nm-applet removed — using iwd/iwctl via custom waybar module instead
@@ -172,7 +171,17 @@ spawn-at-startup "sh" "-c" "systemctl --user import-environment && dbus-update-a
 // ======= Key Bindings =======
 binds {
     // ─── Escape a keyboard-grabbing window (RDP / Chromium keyboard lock) ───
-    Mod+Escape allow-inhibiting=false { spawn "@HOME@/.config/niri/scripts/kbd-inhibit.sh" "toggle"; }
+    //
+    // niri's own action, called directly. This used to route through
+    // scripts/kbd-inhibit.sh, which also kept a per-window ledger to drive a
+    // waybar indicator; the ledger could only ever guess, so both were removed
+    // on 2026-08-21. `git log -- config/niri/scripts/kbd-inhibit.sh` has the
+    // full reasoning.
+    //
+    // allow-inhibiting=false is what makes this bind the escape hatch: it is
+    // the one key niri refuses to hand to an inhibiting client, so it still
+    // arrives when a window has grabbed everything else.
+    Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
 
     // ─── Launch Programs ───
     Mod+Return { spawn "alacritty"; }

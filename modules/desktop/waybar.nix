@@ -19,7 +19,6 @@
       options.my.waybar.modulesRight = lib.mkOption {
         type = lib.types.listOf lib.types.str;
         default = [
-          "custom/kbdinhibit"
           "custom/weather"
           "custom/wifi"
           "custom/storage"

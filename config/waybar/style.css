@@ -131,23 +131,3 @@ window#waybar.hidden {
     margin: 3px 8px 6px 3px;
     color: #D27E99;
 }
-
-/* ── Keyboard-shortcuts inhibitor dot (Mod+Escape) ── */
-#custom-kbdinhibit {
-    background: transparent;
-    padding: 2px 4px;
-    margin: 3px 2px 6px 3px;
-    font-size: 9px;
-}
-
-#custom-kbdinhibit.eaten {
-    color: #C34043;   /* autumnRed  — window is eating your Mod key */
-}
-
-#custom-kbdinhibit.free {
-    color: #98BB6C;   /* springGreen — niri keeps your binds */
-}
-
-#custom-kbdinhibit.unknown {
-    color: transparent;
-}
