@@ -10,11 +10,13 @@ implements **one feature across every configuration class it touches**.
 |---|---|---|
 | `cheroot` | `marlowe` | ThinkPad X13 Gen 1, plain Arch, `laptop` role |
 | `gluck` | `gluck` | desktop, CachyOS, `desktop` role |
+| `wsl` | `gluck` | Windows box's Linux userland, `wsl` role, **no GUI aspects** |
 
 ```sh
 nix develop
 home-manager switch --flake .#marlowe@cheroot
 home-manager switch --flake .#gluck@gluck -b bak   # first run on gluck: see below
+home-manager switch --flake .#gluck@wsl
 ```
 
 ## Layout
@@ -31,10 +33,13 @@ modules/
   shell/bash.nix       bash rendering
   figaro.nix           figaro across BOTH shells: prompt hooks + completions
   prompt.nix cli.nix editor.nix tmux.nix
-  desktop/             niri waybar mako rofi alacritty
-  roles/               laptop desktop
-  hosts/               cheroot gluck
+  desktop/             niri waybar mako rofi alacritty, and session.nix
+                       (the env a graphical session needs and nothing else does)
+  roles/               laptop desktop wsl
+  hosts/               cheroot gluck wsl
 config/                verbatim config files, referenced by the modules
+  fish/conf.d/         core fish modules — every host gets these
+  fish/conf.d-graphical/  wayland repair; only hosts with a screen link it
 ```
 
 ## One flake, many machines
@@ -97,6 +102,58 @@ Two mechanisms make the sharing work, and both are worth knowing:
 Finally: **import-tree ignores paths beginning with `_`.** Handy for scratch
 files under `modules/`; confusing if you do it by accident and wonder why your
 new host never appears.
+
+## Machines with no screen (WSL, servers, containers)
+
+`coreAspects` is the set that survives having no compositor, no GPU and no
+window manager: **both shells, the prompt, the CLI tools, git, go, neovim and
+its formatters, tmux, and figaro.** `guiAspects` is everything that assumes a
+display. A headless host names only the first, and the second is never
+evaluated — not installed-but-unused, *never built*.
+
+```nix
+flake.homeConfigurations = config.flake.lib.mkHost {
+  user = "gluck"; host = "wsl";
+  aspects = config.flake.lib.coreAspects;
+  roles   = [ "wsl" ];
+};
+```
+
+Proof, from the two generations built out of this one flake:
+
+| | `gluck@gluck` | `gluck@wsl` |
+|---|---|---|
+| `~/.config/` | fish git go tmux **niri waybar mako rofi alacritty** | fish git go tmux |
+| `fish/conf.d/12-wayland.fish` | yes | **absent** |
+| `TERM` / `QT_QPA_PLATFORMTHEME` | set | **unset** |
+| gcc, node, python3, tree-sitter | from pacman | from nix |
+
+The seam is only honest if nothing display-shaped hides in a core aspect. Three
+environment variables did, in `shell/core.nix`, and one of them — `TERM=alacritty` —
+is an outright lie under Windows Terminal. They now live in
+`modules/desktop/session.nix` (the `graphical` aspect), and `BROWSER`, which
+names a *specific binary*, lives in the host file. **The test for anything in a
+core aspect: would a machine with no screen want it?**
+
+**Name the WSL machine, do not guess it.** home-manager resolves a bare
+`--flake .` from the hostname, and WSL inherits the *Windows* PC name — mixed
+case, and it changes when the PC is renamed. Pin it instead:
+
+```sh
+sudo tee /etc/wsl.conf >/dev/null <<'EOF'
+[network]
+hostname = wsl
+generateHosts = true
+EOF
+```
+
+then `wsl --shutdown` from PowerShell, reopen, and `home-manager switch --flake .`
+finds `gluck@wsl` with no argument. Prefer the real name? Change the `host`
+string in `modules/hosts/wsl.nix`; the attribute follows.
+
+Clipboard needs nothing: the `clipcopy` fish function writes an OSC 52 escape to
+the tty, which Windows Terminal honours — copying out of a WSL tmux pane into
+Windows works with no `win32yank`, no `clip.exe` bridge and no X server.
 
 ## Both shells, one source
 

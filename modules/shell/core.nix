@@ -34,24 +34,16 @@
         dotfiles = "git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME";
       };
 
+      # THE TEST FOR THIS ATTRSET: would a headless box, a container or WSL
+      # want it? If the answer is no, it does not belong in a core aspect.
+      # The desktop session's variables (QT_QPA_PLATFORMTHEME, TERM) live in
+      # modules/desktop/session.nix; BROWSER names a specific binary and lives
+      # in the host file.
       sessionVariables = {
         CRYPTOGRAPHY_OPENSSL_NO_LEGACY = "1";
         # Was a stray `set -Ux` universal on gluck: invisible to this repo and
         # surviving every config rollback. Declared.
         GOFLAGS = "-buildvcs=false";
-
-        # Rescued from gluck's hand-written ~/.profile, which home-manager
-        # replaces wholesale. Without these three the desktop session quietly
-        # loses its browser, its Qt theming, and its TERM — a good example of
-        # why the collision report matters more than the file count.
-        BROWSER = "cachy-browser";
-        QT_QPA_PLATFORMTHEME = "qt5ct";
-        # NOTE: setting TERM from a profile is questionable — it properly comes
-        # from the terminal, and alacritty.toml already exports
-        # TERM=xterm-256color for its own windows. Carried over verbatim to
-        # preserve current behaviour; drop it if anything renders oddly over
-        # ssh or on a tty.
-        TERM = "alacritty";
       };
     in
     {

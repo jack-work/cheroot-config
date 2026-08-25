@@ -25,6 +25,13 @@
       my.platform.desktopFromNix = false;
       my.platform.toolchainFromNix = false;
 
+      # Names a CachyOS binary, so it is host-specific rather than part of the
+      # graphical aspect: plain Arch (cheroot) has no cachy-browser, and a
+      # BROWSER pointing at a missing binary is worse than an unset one.
+      # Rescued from gluck's hand-written ~/.profile, which home-manager
+      # replaces wholesale.
+      home.sessionVariables.BROWSER = "cachy-browser";
+
       # Dual 2560x1440 stacked vertically, DP-2 above DP-3. The only
       # host-specific niri lines gluck needs — and exactly what a
       # cheroot-derived config would have silently discarded, leaving niri to

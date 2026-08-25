@@ -41,9 +41,18 @@
     ];
 
     # Everything that only means something on a machine with a screen. A
-    # headless host passes `aspects = coreAspects` and none of this is
-    # evaluated, let alone installed.
+    # headless host — a server, a container, WSL — passes
+    # `aspects = coreAspects` and none of this is evaluated, let alone
+    # installed.
+    #
+    # THE SEAM IS LOAD-BEARING. `coreAspects` is exactly the set that survives
+    # having no compositor, no GPU and no window manager: the shells, the
+    # prompt, git, go, neovim, tmux, figaro and the CLI tools. Anything that
+    # assumes a screen belongs below, even if it is only an environment
+    # variable — see modules/desktop/session.nix for the three that were
+    # hiding in shell/core.nix until WSL made the mistake visible.
     guiAspects = [
+      "graphical"
       "fonts"
       "niri"
       "waybar"
