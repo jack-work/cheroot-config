@@ -1,0 +1,7 @@
+# `nix build` / `home-manager build` leave a symlink into /nix/store here.
+# It is machine-local and points at a path no other machine has.
+result
+result-*
+
+# direnv, if anyone enables it in-tree.
+.direnv/
