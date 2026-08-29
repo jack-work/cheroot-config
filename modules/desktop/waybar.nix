@@ -32,6 +32,47 @@
       config = {
         home.packages = lib.optionals config.my.platform.desktopFromNix [ pkgs.waybar ];
 
+        # WAYBAR IS A SYSTEMD USER UNIT, NOT A COMPOSITOR SPAWN.
+        #
+        # niri's `spawn-at-startup "waybar"` used to start it, and waybar was
+        # missing after roughly every other boot: the compositor is still
+        # bringing outputs up when the session target is reached, and waybar
+        # exits on that race. spawn-at-startup fires once and cannot retry, so
+        # the bar simply never appeared. `Restart=always` with `RestartSec=1`
+        # and no start-limit is the cure — it comes back until the outputs are
+        # there.
+        #
+        # Declaring it HERE rather than leaving a hand-written unit in
+        # ~/.config/systemd/user matters for two reasons: the next host gets
+        # the fix for free, and there is exactly one owner. A hand-written unit
+        # plus niri's spawn is how you end up with two bars.
+        #
+        # PartOf/Requisite graphical-session.target: the bar belongs to the
+        # session and must not linger after it, or outlive a compositor crash.
+        systemd.user.services.waybar = {
+          Unit = {
+            Description = "Waybar (niri session)";
+            Documentation = "https://github.com/Alexays/Waybar/wiki/";
+            PartOf = [ "graphical-session.target" ];
+            After = [ "graphical-session.target" ];
+            Requisite = [ "graphical-session.target" ];
+          };
+          Service = {
+            Type = "simple";
+            # Same rule as everything else that draws: pacman owns the GPU
+            # stack on Arch (nixpkgs#9415), so use the distro binary unless the
+            # host says nix provides the desktop. See modules/platform.nix.
+            ExecStart =
+              (if config.my.platform.desktopFromNix then "${pkgs.waybar}/bin/waybar" else "/usr/bin/waybar")
+              + " -c %h/.config/waybar/config-niri -s %h/.config/waybar/style.css";
+            ExecReload = "/bin/kill -SIGUSR2 $MAINPID";
+            Restart = "always";
+            RestartSec = 1;
+            StartLimitIntervalSec = 0;
+          };
+          Install.WantedBy = [ "graphical-session.target" ];
+        };
+
         xdg.configFile = {
           "waybar/style.css".source = ../../config/waybar/style.css;
           "waybar/modules".source = ../../config/waybar/modules;

@@ -158,7 +158,11 @@ environment {
 // ======= Autostart =======
 spawn-at-startup "xwayland-satellite" ":1"
 spawn-at-startup "swaybg" "-o" "*" "-i" "@WALLPAPER@" "-m" "stretch"
-spawn-at-startup "waybar" "-c" "@HOME@/.config/waybar/config-niri" "-s" "@HOME@/.config/waybar/style.css"
+// waybar is NOT spawned here. It is a systemd user unit — see
+// modules/desktop/waybar.nix. The compositor is still bringing outputs up when
+// the session target is reached and waybar dies on that race; `Restart=always`
+// is the cure, and spawn-at-startup cannot restart anything. Starting it in
+// BOTH places yields two bars.
 spawn-at-startup "fcitx5" "-d"
 spawn-at-startup "mako"
 // nm-applet removed — using iwd/iwctl via custom waybar module instead
@@ -193,7 +197,7 @@ binds {
     Mod+G      { power-off-monitors; }
     Mod+O      { toggle-overview; }
     Mod+Shift+Grave { spawn "alacritty" "--title" "wiremix" "-e" "wiremix"; }
-    Mod+Shift+O { spawn "sh" "-c" "killall waybar; sleep 0.3; waybar -c @HOME@/.config/waybar/config-niri -s @HOME@/.config/waybar/style.css &"; }
+    Mod+Shift+O { spawn "systemctl" "--user" "restart" "waybar"; }
 
     // ─── Window Actions ───
     Mod+Q           { close-window; }
