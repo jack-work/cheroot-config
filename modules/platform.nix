@@ -68,6 +68,37 @@
           TRUE on a minimal host with no toolchain of its own.
         '';
       };
+
+      mediaFromNix = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = ''
+          Let nix provide the heavy media codecs and processors — today `sox`
+          and `ffmpeg`, consumed by the `audio` aspect.
+
+          FALSE on Arch, and for once this is not a GPU argument. It is that
+          nixpkgs is BEHIND the distro on both, measured 2026-08-29:
+
+            sox     nixpkgs unstable-2021-05-09  vs  pacman 14.8.0.1 (built
+                    2026-05-26). Upstream sox went dormant and nixpkgs still
+                    carries a 2021 snapshot; installing it would shadow a
+                    current build with a five-year-old one. sox is also the one
+                    audio tool on gluck installed EXPLICITLY, on purpose.
+
+            ffmpeg  nixpkgs 8.1.2  vs  pacman 2:9.0.1 — a whole major version,
+                    and pacman's is `Required By: firefox chromaprint gst-libav
+                    ffmpegthumbnailer localsearch`. Shadowing only the binary
+                    (libraries link by store path, not PATH) is survivable, but
+                    it is still a downgrade for every command you type.
+
+          TRUE on a host that has neither — WSL, a headless server, NixOS —
+          where nixpkgs' version is not competing with anything, it IS the
+          only one.
+
+          Everything in the `audio` aspect that Arch does NOT ship is installed
+          regardless of this flag; see modules/audio.nix.
+        '';
+      };
     };
   };
 }

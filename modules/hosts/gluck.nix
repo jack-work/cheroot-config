@@ -16,7 +16,13 @@
   flake.homeConfigurations = config.flake.lib.mkHost {
     user = "gluck";
     host = "gluck";
-    roles = [ "desktop" ];
+    roles = [
+      "desktop"
+      # Opt-in aspect, not a machine class — `roles` is just extra aspect names.
+      # sox and ffmpeg keep coming from pacman here (mediaFromNix stays false);
+      # what nix adds is what Arch has no answer for. See modules/audio.nix.
+      "audio"
+    ];
 
     settings = {
       # Arch-family: pacman owns everything that draws, and gcc 16.2.1 / node
