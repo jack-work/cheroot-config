@@ -38,6 +38,18 @@
       # replaces wholesale.
       home.sessionVariables.BROWSER = "cachy-browser";
 
+      # THIS IS THE MACHINE WHERE FIGARO IS WRITTEN, so it does not take figaro
+      # from this repo's lockfile. 76 tags and counting; the working tree is
+      # routinely ahead of the newest one. Pinning here would cost
+      # `nix flake update figaro` + a commit + a switch per build, and buy
+      # nothing a dev host wants.
+      #
+      # The binary stays in the imperative profile, upgraded with the one
+      # command figaro itself prints (`figaro update` → `nix profile upgrade
+      # figaro`). This null is not an omission — it is the declaration that
+      # another owner is intended. See modules/figaro.nix.
+      my.figaro.package = null;
+
       # Dual 2560x1440 stacked vertically, DP-2 above DP-3. The only
       # host-specific niri lines gluck needs — and exactly what a
       # cheroot-derived config would have silently discarded, leaving niri to

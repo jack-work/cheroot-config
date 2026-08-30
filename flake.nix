@@ -18,6 +18,16 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # figaro, for hosts that CONSUME it rather than build it.
+    #
+    # Deliberately not used by gluck — see modules/figaro.nix and
+    # modules/hosts/gluck.nix. The machine where figaro is developed takes its
+    # binary from its own dev loop; every other machine takes this pin.
+    figaro = {
+      url = "github:jack-work/figaro";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   # The whole flake is one import-tree call. Nothing else belongs in this file —
