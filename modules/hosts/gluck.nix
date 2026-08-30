@@ -18,10 +18,10 @@
     host = "gluck";
     roles = [
       "desktop"
-      # Opt-in aspect, not a machine class — `roles` is just extra aspect names.
-      # sox and ffmpeg keep coming from pacman here (mediaFromNix stays false);
-      # what nix adds is what Arch has no answer for. See modules/audio.nix.
+      # Opt-in aspects, not machine classes — `roles` is just extra aspect
+      # names. See modules/audio.nix and modules/zig.nix.
       "audio"
+      "zig"
     ];
 
     settings = {
