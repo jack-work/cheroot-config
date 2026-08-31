@@ -19,6 +19,31 @@ home-manager switch --flake .#gluck@gluck -b bak   # first run on gluck: see bel
 home-manager switch --flake .#gluck@wsl
 ```
 
+## Where this lives, and where to push
+
+**spain is the source of truth; GitHub is a replica.**
+
+```
+git@spain:jack/cheroot-config.git   ← push here
+        │  keel post-receive, detached
+        ▼
+github.com/jack-work/cheroot-config  ← mirror, public
+```
+
+keel mirrors with `git push --mirror`, which makes GitHub an *exact* replica:
+forced updates propagate and deleted branches disappear. The consequence is
+worth stating plainly — **anything pushed directly to GitHub is overwritten by
+the next push to spain.** `main` therefore tracks `keel/main`, so a bare
+`git push` goes to the right place.
+
+The mirror push is detached on purpose: keel accepts your push on its own
+merits and never blocks on GitHub's latency or fails when GitHub is
+unreachable. Watch it land with `journalctl -t keel-mirror -f` on spain, and
+retry a failed one with `keel sync jack/cheroot-config`.
+
+GitHub still matters — it is what a machine with no tailnet can clone, and it
+is where issue #1 (the WSL runbook) lives.
+
 ## Layout
 
 ```
