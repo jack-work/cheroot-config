@@ -15,7 +15,13 @@
       ...
     }:
     {
-      home.packages = [ pkgs.tmux ];
+      # sesh is a hard dependency of tmux.conf: prefix+f and prefix+C-f call it
+      # by name. It is a short-lived CLI, not a daemon — nothing runs between
+      # keypresses.
+      home.packages = [
+        pkgs.tmux
+        pkgs.sesh
+      ];
 
       xdg.configFile."tmux/tmux.conf".source = ../config/tmux/tmux.conf;
 
