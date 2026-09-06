@@ -97,6 +97,27 @@
             logins and extensions all still on disk, none of them loaded.
           '';
         };
+
+        shortcutsVersion = lib.mkOption {
+          type = lib.types.nullOr lib.types.int;
+          default = shortcuts.version;
+          defaultText = lib.literalExpression "the version recorded in config/zen/keyboard-shortcuts.json";
+          description = ''
+            The shortcut schema version THIS MACHINE'S Zen speaks, read from
+            about:config's `zen.keyboard.shortcuts.version`. Activation refuses
+            to patch when it disagrees, which is the whole point: a Zen release
+            that renumbers the schema should stop and be looked at, not quietly
+            write bindings by id into a table that has moved underneath them.
+
+            It defaults to the version the export was taken at, so the machine
+            that produced config/zen/keyboard-shortcuts.json declares nothing. A
+            host whose browser is BEHIND names its own version, which is a
+            statement that the drift is known and temporary — the repair is to
+            upgrade that machine's Zen until both speak the same schema.
+
+            `null` disables the check. Do not.
+          '';
+        };
       };
 
       config = {
@@ -220,7 +241,7 @@
             # Refuse to patch a schema this export was not taken against.
             # Bump by re-running bin/zen-shortcuts-export after a Zen upgrade
             # that changes about:config's zen.keyboard.shortcuts.version.
-            keyboardShortcutsVersion = shortcuts.version;
+            keyboardShortcutsVersion = config.my.zen.shortcutsVersion;
           };
         };
       };

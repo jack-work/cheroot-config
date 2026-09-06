@@ -35,6 +35,20 @@
       # ~/.config/zen/profiles.ini; do not invent it.
       my.zen.profileDir = "y9w3yl5l.Default (release)";
 
+      # TEMPORARY, AND THE REASON IT IS TEMPORARY IS THE POINT.
+      #
+      # cheroot's zen-browser-bin is 1.21.9b against gluck's 1.21.13b, and the
+      # two speak different shortcut schemas — 19 here, 20 there. The exported
+      # table in config/zen/keyboard-shortcuts.json was taken at 20, so without
+      # this line activation stops and says so, which is exactly what the guard
+      # is for.
+      #
+      # Declaring 19 says "the drift is known": the ids this repo patches are
+      # stable across the bump, so the bindings still land. Delete this line
+      # after `pacman -Syu zen-browser-bin` brings the two machines level, and
+      # let the default (the export's own version) take over again.
+      my.zen.shortcutsVersion = 19;
+
       # THE BAR IS CENTRED FOR 1920px, AND THIS IS WHY IT IS HOST-SPECIFIC.
       #
       # waybar centres `modules-center` in the full bar width and GTK centres a
