@@ -60,11 +60,17 @@ modules/
   prompt.nix cli.nix editor.nix tmux.nix
   desktop/             niri waybar mako rofi alacritty, and session.nix
                        (the env a graphical session needs and nothing else does)
+  desktop/zen.nix      the browser: prefs, extensions, shortcuts — but NOT the
+                       binary, which is pacman's
   roles/               laptop desktop wsl
   hosts/               cheroot gluck wsl
+bin/                   scripts that GENERATE checked-in data
+  zen-shortcuts-export   a Zen profile's shortcuts -> config/zen/*.json
 config/                verbatim config files, referenced by the modules
   fish/conf.d/         core fish modules — every host gets these
   fish/conf.d-graphical/  wayland repair; only hosts with a screen link it
+  zen/                 user.js and the exported keyboard shortcuts
+pkgs/                  small derivations: mako-term, firefox-xpi (AMO pins)
 ```
 
 ## One flake, many machines
@@ -203,6 +209,37 @@ Numbering is deliberately parallel so the two are readable together:
 Neither shell is installed by nix: a login shell needs `/etc/shells` and a
 stable path, so both come from pacman and nix only configures them.
 
+## The browser
+
+Zen is configured here and installed by pacman. `modules/desktop/zen.nix` owns
+prefs, the extension set, the active theme and the keyboard shortcuts;
+`package = null` because Zen draws and nixpkgs does not ship it at all. The
+visible consequence of a null package is that `policies` never apply — there is
+no wrapper to put them in — so extensions install as signed xpi files dropped
+into the profile, which any gecko binary honours.
+
+Shortcuts are the interesting part, because they are the thing you want
+identical on two machines:
+
+```sh
+./bin/zen-shortcuts-export > config/zen/keyboard-shortcuts.json
+git diff config/zen/keyboard-shortcuts.json   # exactly what you rebound
+```
+
+The export is exhaustive — every addressable shortcut, not a diff — because
+Zen's own file does not record which entries were customised. That is safe
+because the module **patches by id** and leaves unlisted ids alone: a Zen
+release that adds shortcuts does not lose them, and `keyboardShortcutsVersion`
+fails the activation loudly if the schema moves. Around a dozen alternate
+bindings (F5, backspace) carry no id at all and cannot be declared by anyone.
+
+What nix does **not** own is the configuration living *inside* an extension —
+Vimium C's keymap above all. It sits in the extension's IndexedDB, and
+home-manager's route to it (`extensions.settings`) forces the whole profile back
+to the legacy JSON storage backend, hiding what every other extension had
+already stored (home-manager#9211). Export Vimium C's options from its own
+options page instead.
+
 ## Things that will bite you
 
 **Do not symlink a whole config directory.** `xdg.configFile."fish/conf.d".source
@@ -239,3 +276,14 @@ guarded in `15-brew.sh`.
 **First switch on gluck needs `-b bak`.** Real files already exist at
 `~/.config/fish`, `tmux.conf`, `alacritty.toml`, `starship.toml`; without the
 backup flag home-manager refuses rather than clobbering.
+
+**A Zen profile directory must be NAMED, never guessed.** `my.zen.profileDir`
+and `my.zen.configPath` are per-host facts, and getting either wrong does not
+fail — home-manager writes a complete, correct profile that the browser never
+opens, and Zen carries on with the real one as if nothing had happened.
+Measured today: gluck keeps profiles in `~/.zen`, cheroot in `~/.config/zen`,
+from the same AUR package. Read `profiles.ini` before editing either value.
+
+**Close Zen before a switch that changes shortcuts.** The module patches
+`zen-keyboard-shortcuts.json` in place during activation; a running Zen holds
+its own copy and writes it back on exit, silently undoing the patch.
