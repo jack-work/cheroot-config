@@ -140,7 +140,8 @@
           # ours, so the paths are the binary's, not the module's.
           configPath = config.my.zen.configPath;
           profilesPath = config.my.zen.configPath;
-          vendorPath = config.my.zen.configPath;
+          # `vendorPath` is NOT set: upstream deprecated it (native messaging
+          # hosts resolve without it) and setting it only earns a warning.
 
           profiles.default = {
             id = 0;
