@@ -121,6 +121,27 @@
       };
 
       config = {
+        # PROFILES.INI IS ZEN'S, NOT OURS. THIS LINE IS LOAD-BEARING.
+        #
+        # home-manager's firefox machinery writes profiles.ini whenever any
+        # profile is declared, as a read-only store symlink. That breaks Zen at
+        # startup with "Your Zen profile cannot be loaded. It may be missing or
+        # inaccessible" — measured on cheroot, 2026-09-06.
+        #
+        # The reason is that profiles.ini is not configuration, it is a
+        # REGISTRY the browser maintains. Since Firefox 67 each installation
+        # claims a dedicated profile through an `[InstallXXXXXXXX]` section
+        # keyed by a hash of the install path, and the generated file has no
+        # such section. Zen therefore tries to claim one, cannot write the
+        # file, and refuses to start rather than silently using someone else's
+        # profile.
+        #
+        # Owning the CONTENTS of a profile and leaving the REGISTRY of profiles
+        # to the browser is also just the right split: which profiles exist and
+        # which install last used which is state, and declaring state is how a
+        # config file starts fighting its program.
+        home.file."${config.my.zen.configPath}/profiles.ini".enable = false;
+
         programs.zen-browser = {
           enable = true;
 
