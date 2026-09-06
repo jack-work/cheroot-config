@@ -1,8 +1,6 @@
-// Extra Zen prefs, appended verbatim to the generated user.js.
-//
-// Everything expressible as a typed option belongs in `my.zen.settings` in
-// modules/desktop/zen.nix instead; what lives here is the block whose COMMENTS
-// are the point — the reasoning survives only if the file does.
+// Extra Zen prefs, appended verbatim to the generated user.js. Typed settings
+// belong in `my.zen.settings`; this file is for blocks whose comments are the
+// point.
 
 // Disable GTK native emoji picker (Ctrl+. / Ctrl+;)
 user_pref("widget.gtk.native-emoji-dialog", false);

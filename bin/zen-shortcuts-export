@@ -3,32 +3,16 @@
 
     bin/zen-shortcuts-export [profile-dir] > config/zen/keyboard-shortcuts.json
 
-WHY A FULL EXPORT AND NOT A DIFF. Zen's own `zen-keyboard-shortcuts.json` does
-not record which entries you changed — a customised binding and a default one
-are byte-identical in shape. There is therefore no honest way to emit "just my
-overrides" from a single machine. Exporting ALL of them instead makes the file
-the source of truth: every listed id is re-asserted on every `home-manager
-switch`, so two machines fed this file agree completely.
+Exports every shortcut, not a diff: Zen's file does not record which entries
+were customised, so there is no way to emit "just my overrides". Safe to be
+exhaustive because the home-manager module patches by id and leaves unlisted
+ids alone. Re-run after rebinding something in the UI; git diff shows the
+change.
 
-The home-manager module patches BY ID and leaves unlisted ids alone, which is
-why this is safe across Zen upgrades: a Zen release that adds a shortcut adds it
-with its default binding, and nothing here silently deletes it. Re-run this
-script after deliberately rebinding something in the UI, and `git diff` shows
-exactly what you changed.
-
-DROPPED ON PURPOSE:
-  internal   Zen's own plumbing, never surfaced in the shortcut editor.
-  id == null Zen ships ~12 ALTERNATE bindings with no id at all (a second key
-             for zoom-reset, F5 for reload, backspace for back). The module
-             patches by id, so these are unaddressable — declaring them is not
-             possible, and pretending otherwise would be the lie. They keep
-             whatever Zen ships.
-  l10nId,
-  group,
-  action     display metadata; the module keys on `id` alone.
-
-The `zen.keyboard.shortcuts.version` pref is emitted alongside so the module can
-refuse to patch a schema it was not written against.
+Dropped: `internal` entries (Zen plumbing, not in the shortcut editor), the
+dozen alternate bindings that carry no id at all (F5 for reload, backspace for
+back) since the module cannot address them, and the l10nId/group/action display
+metadata.
 """
 
 import json
@@ -43,11 +27,9 @@ FIELDS = ("control", "alt", "shift", "meta", "accel")
 def find_profile() -> Path:
     """Resolve the profile Zen actually launches from ~/.zen/profiles.ini.
 
-    The [InstallXXXX] section wins. `Default=1` under a [ProfileN] section is
-    the OLD, per-profile-list default and on a machine that has ever run two
-    builds it points somewhere stale — measured on gluck, where [Profile1]
-    claims "Default Profile" while the install section names the profile with
-    every extension in it.
+    The [InstallXXXX] section wins. `Default=1` under [ProfileN] is the older
+    per-profile-list default and can be stale: on gluck it names an empty
+    profile while the install section names the real one.
     """
     root = Path.home() / ".zen"
     ini = root / "profiles.ini"
@@ -88,7 +70,7 @@ def main() -> None:
     profile = Path(sys.argv[1]) if len(sys.argv) > 1 else find_profile()
     src = profile / "zen-keyboard-shortcuts.json"
     if not src.exists():
-        sys.exit(f"{src} does not exist — launch Zen once to generate it")
+        sys.exit(f"{src} does not exist; launch Zen once to generate it")
 
     out = []
     for s in json.load(src.open())["shortcuts"]:

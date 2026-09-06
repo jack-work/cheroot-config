@@ -19,11 +19,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Zen. Not in nixpkgs at all, so the browser's home-manager module comes
-    # from the community flake — it is home-manager's own mkFirefoxModule
-    # pointed at Zen's paths, plus Zen-only machinery (keyboard shortcuts,
-    # mods, spaces). See modules/desktop/zen.nix; on both Arch hosts we take
-    # the MODULE and leave the BINARY to pacman.
+    # Zen is not in nixpkgs, so its home-manager module comes from the
+    # community flake. See modules/desktop/zen.nix: we take the module and
+    # leave the binary to pacman.
     zen-browser = {
       url = "github:0xc000022070/zen-browser-flake";
       inputs = {
@@ -32,8 +30,8 @@
       };
     };
 
-    # Signed add-on xpis, generated from AMO. The one add-on this set lacks is
-    # pinned by hand in pkgs/firefox-xpi.nix.
+    # Signed add-on xpis, generated from AMO. What it lacks is pinned by hand
+    # in pkgs/firefox-xpi.nix.
     firefox-addons = {
       url = "gitlab:rycee/nur-expressions?dir=pkgs/firefox-addons";
       inputs.nixpkgs.follows = "nixpkgs";

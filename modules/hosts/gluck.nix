@@ -39,12 +39,8 @@
       # replaces wholesale.
       home.sessionVariables.BROWSER = "cachy-browser";
 
-      # THE PROFILE DIRECTORY ZEN ALREADY USES. Not a name we chose — Zen
-      # generated the "829beuvl." prefix on first run, and the live profile
-      # (bookmarks, logins, cookies, 276 tabs of history) is inside it. Naming
-      # anything else here would leave that profile on disk and untouched while
-      # Zen opened an empty one. Confirm with ~/.zen/profiles.ini before ever
-      # editing this string. See modules/desktop/zen.nix.
+      # Zen's profile directory, read out of ~/.zen/profiles.ini. Do not guess:
+      # a wrong value configures a profile the browser never opens.
       my.zen.profileDir = "829beuvl.Default (release)";
 
       # THIS IS THE MACHINE WHERE FIGARO IS WRITTEN, so it does not take figaro

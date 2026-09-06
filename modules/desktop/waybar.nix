@@ -29,17 +29,11 @@
         description = "Right-hand waybar modules, in display order.";
       };
 
-      # WHY A HOST NEEDS TO APPEND CSS AT ALL.
-      #
-      # waybar centres `modules-center` in the FULL bar width, and GTK centres a
-      # widget INCLUDING its margins. A symmetric margin therefore moves the
-      # clock by exactly zero pixels; only an ASYMMETRIC one shifts it. The
-      # correcting value depends on the bar's pixel width AND on how wide the
-      # left and right groups render — which is to say on the screen and on
-      # `modulesRight`. It cannot be shared, and it cannot be derived.
-      #
-      # `types.lines` so several definitions concatenate rather than conflict,
-      # the same mechanism `my.niri.extra` uses.
+      # waybar centres modules-center in the full bar width and GTK centres a
+      # widget including its margins, so only an asymmetric margin moves the
+      # clock. The correcting value depends on screen width and on how wide the
+      # module groups render, so it cannot be shared or derived. types.lines to
+      # concatenate rather than conflict, as my.niri.extra does.
       options.my.waybar.extraStyle = lib.mkOption {
         type = lib.types.lines;
         default = "";
@@ -94,10 +88,7 @@
         };
 
         xdg.configFile = {
-          # TEXT, not source: the host's `extraStyle` is concatenated after the
-          # shared sheet so the last rule wins. A bare `.source` would make the
-          # stylesheet unextendable and force every screen-specific tweak into
-          # the shared file, where it would be wrong for the other machine.
+          # text, not source, so extraStyle can be appended after it.
           "waybar/style.css".text =
             builtins.readFile ../../config/waybar/style.css + config.my.waybar.extraStyle;
 

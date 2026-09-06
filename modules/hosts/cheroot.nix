@@ -18,60 +18,26 @@
     settings = {
       my.platform.desktopFromNix = false;
 
-      # ZEN'S PROFILE LIVES AT THE **XDG** PATH ON THIS MACHINE.
-      #
-      # Measured, not assumed: cheroot's zen-browser-bin (1.21.9b) keeps its
-      # profiles in ~/.config/zen, while gluck's (1.21.13b, same AUR package)
-      # keeps them in ~/.zen. The difference is age, not version — Zen prefers a
-      # legacy ~/.zen if it already exists, and gluck's predates the XDG move
-      # while cheroot's install is from July and never had one.
-      #
-      # This is exactly why `my.zen.configPath` is a per-host fact. Point it at
-      # the wrong directory and nothing errors: home-manager writes a complete
-      # profile the browser never opens.
+      # This machine's zen (1.21.9b) uses the XDG path; gluck's (1.21.13b)
+      # still uses ~/.zen. Both values read out of the real profiles.ini; a
+      # wrong one configures a profile the browser never opens.
       my.zen.configPath = ".config/zen";
-
-      # The 94MB live profile — the one installs.ini names. Read from
-      # ~/.config/zen/profiles.ini; do not invent it.
       my.zen.profileDir = "y9w3yl5l.Default (release)";
 
-      # TEMPORARY, AND THE REASON IT IS TEMPORARY IS THE POINT.
-      #
-      # cheroot's zen-browser-bin is 1.21.9b against gluck's 1.21.13b, and the
-      # two speak different shortcut schemas — 19 here, 20 there. The exported
-      # table in config/zen/keyboard-shortcuts.json was taken at 20, so without
-      # this line activation stops and says so, which is exactly what the guard
-      # is for.
-      #
-      # Declaring 19 says "the drift is known": the ids this repo patches are
-      # stable across the bump, so the bindings still land. Delete this line
-      # after `pacman -Syu zen-browser-bin` brings the two machines level, and
-      # let the default (the export's own version) take over again.
+      # Temporary: this Zen speaks shortcut schema 19, the export was taken at
+      # gluck's 20. Drop the line once `pacman -Syu zen-browser-bin` levels
+      # them, and let the default take over.
       my.zen.shortcutsVersion = 19;
 
-      # THE BAR IS CENTRED FOR 1920px, AND THIS IS WHY IT IS HOST-SPECIFIC.
-      #
-      # waybar centres `modules-center` in the full bar width and GTK centres a
-      # widget including its margins, so only an asymmetric margin moves the
-      # clock. Measured on cheroot at 1920px with the laptop module set: the
-      # left group ended at x=137, the clock occupied 733→970 and weather began
-      # at x=996 — 596px of slack on the left against 26px on the right.
-      # Equalising at 311px needs a 285px leftward shift, and margin-right was
-      # measured to shift the widget 1:1 (not by half), hence 2 + 285 = 287.
-      #
-      # ONE RULE, NOT TWO. The old hand-written stylesheet on cheroot carried a
-      # second copy of this margin under `#clock#date` with a different number
-      # (574). That selector names two ids and is invalid CSS — it matched
-      # nothing and never had any effect. It is deliberately not carried over.
-      #
-      # These numbers are tuned to THIS screen and THIS module list. Adding a
-      # right-hand module, or a battery reading that gains a digit, means
-      # re-measuring. On gluck's 2560px screen the shared symmetric margins are
-      # already correct, which is exactly why this block cannot live in the
-      # shared stylesheet.
+      # Clock centring at 1920px with the laptop module set. Measured: left
+      # group ended x=137, clock 733-970, weather began x=996, so 596px slack
+      # left against 26px right; equalising needs a 285px leftward shift, and
+      # margin-right shifts 1:1, hence 287. Re-measure if modulesRight changes.
+      # (The old hand-written sheet had a second copy of this under
+      # `#clock#date`, which names two ids and never matched anything.)
       my.waybar.extraStyle = ''
 
-        /* ===== host: cheroot — clock centring at 1920px ===== */
+        /* host: cheroot, 1920px */
         #clock {
             margin: 1px 287px 1px 2px;
         }
