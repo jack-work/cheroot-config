@@ -18,11 +18,22 @@
     settings = {
       my.platform.desktopFromNix = false;
 
-      # No profile exists here yet — cheroot has the AUR binary installed and
-      # has never launched it — so home-manager creates one at this name and
-      # Zen adopts it. Compare gluck, which must name the random prefix Zen
-      # generated for it years ago.
-      my.zen.profileDir = "default";
+      # ZEN'S PROFILE LIVES AT THE **XDG** PATH ON THIS MACHINE.
+      #
+      # Measured, not assumed: cheroot's zen-browser-bin (1.21.9b) keeps its
+      # profiles in ~/.config/zen, while gluck's (1.21.13b, same AUR package)
+      # keeps them in ~/.zen. The difference is age, not version — Zen prefers a
+      # legacy ~/.zen if it already exists, and gluck's predates the XDG move
+      # while cheroot's install is from July and never had one.
+      #
+      # This is exactly why `my.zen.configPath` is a per-host fact. Point it at
+      # the wrong directory and nothing errors: home-manager writes a complete
+      # profile the browser never opens.
+      my.zen.configPath = ".config/zen";
+
+      # The 94MB live profile — the one installs.ini names. Read from
+      # ~/.config/zen/profiles.ini; do not invent it.
+      my.zen.profileDir = "y9w3yl5l.Default (release)";
 
       # THE BAR IS CENTRED FOR 1920px, AND THIS IS WHY IT IS HOST-SPECIFIC.
       #
