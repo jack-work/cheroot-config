@@ -1,4 +1,8 @@
 {
+    // Nerd Fonts v3 moved Material Design icons from U+F500-FD46 to
+    // U+F0001-F1AF0 and dropped the old range. Codepoints copied from older
+    // waybar configs render as boxes; check a new glyph against the font
+    // before using it.
     "layer": "top",
     "position": "top",
     "height": 24,
@@ -65,7 +69,7 @@
         // "format-critical": " {temperatureC}°C",
         "format-critical": "  {temperatureC}°C",
         "format": "{icon}  {temperatureC}°C",
-        "format-icons": ["", "", ""],
+        "format-icons": ["", "", ""],
         "max-length": 7,
         "min-length": 7,
         "on-click": "xsensors"
@@ -85,7 +89,7 @@
             "critical": 15
         },
         "format": "{icon} {capacity}%",
-        "format-charging": " {capacity}%",
+        "format-charging": "󰂄 {capacity}%",
         "format-plugged": " {capacity}%",
         "format-icons": [
             "",
@@ -274,16 +278,16 @@
         "scroll-step": 3, // %, can be a float
         "format": "{icon} {volume}% {format_source}",
         "format-bluetooth": "{volume}% {icon} {format_source}",
-        "format-bluetooth-muted": " {icon} {format_source}",
-        "format-muted": " {format_source}",
+        "format-bluetooth-muted": "󰖁 {icon} {format_source}",
+        "format-muted": "󰖁 {format_source}",
         //"format-source": "{volume}% ",
         //"format-source-muted": "",
         "format-source": "",
         "format-source-muted": "",
         "format-icons": {
             "headphone": "",
-            "hands-free": "",
-            "headset": "",
+            "hands-free": "󰋋",
+            "headset": "󰋋",
             "phone": "",
             "portable": "",
             "car": "",
@@ -301,15 +305,15 @@
         //on-scroll-down: "${wpctl} set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 0.04+";
         //on-scroll-up: "${wpctl} set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 0.04-";
         "format": "<span foreground='#fab387'>{icon}</span>  {volume}%",
-        "format-muted": " ",
+        "format-muted": "󰖁 ",
         "format-source": "",
         "format-source-muted": "",
         //"format-muted": "<span foreground='#fab387'> </span>",
         //"format-icons": [ "<span foreground='#fab387'></span>" ]
         "format-icons": {
             "headphone": " ",
-            "hands-free": " ",
-            "headset": " ",
+            "hands-free": "󰋋 ",
+            "headset": "󰋋 ",
             "phone": " ",
             "portable": " ",
             "car": " ",
