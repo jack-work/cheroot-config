@@ -22,6 +22,7 @@
       # names. See modules/audio.nix and modules/zig.nix.
       "audio"
       "zig"
+      "zen"
     ];
 
     settings = {
@@ -37,6 +38,14 @@
       # Rescued from gluck's hand-written ~/.profile, which home-manager
       # replaces wholesale.
       home.sessionVariables.BROWSER = "cachy-browser";
+
+      # THE PROFILE DIRECTORY ZEN ALREADY USES. Not a name we chose — Zen
+      # generated the "829beuvl." prefix on first run, and the live profile
+      # (bookmarks, logins, cookies, 276 tabs of history) is inside it. Naming
+      # anything else here would leave that profile on disk and untouched while
+      # Zen opened an empty one. Confirm with ~/.zen/profiles.ini before ever
+      # editing this string. See modules/desktop/zen.nix.
+      my.zen.profileDir = "829beuvl.Default (release)";
 
       # THIS IS THE MACHINE WHERE FIGARO IS WRITTEN, so it does not take figaro
       # from this repo's lockfile. 76 tags and counting; the working tree is

@@ -82,7 +82,25 @@
       }:
       {
         "${user}@${host}" = inputs.home-manager.lib.homeManagerConfiguration {
-          pkgs = inputs.nixpkgs.legacyPackages.${system};
+          # NIXPKGS IS INSTANTIATED HERE, NOT TAKEN FROM `legacyPackages`.
+          #
+          # The difference is one attribute: an unfree ALLOWLIST, by package
+          # name. `legacyPackages` carries the default config, under which a
+          # single proprietary add-on (1Password's, via
+          # modules/desktop/zen.nix) aborts evaluation of the whole
+          # configuration.
+          #
+          # A predicate rather than `allowUnfree = true`: the blanket flag
+          # silently permits the next unfree thing anyone adds, and this repo
+          # would rather the build stop and make someone add a line here.
+          # `NIXPKGS_ALLOW_UNFREE=1` is the third option and the worst — it
+          # requires `--impure` and makes the result depend on the caller's
+          # environment.
+          pkgs = import inputs.nixpkgs {
+            inherit system;
+            config.allowUnfreePredicate =
+              pkg: builtins.elem (lib.getName pkg) [ "1password-x-password-manager" ];
+          };
 
           modules = map (name: config.flake.modules.homeManager.${name}) (aspects ++ roles) ++ [
             {
