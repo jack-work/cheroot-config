@@ -18,10 +18,8 @@
 
     # Trackpad. Appended rather than living in the base config, so a desktop
     # never carries input rules for hardware it does not have.
-    my.niri.extra = ''
-
-      // ===== role: laptop =====
-      input {
+    my.niri.inputExtra = ''
+          // ===== role: laptop =====
           touchpad {
               tap
               natural-scroll
@@ -29,7 +27,6 @@
               accel-profile "adaptive"
               scroll-method "two-finger"
           }
-      }
     '';
   };
 }

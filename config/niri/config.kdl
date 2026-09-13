@@ -20,6 +20,7 @@ input {
     // Follow mouse focus (like Hyprland follow_mouse = 2)
     focus-follows-mouse max-scroll-amount="0%"
     warp-mouse-to-focus
+@INPUT_EXTRA@
 }
 
 // ======= Outputs (Monitors) =======

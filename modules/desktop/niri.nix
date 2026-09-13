@@ -27,6 +27,17 @@
         '';
       };
 
+      options.my.niri.inputExtra = lib.mkOption {
+        type = lib.types.lines;
+        default = "";
+        description = ''
+          Host- or role-specific KDL spliced INSIDE the single `input` node.
+          niri permits exactly one `input` node, so roles that add hardware
+          rules (a touchpad, a trackpoint) must contribute here rather than
+          via `my.niri.extra`, which appends at top level.
+        '';
+      };
+
       options.my.wallpaper = lib.mkOption {
         type = lib.types.path;
         default = ../../wallpaper.jpg;
@@ -54,10 +65,11 @@
 
         xdg.configFile."niri/config.kdl".text =
           builtins.replaceStrings
-            [ "@HOME@" "@WALLPAPER@" ]
+            [ "@HOME@" "@WALLPAPER@" "@INPUT_EXTRA@" ]
             [
               config.home.homeDirectory
               "${config.home.homeDirectory}/.local/share/wallpaper/wallpaper.jpg"
+              config.my.niri.inputExtra
             ]
             (builtins.readFile ../../config/niri/config.kdl)
           + config.my.niri.extra;
