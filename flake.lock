@@ -82,6 +82,26 @@
         "type": "github"
       }
     },
+    "hush": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1789080992,
+        "narHash": "sha256-TaqRndOxDH9iPJxCjwLCq0kwWYxWXWdLkTt1MV0hxek=",
+        "owner": "jack-work",
+        "repo": "hush",
+        "rev": "8fa1e0162414943fd55a446759e6345b582f3bc0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jack-work",
+        "repo": "hush",
+        "type": "github"
+      }
+    },
     "import-tree": {
       "locked": {
         "lastModified": 1788467110,
@@ -119,6 +139,7 @@
         "firefox-addons": "firefox-addons",
         "flake-parts": "flake-parts",
         "home-manager": "home-manager",
+        "hush": "hush",
         "import-tree": "import-tree",
         "nixpkgs": "nixpkgs",
         "zen-browser": "zen-browser"

@@ -55,6 +55,11 @@
       # another owner is intended. See modules/figaro.nix.
       my.figaro.package = null;
 
+      # Likewise hush: gluck develops it (~/dev/hush) and installs it with
+      # `go install`, so the pin would be shadowed by a binary that is routinely
+      # ahead of it. See modules/hush.nix.
+      my.hush.package = null;
+
       # Dual 2560x1440 stacked vertically, DP-2 above DP-3. The only
       # host-specific niri lines gluck needs — and exactly what a
       # cheroot-derived config would have silently discarded, leaving niri to

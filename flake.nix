@@ -46,6 +46,13 @@
       url = "github:jack-work/figaro";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # hush, the credential keeper the brave search skill shells out to. Same
+    # null-on-gluck split as figaro; see modules/hush.nix.
+    hush = {
+      url = "github:jack-work/hush";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   # The whole flake is one import-tree call. Nothing else belongs in this file —

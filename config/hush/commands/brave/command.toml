@@ -1,0 +1,6 @@
+description = "Brave web search"
+delivery = "env"
+timeout = "120s"
+
+[secrets]
+secret = "BRAVE_API_KEY"

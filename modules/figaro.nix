@@ -72,15 +72,12 @@
 # Aliases (fig/q/qe/qf/l/x) are likewise not here: they are plain shell aliases
 # with no figaro-specific machinery, so they live with the other shared aliases
 # in shell/core.nix and are rendered into both shells from one attrset.
-{ inputs, ... }:
+{ inputs, config, ... }:
 {
+  # `hm@{ ... }` rather than destructuring `config`: the OUTER `config` is the
+  # flake config, needed below for linkDir. Same split as shell/fish.nix.
   flake.modules.homeManager.figaro =
-    {
-      pkgs,
-      lib,
-      config,
-      ...
-    }:
+    hm@{ pkgs, lib, ... }:
     {
       options.my.figaro.package = lib.mkOption {
         type = lib.types.nullOr lib.types.package;
@@ -100,11 +97,19 @@
       };
 
       config = {
-        home.packages = lib.optional (config.my.figaro.package != null) config.my.figaro.package;
+        home.packages = lib.optional (hm.config.my.figaro.package != null) hm.config.my.figaro.package;
 
-        # fish forks each pipeline member itself, so a pipe AND a redirect both keep
-        # fish as figaro's parent. The binding survives.
-        xdg.configFile."fish/conf.d/65-figaro-prompt.fish".source = ../config/figaro/prompt.fish;
+        xdg.configFile =
+          # Skills are markdown an aria reads at need, found through the default
+          # outfit's `skills = { dirName = "skills" }`. Linked FILE BY FILE:
+          # figaro writes nothing here, but a machine may still want a local
+          # skill beside the shared ones, and a store symlink would forbid it.
+          # config/figaro/skills/brave.md needs hush, see modules/hush.nix.
+          config.flake.lib.linkDir ../config/figaro/skills "figaro/skills" // {
+            # fish forks each pipeline member itself, so a pipe AND a redirect both
+            # keep fish as figaro's parent. The binding survives.
+            "fish/conf.d/65-figaro-prompt.fish".source = ../config/figaro/prompt.fish;
+          };
 
         # bash does NOT. Any pipe or redirect INSIDE a command substitution forks a
         # subshell, and figaro reports "no figaro bound to this shell" forever,

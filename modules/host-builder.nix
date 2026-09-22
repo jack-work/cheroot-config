@@ -32,6 +32,7 @@
       "fish"
       "bash"
       "figaro"
+      "hush"
       "prompt"
       "cli"
       "git"
