@@ -39,10 +39,32 @@
         '';
       };
 
+      options.my.hush.unlock = lib.mkOption {
+        type = lib.types.nullOr lib.types.lines;
+        default = null;
+        example = ''
+          [unlock]
+          method = "keyring"
+        '';
+        description = ''
+          The `[unlock]` policy for this machine's hush.toml, or null to leave
+          the file unmanaged. How the identity is unlocked is a fact about the
+          BOX, not about hush: a desktop with a running Secret Service uses the
+          keyring, a headless or bare machine reads a 0600 file, and a machine
+          with someone sitting at it can just be asked.
+
+          The passphrase itself is never here. Only the method is.
+        '';
+      };
+
       config = {
         home.packages = lib.optional (hm.config.my.hush.package != null) hm.config.my.hush.package;
 
-        xdg.configFile = config.flake.lib.linkDir ../config/hush/commands/brave "hush/commands/brave";
+        xdg.configFile =
+          config.flake.lib.linkDir ../config/hush/commands/brave "hush/commands/brave"
+          // lib.optionalAttrs (hm.config.my.hush.unlock != null) {
+            "hush/hush.toml".text = hm.config.my.hush.unlock;
+          };
       };
     };
 }

@@ -18,6 +18,18 @@
     settings = {
       my.platform.desktopFromNix = false;
 
+      # No Secret Service on this box (libsecret is installed, gnome-keyring is
+      # not), and figaro runs hush unattended: an agent that can only be
+      # unlocked by someone typing is an agent an aria cannot use. The
+      # passphrase lives in ~/.config/hush/passphrase, 0600, created by hand.
+      my.hush.unlock = ''
+        ttl = "12h"
+
+        [unlock]
+        method = "file"
+        file = "/home/marlowe/.config/hush/passphrase"
+      '';
+
       # This machine's zen (1.21.9b) uses the XDG path; gluck's (1.21.13b)
       # still uses ~/.zen. Both values read out of the real profiles.ini; a
       # wrong one configures a profile the browser never opens.
