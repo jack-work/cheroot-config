@@ -89,11 +89,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1789080992,
-        "narHash": "sha256-TaqRndOxDH9iPJxCjwLCq0kwWYxWXWdLkTt1MV0hxek=",
+        "lastModified": 1790087081,
+        "narHash": "sha256-5Fxb/3zBkvOX1ThPqxA84h3NDlD3a7uyyVUEToiFJ+I=",
         "owner": "jack-work",
         "repo": "hush",
-        "rev": "8fa1e0162414943fd55a446759e6345b582f3bc0",
+        "rev": "6093acd81f98dddcf1174971393e5582acc2ef3e",
         "type": "github"
       },
       "original": {
