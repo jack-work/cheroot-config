@@ -18,6 +18,15 @@
     settings = {
       my.platform.desktopFromNix = false;
 
+      # This box has polkit-GNOME; gluck has polkit-KDE. The shared config used
+      # to name the KDE path, so cheroot booted for six weeks with no polkit
+      # agent and no way to answer a GUI authentication prompt.
+      my.preflight.binaries = [ "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1" ];
+      my.preflight.pacman = [
+        "polkit-gnome"
+        "ttf-jetbrains-mono-nerd"
+      ];
+
       # No Secret Service on this box (libsecret is installed, gnome-keyring is
       # not), and figaro runs hush unattended: an agent that can only be
       # unlocked by someone typing is an agent an aria cannot use. The
@@ -72,6 +81,8 @@
         output "eDP-1" {
             scale 1.0
         }
+
+        spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
       '';
     };
   };

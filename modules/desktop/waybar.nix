@@ -44,6 +44,20 @@
       };
 
       config = {
+        # The handlers of the modules this bar actually displays. `wiremix` was
+        # missing on cheroot for weeks: the volume module's on-click spawned a
+        # terminal that died before it drew, and the only trace was
+        # "Failed to spawn command" in the user journal.
+        my.preflight.binaries = [
+          "waybar"
+          "alacritty"
+          "btop"
+          "curl"
+          "iwctl"
+          "wiremix"
+          "wpctl"
+        ];
+
         home.packages = lib.optionals config.my.platform.desktopFromNix [ pkgs.waybar ];
 
         # WAYBAR IS A SYSTEMD USER UNIT, NOT A COMPOSITOR SPAWN.

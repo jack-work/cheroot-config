@@ -32,6 +32,7 @@
       "fish"
       "bash"
       "figaro"
+      "preflight"
       "hush"
       "prompt"
       "cli"

@@ -49,6 +49,37 @@
       };
 
       config = {
+        # Everything the compositor spawns at startup, or on a keybind. niri
+        # reports a failed spawn nowhere a human looks, so the names are
+        # asserted at switch time instead. Per-machine spawns (the polkit
+        # agent, the idle locker) assert themselves where they are declared.
+        my.preflight.binaries = [
+          "xwayland-satellite"
+          "swaybg"
+          "mako"
+          "makoctl"
+          "niri"
+          "systemctl"
+          "dbus-update-activation-environment"
+        ];
+
+        # Keybinds only. A dead one costs a keypress, not a session.
+        my.preflight.optional = [
+          "alacritty"
+          "rofi"
+          "grim"
+          "slurp"
+          "swappy"
+          "wl-paste"
+          "playerctl"
+          "pactl"
+          "amixer"
+          "nemo"
+          "gnome-calculator"
+          "bunx"
+          "zen-browser"
+        ];
+
         home.packages = lib.optionals config.my.platform.desktopFromNix (
           with pkgs;
           [

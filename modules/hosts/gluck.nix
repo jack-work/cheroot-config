@@ -32,6 +32,12 @@
       my.platform.desktopFromNix = false;
       my.platform.toolchainFromNix = false;
 
+      # polkit-KDE here, polkit-GNOME on cheroot. Whichever the machine has is
+      # a fact about the machine, so it is spawned from its host file, below in
+      # the same my.niri.extra that carries this machine's outputs.
+      my.preflight.binaries = [ "/usr/lib/polkit-kde-authentication-agent-1" ];
+      my.preflight.pacman = [ "polkit-kde-agent" ];
+
       # Names a CachyOS binary, so it is host-specific rather than part of the
       # graphical aspect: plain Arch (cheroot) has no cachy-browser, and a
       # BROWSER pointing at a missing binary is worse than an unset one.
@@ -75,6 +81,8 @@
             mode "2560x1440@59.91"
             position x=0 y=1440
         }
+
+        spawn-at-startup "/usr/lib/polkit-kde-authentication-agent-1"
       '';
     };
   };

@@ -164,11 +164,12 @@ spawn-at-startup "swaybg" "-o" "*" "-i" "@WALLPAPER@" "-m" "stretch"
 // the session target is reached and waybar dies on that race; `Restart=always`
 // is the cure, and spawn-at-startup cannot restart anything. Starting it in
 // BOTH places yields two bars.
-spawn-at-startup "fcitx5" "-d"
 spawn-at-startup "mako"
 // nm-applet removed — using iwd/iwctl via custom waybar module instead
-spawn-at-startup "/usr/lib/polkit-kde-authentication-agent-1"
-spawn-at-startup "swayidle" "-w" "timeout" "300" "swaylock -f -c 000000" "before-sleep" "swaylock -f -c 000000"
+// The polkit agent and the idle locker are per-machine facts: gluck has
+// polkit-kde, cheroot has polkit-gnome, and only a laptop locks on idle.
+// Both arrive through my.niri.extra, from the host and the role. Naming one
+// path here made the shared config wrong on whichever machine lacked it.
 
 // systemd/dbus integration
 spawn-at-startup "sh" "-c" "systemctl --user import-environment && dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=niri"
