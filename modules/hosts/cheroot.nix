@@ -82,6 +82,22 @@
             scale 1.0
         }
 
+        // Samsung LS27D36xG, 27" 1080p: 600 mm of panel for 1920 px is 81 DPI,
+        // against the internal panel's 290 mm for 1920 px, or 168. At scale 1.0
+        // on both, the same window is more than twice the physical size over
+        // here, which is why the external reads huge rather than merely large.
+        // 0.8 buys 2400x1350 of logical space, about 101 DPI. A 1080p panel at
+        // this size cannot be made crisp AND small, so this is a compromise:
+        // drop to 0.75 (2560x1440) for more room, raise toward 1.0 for less
+        // softness.
+        //
+        // The mode is named only because the preferred one is 60 Hz and the
+        // panel will do 100. Auto-enable would take the slower one forever.
+        output "DVI-I-1" {
+            mode "1920x1080@100.000"
+            scale 0.8
+        }
+
         spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
       '';
     };

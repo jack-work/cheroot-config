@@ -215,9 +215,14 @@ binds {
     // J/K navigate windows in column, then workspaces
     Mod+J     { focus-window-or-workspace-down; }
     Mod+K     { focus-window-or-workspace-up; }
-    // N/P toggle between monitors (vertically stacked)
-    Mod+N     { focus-monitor-down; }
-    Mod+P     { focus-monitor-up; }
+    // N/P cycle monitors. NEXT/PREVIOUS, not up/down: these were directional,
+    // which silently binds the keys to this machine's monitor GEOMETRY. gluck
+    // stacks its two monitors vertically so down/up worked there; cheroot's
+    // external sits to the RIGHT of the laptop panel, so down/up matched
+    // nothing and the keys did nothing at all. next/previous cycles whatever
+    // outputs exist, however they are arranged.
+    Mod+N     { focus-monitor-next; }
+    Mod+P     { focus-monitor-previous; }
     Mod+Left  { focus-column-left; }
     Mod+Right { focus-column-right; }
     Mod+Down  { focus-window-or-workspace-down; }
@@ -228,9 +233,10 @@ binds {
     Mod+Shift+L     { spawn "sh" "-c" "niri msg action reset-window-height; niri msg action consume-or-expel-window-right"; }
     Mod+Shift+J     { move-window-down-or-to-workspace-down; }
     Mod+Shift+K     { move-window-up-or-to-workspace-up; }
-    // Shift+N/P: move window to other monitor
-    Mod+Shift+N     { move-column-to-monitor-down; }
-    Mod+Shift+P     { move-column-to-monitor-up; }
+    // Shift+N/P: move the column to the next/previous monitor. Directional for
+    // the same reason as above, and broken on cheroot for the same reason.
+    Mod+Shift+N     { move-column-to-monitor-next; }
+    Mod+Shift+P     { move-column-to-monitor-previous; }
     Mod+Shift+Left  { spawn "sh" "-c" "niri msg action reset-window-height; niri msg action consume-or-expel-window-left"; }
     Mod+Shift+Right { spawn "sh" "-c" "niri msg action reset-window-height; niri msg action consume-or-expel-window-right"; }
     Mod+Shift+Down  { move-window-down-or-to-workspace-down; }
