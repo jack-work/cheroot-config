@@ -66,19 +66,18 @@
       # ahead of it. See modules/hush.nix.
       my.hush.package = null;
 
-      # Dual 2560x1440 stacked vertically, DP-2 above DP-3. The only
-      # host-specific niri lines gluck needs — and exactly what a
-      # cheroot-derived config would have silently discarded, leaving niri to
-      # re-arrange both monitors side by side at the next login.
+      # Dual 2560x1440 stacked vertically, Dell above Lenovo. Named by EDID
+      # make/model/serial rather than connector: DP-N is the GPU socket, so
+      # moving a cable renames the monitor and silently drops its position.
       my.niri.extra = ''
 
         // ===== host: gluck (desktop) =====
-        output "DP-2" {
-            mode "2560x1440@59.91"
+        output "Dell Inc. DELL U2719D DDZQJS2" {
+            mode "2560x1440@59.951"
             position x=0 y=0
         }
-        output "DP-3" {
-            mode "2560x1440@59.91"
+        output "Lenovo Group Limited LEN P27h-10 0x58314841" {
+            mode "2560x1440@59.951"
             position x=0 y=1440
         }
 
