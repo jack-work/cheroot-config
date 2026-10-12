@@ -61,6 +61,7 @@ modules/
   desktop/             niri waybar mako rofi alacritty, and session.nix
                        (the env a graphical session needs and nothing else does)
   desktop/zen.nix      the browser: prefs, extensions, shortcuts, not the binary
+  desktop/helium.nix   the other browser: extensions, theme, 1Password bridge
   roles/               laptop desktop wsl
   hosts/               cheroot gluck wsl
 bin/                   scripts that generate checked-in data

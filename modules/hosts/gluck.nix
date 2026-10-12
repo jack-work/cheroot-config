@@ -23,6 +23,7 @@
       "audio"
       "zig"
       "zen"
+      "helium"
     ];
 
     settings = {
