@@ -34,6 +34,7 @@
       "figaro"
       "preflight"
       "hush"
+      "muse-code"
       "prompt"
       "cli"
       "git"

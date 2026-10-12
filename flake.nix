@@ -53,6 +53,11 @@
       url = "github:jack-work/hush";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    llm-agents = {
+      url = "github:numtide/llm-agents.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   # The whole flake is one import-tree call. Nothing else belongs in this file —
