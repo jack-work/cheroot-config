@@ -13,6 +13,7 @@
       "laptop"
       # Opt-in aspects, not machine classes. See modules/desktop/zen.nix.
       "zen"
+      "helium"
     ];
 
     settings = {
