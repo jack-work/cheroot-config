@@ -1,6 +1,7 @@
 {
   flake.modules.homeManager.helium =
     {
+      config,
       lib,
       pkgs,
       ...
@@ -9,6 +10,21 @@
       userDataDir = "net.imput.helium";
 
       heliumWebstoreUpdateUrl = "https://update-url-to-be-replaced.qjz9zk";
+
+      servicesPrefs = {
+        helium.services = {
+          enabled = true;
+          user_consented = true;
+          ext_proxy = true;
+          origin_override = "https://spain.tail34d120.ts.net";
+        };
+      };
+
+      jq = lib.getExe pkgs.jq;
+      pgrep = "${pkgs.procps}/bin/pgrep";
+      profilePrefs = "${config.xdg.configHome}/${userDataDir}/Default/Preferences";
+      wantPrefs = lib.escapeShellArg (builtins.toJSON servicesPrefs);
+      prefsCurrent = ''[ -f "${profilePrefs}" ] && ${jq} -e --argjson w ${wantPrefs} '. * $w == .' "${profilePrefs}" >/dev/null'';
 
       webstoreExtensions = {
         vimium-c = "hfjbmagddngcpeloejdejnfgbamkjaeg";
@@ -99,6 +115,23 @@
           echo "helium: 1Password will refuse the browser until it is allowlisted:" >&2
           echo "  sudo install -d /etc/1password && echo helium | sudo tee -a /etc/1password/custom_allowed_browsers" >&2
           exit 1
+        fi
+      '';
+
+      home.activation.heliumServicesPrecheck = lib.hm.dag.entryBefore [ "writeBoundary" ] ''
+        if ! { ${prefsCurrent}; } && ${pgrep} -u "$USER" -x helium >/dev/null; then
+          echo "helium: close Helium so its services prefs can be written; it rewrites Preferences on exit" >&2
+          exit 1
+        fi
+      '';
+
+      home.activation.heliumServices = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        if ! { ${prefsCurrent}; }; then
+          run mkdir -p "$(dirname "${profilePrefs}")"
+          [ -f "${profilePrefs}" ] || echo '{}' > "${profilePrefs}"
+          tmp=$(mktemp "${profilePrefs}.XXXXXX")
+          ${jq} --argjson w ${wantPrefs} '. * $w' "${profilePrefs}" > "$tmp"
+          run mv "$tmp" "${profilePrefs}"
         fi
       '';
     };
