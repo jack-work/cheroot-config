@@ -16,6 +16,9 @@
       pkgs,
       ...
     }:
+    let
+      cursorTheme = "vimix-kanagawa-cursors-lotus";
+    in
     {
       options.my.niri.extra = lib.mkOption {
         type = lib.types.lines;
@@ -90,17 +93,30 @@
 
         home.file.".local/share/wallpaper/wallpaper.jpg".source = config.my.wallpaper;
 
+        my.preflight.pacman = [ "vimix-kanagawa-cursors" ];
+
+        home.file.".icons/default/index.theme".text = ''
+          [Icon Theme]
+          Inherits=${cursorTheme}
+        '';
+
+        dconf.settings."org/gnome/desktop/interface" = {
+          cursor-theme = cursorTheme;
+          cursor-size = 16;
+        };
+
         # No helper scripts. `.config/niri/scripts/kbd-inhibit.sh` lived here
         # until 2026-08-21; Mod+Escape now calls niri's own
         # toggle-keyboard-shortcuts-inhibit action directly.
 
         xdg.configFile."niri/config.kdl".text =
           builtins.replaceStrings
-            [ "@HOME@" "@WALLPAPER@" "@INPUT_EXTRA@" ]
+            [ "@HOME@" "@WALLPAPER@" "@INPUT_EXTRA@" "@CURSOR_THEME@" ]
             [
               config.home.homeDirectory
               "${config.home.homeDirectory}/.local/share/wallpaper/wallpaper.jpg"
               config.my.niri.inputExtra
+              cursorTheme
             ]
             (builtins.readFile ../../config/niri/config.kdl)
           + config.my.niri.extra;

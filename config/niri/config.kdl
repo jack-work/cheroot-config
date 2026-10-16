@@ -142,7 +142,7 @@ window-rule {
 
 // ======= Cursor =======
 cursor {
-    xcursor-theme "vimix-kanagawa-cursors-lotus"
+    xcursor-theme "@CURSOR_THEME@"
     xcursor-size 16
 }
 
@@ -152,7 +152,7 @@ environment {
     // Pointing at :0 gets "Authorization required" (root-owned, its own xauth).
     DISPLAY ":1"
     QT_CURSOR_SIZE "16"
-    XCURSOR_THEME "vimix-kanagawa-cursors-lotus"
+    XCURSOR_THEME "@CURSOR_THEME@"
     XCURSOR_SIZE "16"
 }
 
