@@ -77,7 +77,7 @@
         // ===== host: cheroot (laptop) =====
         output "eDP-1" {
             scale 1.0
-            position x=320 y=1440
+            position x=320 y=2880
         }
 
         // Samsung LS27D36xG, 27" 1080p: 600 mm of panel for 1920 px is 81 DPI,
@@ -97,11 +97,10 @@
         }
 
         output "Dell Inc. DELL U2719D DDZQJS2" {
-            modeline 218.5 2560 2568 2600 2640 1440 1464 1472 1478 "+hsync" "-vsync"
             position x=0 y=0
         }
         output "Lenovo Group Limited LEN P27h-10 0x58314841" {
-            off
+            position x=0 y=1440
         }
 
         spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
