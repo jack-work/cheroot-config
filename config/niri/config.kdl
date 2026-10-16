@@ -148,16 +148,14 @@ cursor {
 
 // ======= Environment =======
 environment {
-    // xwayland-satellite runs on :1 — SDDM's Xorg greeter owns :0.
-    // Pointing at :0 gets "Authorization required" (root-owned, its own xauth).
-    DISPLAY ":1"
+    DISPLAY ":0"
     QT_CURSOR_SIZE "16"
     XCURSOR_THEME "@CURSOR_THEME@"
     XCURSOR_SIZE "16"
 }
 
 // ======= Autostart =======
-spawn-at-startup "xwayland-satellite" ":1"
+spawn-at-startup "xwayland-satellite" ":0"
 spawn-at-startup "swaybg" "-o" "*" "-i" "@WALLPAPER@" "-m" "stretch"
 // waybar is NOT spawned here. It is a systemd user unit — see
 // modules/desktop/waybar.nix. The compositor is still bringing outputs up when
