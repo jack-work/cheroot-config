@@ -23,6 +23,22 @@
       spawn-at-startup "swayidle" "-w" "timeout" "300" "swaylock -f -c 000000" "before-sleep" "swaylock -f -c 000000"
     '';
 
+    my.preflight.etc = {
+      "systemd/logind.conf.d/10-laptop.conf" = ''
+        [Login]
+        HandleLidSwitch=suspend
+        HandleLidSwitchExternalPower=ignore
+        HandleLidSwitchDocked=ignore
+        HandlePowerKey=suspend
+        IdleAction=ignore
+      '';
+
+      "udev/rules.d/90-usb-wake.rules" = ''
+        ACTION=="add", SUBSYSTEM=="usb", DRIVER=="usb", ATTR{bDeviceClass}=="09", TEST=="power/wakeup", ATTR{power/wakeup}="enabled"
+        ACTION=="add", SUBSYSTEM=="usb", DRIVER=="usb", ATTR{bDeviceClass}=="e0", TEST=="power/wakeup", ATTR{power/wakeup}="enabled"
+      '';
+    };
+
     my.preflight.binaries = [
       "swayidle"
       "swaylock"
