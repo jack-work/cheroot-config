@@ -26,7 +26,12 @@
 # "2 missing" sends you back to grep.
 {
   flake.modules.homeManager.preflight =
-    { lib, config, ... }:
+    {
+      lib,
+      config,
+      pkgs,
+      ...
+    }:
     {
       options.my.preflight = {
         binaries = lib.mkOption {
@@ -63,6 +68,19 @@
             pacman, so a NixOS or WSL host carries the list harmlessly.
           '';
         };
+
+        etc = lib.mkOption {
+          type = lib.types.attrsOf lib.types.lines;
+          default = { };
+          example = {
+            "systemd/logind.conf.d/10-laptop.conf" = "[Login]\nHandleLidSwitchDocked=ignore\n";
+          };
+          description = ''
+            Files under /etc this configuration depends on but cannot write,
+            keyed by path relative to /etc. A file whose content differs fails
+            activation and prints the sudo command that installs it.
+          '';
+        };
       };
 
       config.home.activation.preflight = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
@@ -97,6 +115,22 @@
           done
         fi
 
+        preflight_etc=""
+        ${lib.concatStrings (
+          lib.mapAttrsToList (
+            path: text:
+            let
+              want = pkgs.writeText (baseNameOf path) text;
+            in
+            ''
+              if ! ${pkgs.diffutils}/bin/cmp -s ${want} /etc/${path}; then
+                preflight_etc="$preflight_etc
+                sudo install -Dm644 ${want} /etc/${path}"
+              fi
+            ''
+          ) config.my.preflight.etc
+        )}
+
         if [ -n "$preflight_absent" ]; then
           echo "preflight: optional, absent:$preflight_absent"
         fi
@@ -106,6 +140,11 @@
           [ -n "$preflight_missing" ] && echo "preflight: not on PATH:$preflight_missing" >&2
           [ -n "$preflight_unowned" ] && echo "preflight: not installed by pacman:$preflight_unowned" >&2
           echo "preflight: install them, or stop referring to them. Nothing was activated." >&2
+          exit 1
+        fi
+
+        if [ -n "$preflight_etc" ]; then
+          echo "preflight: /etc differs from this configuration. Install it with:$preflight_etc" >&2
           exit 1
         fi
       '';
