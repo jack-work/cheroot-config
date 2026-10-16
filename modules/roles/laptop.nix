@@ -21,6 +21,10 @@
     my.niri.extra = ''
       // ===== role: laptop =====
       spawn-at-startup "swayidle" "-w" "timeout" "300" "swaylock -f -c 000000" "before-sleep" "swaylock -f -c 000000"
+
+      switch-events {
+          lid-close { spawn "swaylock" "-f" "-c" "000000"; }
+      }
     '';
 
     my.preflight.etc = {
