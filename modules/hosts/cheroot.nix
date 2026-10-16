@@ -24,6 +24,7 @@
       # agent and no way to answer a GUI authentication prompt.
       my.preflight.binaries = [ "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1" ];
       my.preflight.pacman = [
+        "bolt"
         "polkit-gnome"
         "ttf-jetbrains-mono-nerd"
       ];
