@@ -24,6 +24,8 @@
       "zig"
       "zen"
       "helium"
+      "greeter"
+      "splash"
     ];
 
     settings = {
