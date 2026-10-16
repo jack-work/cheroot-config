@@ -72,15 +72,12 @@
 
       # Internal panel. 1920x1080 at 13.3" is ~166 DPI; scale 1.0 is legible but
       # tight. Change to 1.25 and re-switch if it reads small.
-      #
-      # This is the ONLY output block, and it names the internal panel only.
-      # External monitors are deliberately unlisted so niri auto-enables them at
-      # their preferred mode — that is what keeps the config portable.
       my.niri.extra = ''
 
         // ===== host: cheroot (laptop) =====
         output "eDP-1" {
             scale 1.0
+            position x=320 y=1440
         }
 
         // Samsung LS27D36xG, 27" 1080p: 600 mm of panel for 1920 px is 81 DPI,
@@ -97,6 +94,14 @@
         output "DVI-I-1" {
             mode "1920x1080@100.000"
             scale 0.8
+        }
+
+        output "Dell Inc. DELL U2719D DDZQJS2" {
+            modeline 218.5 2560 2568 2600 2640 1440 1464 1472 1478 "+hsync" "-vsync"
+            position x=0 y=0
+        }
+        output "Lenovo Group Limited LEN P27h-10 0x58314841" {
+            off
         }
 
         spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
