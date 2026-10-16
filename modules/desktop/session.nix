@@ -39,5 +39,7 @@
     # directory is assembled from two sources, and only graphical hosts get the
     # second. See modules/shell/fish.nix for why linking is per-file.
     xdg.configFile = config.flake.lib.linkDir ../../config/fish/conf.d-graphical "fish/conf.d";
+
+    dconf.settings."org/gnome/desktop/interface".color-scheme = "prefer-dark";
   };
 }
