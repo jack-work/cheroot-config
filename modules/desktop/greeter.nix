@@ -15,6 +15,19 @@
         user = "greeter"
       '';
 
+      "pam.d/greetd" = ''
+        #%PAM-1.0
+        auth       include      system-local-login
+        -auth      optional     pam_gnome_keyring.so
+        -auth      optional     pam_kwallet5.so
+        account    include      system-local-login
+        password   include      system-local-login
+        -password  optional     pam_gnome_keyring.so use_authtok
+        session    include      system-local-login
+        -session   optional     pam_gnome_keyring.so auto_start
+        -session   optional     pam_kwallet5.so auto_start
+      '';
+
       "systemd/system/greetd.service.d/tty.conf" = ''
         [Service]
         Type=idle
