@@ -11,19 +11,20 @@
 
       heliumWebstoreUpdateUrl = "https://update-url-to-be-replaced.qjz9zk";
 
-      servicesPrefs = {
+      managedPrefs = {
         helium.services = {
           enabled = true;
           user_consented = true;
           ext_proxy = true;
           origin_override = "https://spain.tail34d120.ts.net";
         };
+        helium.browser.layout = 2;
       };
 
       jq = lib.getExe pkgs.jq;
       pgrep = "${pkgs.procps}/bin/pgrep";
       profilePrefs = "${config.xdg.configHome}/${userDataDir}/Default/Preferences";
-      wantPrefs = lib.escapeShellArg (builtins.toJSON servicesPrefs);
+      wantPrefs = lib.escapeShellArg (builtins.toJSON managedPrefs);
       prefsCurrent = ''[ -f "${profilePrefs}" ] && ${jq} -e --argjson w ${wantPrefs} '. * $w == .' "${profilePrefs}" >/dev/null'';
 
       webstoreExtensions = {
@@ -118,14 +119,14 @@
         fi
       '';
 
-      home.activation.heliumServicesPrecheck = lib.hm.dag.entryBefore [ "writeBoundary" ] ''
+      home.activation.heliumPrefsPrecheck = lib.hm.dag.entryBefore [ "writeBoundary" ] ''
         if ! { ${prefsCurrent}; } && ${pgrep} -u "$USER" -x helium >/dev/null; then
-          echo "helium: close Helium so its services prefs can be written; it rewrites Preferences on exit" >&2
+          echo "helium: close Helium so its prefs can be written; it rewrites Preferences on exit" >&2
           exit 1
         fi
       '';
 
-      home.activation.heliumServices = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      home.activation.heliumPrefs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         if ! { ${prefsCurrent}; }; then
           run mkdir -p "$(dirname "${profilePrefs}")"
           [ -f "${profilePrefs}" ] || echo '{}' > "${profilePrefs}"
