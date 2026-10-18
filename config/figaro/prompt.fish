@@ -49,7 +49,7 @@ function __figaro_prompt_refresh --on-event fish_prompt --description 'Refresh t
     set -gx FIGARO_PROMPT (
         fig status --json </dev/null 2>/dev/null |
         jq -r 'select(.id) | [
-                 .id,
+                 (.handle // .id),
                  (if   .frozen          then "❄"
                   elif .state == "active" then "●"
                   elif .state == "idle"   then "◐"

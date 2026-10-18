@@ -68,7 +68,7 @@ __figaro_prompt_refresh() {
     # jq runs as a SEPARATE step. Piping fig into jq directly would fork.
     FIGARO_PROMPT=$(
         printf '%s' "$raw" | jq -r 'select(.id) | [
-                 .id,
+                 (.handle // .id),
                  (if   .frozen            then "❄"
                   elif .state == "active" then "●"
                   elif .state == "idle"   then "◐"
