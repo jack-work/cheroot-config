@@ -34,6 +34,9 @@
 
       onepasswordBrowserSupport = "/opt/1Password/1Password-BrowserSupport";
 
+      exitHost = config.my.helium.exitHost;
+      socksPort = toString config.my.helium.socksPort;
+
       rgb =
         hex:
         map (i: lib.fromHexString (builtins.substring i 2 hex)) [
@@ -88,52 +91,100 @@
       };
     in
     {
-      my.preflight.binaries = [ "helium-browser" ];
+      options.my.helium = {
+        exitHost = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          example = "root@exit-seattle";
+          description = ''
+            SSH destination that Helium's traffic leaves from, through a SOCKS
+            tunnel. Only Helium uses it; the rest of the machine routes as
+            usual. Tailnet names and addresses bypass the tunnel.
+          '';
+        };
 
-      xdg.configFile = {
-        "helium-browser-flags.conf".text = ''
-          --load-extension=${kanagawaTheme}
+        socksPort = lib.mkOption {
+          type = lib.types.port;
+          default = 1080;
+          description = "Loopback port of the SOCKS tunnel to exitHost.";
+        };
+      };
+
+      config = {
+        my.preflight.binaries = [ "helium-browser" ];
+
+        xdg.configFile = {
+          "helium-browser-flags.conf".text = ''
+            --load-extension=${kanagawaTheme}
+          ''
+          + lib.optionalString (exitHost != null) ''
+            --proxy-server=socks5://127.0.0.1:${socksPort}
+            --proxy-bypass-list="*.ts.net;100.64.0.0/10"
+            --force-webrtc-ip-handling-policy=disable_non_proxied_udp
+          '';
+
+          "${userDataDir}/NativeMessagingHosts/com.1password.1password.json".text = builtins.toJSON {
+            name = "com.1password.1password";
+            description = "1Password BrowserSupport";
+            path = onepasswordBrowserSupport;
+            type = "stdio";
+            allowed_origins = [ "chrome-extension://${webstoreExtensions.onepassword}/" ];
+          };
+        }
+        // lib.mapAttrs' (
+          _: id:
+          lib.nameValuePair "${userDataDir}/External Extensions/${id}.json" {
+            text = builtins.toJSON { external_update_url = heliumWebstoreUpdateUrl; };
+          }
+        ) webstoreExtensions;
+
+        home.activation.heliumOnepasswordAllowlist = lib.hm.dag.entryBefore [ "writeBoundary" ] ''
+          if [ -x ${onepasswordBrowserSupport} ] \
+            && ! grep -qx helium /etc/1password/custom_allowed_browsers 2>/dev/null; then
+            echo "helium: 1Password will refuse the browser until it is allowlisted:" >&2
+            echo "  sudo install -d /etc/1password && echo helium | sudo tee -a /etc/1password/custom_allowed_browsers" >&2
+            exit 1
+          fi
         '';
 
-        "${userDataDir}/NativeMessagingHosts/com.1password.1password.json".text = builtins.toJSON {
-          name = "com.1password.1password";
-          description = "1Password BrowserSupport";
-          path = onepasswordBrowserSupport;
-          type = "stdio";
-          allowed_origins = [ "chrome-extension://${webstoreExtensions.onepassword}/" ];
+        home.activation.heliumPrefsPrecheck = lib.hm.dag.entryBefore [ "writeBoundary" ] ''
+          if ! { ${prefsCurrent}; } && ${pgrep} -u "$USER" -x helium >/dev/null; then
+            echo "helium: close Helium so its prefs can be written; it rewrites Preferences on exit" >&2
+            exit 1
+          fi
+        '';
+
+        home.activation.heliumPrefs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+          if ! { ${prefsCurrent}; }; then
+            run mkdir -p "$(dirname "${profilePrefs}")"
+            [ -f "${profilePrefs}" ] || echo '{}' > "${profilePrefs}"
+            tmp=$(mktemp "${profilePrefs}.XXXXXX")
+            ${jq} --argjson w ${wantPrefs} '. * $w' "${profilePrefs}" > "$tmp"
+            run mv "$tmp" "${profilePrefs}"
+          fi
+        '';
+
+        systemd.user.services.helium-exit = lib.mkIf (exitHost != null) {
+          Unit = {
+            Description = "SOCKS tunnel for Helium via ${exitHost}";
+            StartLimitIntervalSec = 0;
+          };
+          Service = {
+            ExecStart = lib.concatStringsSep " " [
+              "${pkgs.openssh}/bin/ssh -N"
+              "-D 127.0.0.1:${socksPort}"
+              "-o BatchMode=yes"
+              "-o ExitOnForwardFailure=yes"
+              "-o ServerAliveInterval=15"
+              "-o ServerAliveCountMax=3"
+              "-o StrictHostKeyChecking=accept-new"
+              exitHost
+            ];
+            Restart = "always";
+            RestartSec = 5;
+          };
+          Install.WantedBy = [ "default.target" ];
         };
-      }
-      // lib.mapAttrs' (
-        _: id:
-        lib.nameValuePair "${userDataDir}/External Extensions/${id}.json" {
-          text = builtins.toJSON { external_update_url = heliumWebstoreUpdateUrl; };
-        }
-      ) webstoreExtensions;
-
-      home.activation.heliumOnepasswordAllowlist = lib.hm.dag.entryBefore [ "writeBoundary" ] ''
-        if [ -x ${onepasswordBrowserSupport} ] \
-          && ! grep -qx helium /etc/1password/custom_allowed_browsers 2>/dev/null; then
-          echo "helium: 1Password will refuse the browser until it is allowlisted:" >&2
-          echo "  sudo install -d /etc/1password && echo helium | sudo tee -a /etc/1password/custom_allowed_browsers" >&2
-          exit 1
-        fi
-      '';
-
-      home.activation.heliumPrefsPrecheck = lib.hm.dag.entryBefore [ "writeBoundary" ] ''
-        if ! { ${prefsCurrent}; } && ${pgrep} -u "$USER" -x helium >/dev/null; then
-          echo "helium: close Helium so its prefs can be written; it rewrites Preferences on exit" >&2
-          exit 1
-        fi
-      '';
-
-      home.activation.heliumPrefs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        if ! { ${prefsCurrent}; }; then
-          run mkdir -p "$(dirname "${profilePrefs}")"
-          [ -f "${profilePrefs}" ] || echo '{}' > "${profilePrefs}"
-          tmp=$(mktemp "${profilePrefs}.XXXXXX")
-          ${jq} --argjson w ${wantPrefs} '. * $w' "${profilePrefs}" > "$tmp"
-          run mv "$tmp" "${profilePrefs}"
-        fi
-      '';
+      };
     };
 }
