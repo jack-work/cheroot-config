@@ -7,10 +7,12 @@ export CRYPTOGRAPHY_OPENSSL_NO_LEGACY=1
 # GOFLAGS/GOPATH: see modules/go.nix -> ~/.config/go/env (read by the go tool
 # itself, so it applies to editors and IDEs too, not just shells).
 
-# ssh-agent socket, published by the systemd user unit.
-# XDG_RUNTIME_DIR rather than a hardcoded /run/user/1000: correct on any host.
 if [ -n "$XDG_RUNTIME_DIR" ]; then
-    export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+    if [ -S "$XDG_RUNTIME_DIR/gcr/ssh" ]; then
+        export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/gcr/ssh"
+    else
+        export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+    fi
 fi
 
 # tmux drops SSH_TTY. Restore it so remote-session detection keeps working.
