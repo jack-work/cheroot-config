@@ -24,7 +24,10 @@
           rc=0
           "$bin" --apply --out "$out" >"$state/last.txt" 2>&1 || rc=$?
 
-          grep -E '^  [A-Za-z0-9_.-]+ +[0-9a-f]{7}  ' "$state/last.txt" | grep -v '  current$' | sed 's/^  //; s/  */ /g' | sort >"$state/lagging.new" || true
+          {
+            grep -E '^  [A-Za-z0-9_.-]+ +[0-9a-f]{7}  ' "$state/last.txt" | grep -v '  current$' | sed 's/^  //; s/  */ /g'
+            grep -E '^  github-only ' "$state/last.txt" | awk '{print $1, $2}'
+          } | sort >"$state/lagging.new" || true
           touch "$state/lagging.txt"
           added=$(comm -13 "$state/lagging.txt" "$state/lagging.new")
           mv "$state/lagging.new" "$state/lagging.txt"
