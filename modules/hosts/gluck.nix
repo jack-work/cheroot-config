@@ -26,6 +26,7 @@
       "helium"
       "greeter"
       "splash"
+      "keel-sync"
     ];
 
     settings = {
