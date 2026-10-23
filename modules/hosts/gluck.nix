@@ -53,7 +53,12 @@
       # a wrong value configures a profile the browser never opens.
       my.zen.profileDir = "829beuvl.Default (release)";
 
-      my.helium.exitHost = "root@exit-seattle";
+      my.helium.exits = {
+        seattle = "root@exit-seattle";
+        newjersey = "root@exit-newjersey";
+        amsterdam = "root@exit-amsterdam";
+      };
+      my.helium.defaultExit = "seattle";
 
       # THIS IS THE MACHINE WHERE FIGARO IS WRITTEN, so it does not take figaro
       # from this repo's lockfile. 76 tags and counting; the working tree is

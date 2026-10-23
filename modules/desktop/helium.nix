@@ -34,8 +34,81 @@
 
       onepasswordBrowserSupport = "/opt/1Password/1Password-BrowserSupport";
 
-      exitHost = config.my.helium.exitHost;
-      socksPort = toString config.my.helium.socksPort;
+      cfg = config.my.helium;
+      socksPort = toString cfg.socksPort;
+      proxied = cfg.exits != { };
+      exitState = "${config.xdg.stateHome}/helium-exit/current";
+      exitNames = lib.concatStringsSep " " ([ "direct" ] ++ lib.attrNames cfg.exits);
+
+      exitCases = lib.concatStrings (
+        lib.mapAttrsToList (name: dest: ''
+          ${lib.escapeShellArg name}) dest=${lib.escapeShellArg dest} ;;
+        '') cfg.exits
+      );
+
+      exitTunnel = pkgs.writeShellApplication {
+        name = "helium-exit-tunnel";
+        text = ''
+          name=$(cat "${exitState}" 2>/dev/null || echo ${lib.escapeShellArg cfg.defaultExit})
+          dest=
+          case "$name" in
+          ${exitCases}
+          direct) exec ${lib.getExe pkgs.microsocks} -i 127.0.0.1 -p ${socksPort} ;;
+          *)
+            echo "unknown exit '$name', using ${cfg.defaultExit}" >&2
+            rm -f "${exitState}"
+            exit 1
+            ;;
+          esac
+          exec ${pkgs.openssh}/bin/ssh -N -D 127.0.0.1:${socksPort} \
+            -o BatchMode=yes -o ExitOnForwardFailure=yes \
+            -o ServerAliveInterval=15 -o ServerAliveCountMax=3 \
+            -o StrictHostKeyChecking=accept-new "$dest"
+        '';
+      };
+
+      exitSwitch = pkgs.writeShellApplication {
+        name = "helium-exit";
+        runtimeInputs = [ pkgs.curl ];
+        text = ''
+          current=$(cat "${exitState}" 2>/dev/null || echo ${lib.escapeShellArg cfg.defaultExit})
+          egress() {
+            curl -s --max-time 8 --socks5-hostname 127.0.0.1:${socksPort} https://ipinfo.io/json \
+              | sed -n 's/^ *"\(ip\|city\|country\)": "\(.*\)",$/\2/p' | paste -sd' '
+          }
+          case "''${1:-}" in
+          "")
+            out=$(egress) || true
+            echo "$current: ''${out:-not answering}"
+            ;;
+          -l | list)
+            for n in ${exitNames}; do
+              if [ "$n" = "$current" ]; then echo "* $n"; else echo "  $n"; fi
+            done
+            ;;
+          *)
+            case "$1" in
+            ${
+              lib.concatStringsSep " | " (map lib.escapeShellArg ([ "direct" ] ++ lib.attrNames cfg.exits))
+            }) ;;
+            *)
+              echo "helium-exit: no exit '$1' (have: ${exitNames})" >&2
+              exit 2
+              ;;
+            esac
+            mkdir -p "$(dirname "${exitState}")"
+            echo "$1" >"${exitState}"
+            systemctl --user restart helium-exit.service
+            for _ in $(seq 20); do
+              out=$(egress) && [ -n "$out" ] && { echo "$1: $out"; exit 0; }
+              sleep 0.5
+            done
+            echo "helium-exit: $1 is not answering; see journalctl --user -u helium-exit" >&2
+            exit 1
+            ;;
+          esac
+        '';
+      };
 
       rgb =
         hex:
@@ -92,32 +165,51 @@
     in
     {
       options.my.helium = {
-        exitHost = lib.mkOption {
-          type = lib.types.nullOr lib.types.str;
-          default = null;
-          example = "root@exit-seattle";
+        exits = lib.mkOption {
+          type = lib.types.attrsOf lib.types.str;
+          default = { };
+          example = {
+            seattle = "root@exit-seattle";
+          };
           description = ''
-            SSH destination that Helium's traffic leaves from, through a SOCKS
-            tunnel. Only Helium uses it; the rest of the machine routes as
-            usual. Tailnet names and addresses bypass the tunnel.
+            SSH destinations Helium's traffic can leave from, by name. When
+            set, Helium always talks to a SOCKS proxy on loopback, and
+            `helium-exit <name>` swaps what is behind it without restarting
+            the browser. `direct` is always available. Tailnet names and
+            addresses bypass the proxy.
           '';
+        };
+
+        defaultExit = lib.mkOption {
+          type = lib.types.str;
+          default = "direct";
+          description = "Exit used until `helium-exit` picks another.";
         };
 
         socksPort = lib.mkOption {
           type = lib.types.port;
           default = 1080;
-          description = "Loopback port of the SOCKS tunnel to exitHost.";
+          description = "Loopback port of the proxy Helium talks to.";
         };
       };
 
       config = {
+        assertions = [
+          {
+            assertion = !proxied || cfg.defaultExit == "direct" || cfg.exits ? ${cfg.defaultExit};
+            message = "my.helium.defaultExit names an exit not in my.helium.exits";
+          }
+        ];
+
         my.preflight.binaries = [ "helium-browser" ];
+
+        home.packages = lib.optional proxied exitSwitch;
 
         xdg.configFile = {
           "helium-browser-flags.conf".text = ''
             --load-extension=${kanagawaTheme}
           ''
-          + lib.optionalString (exitHost != null) ''
+          + lib.optionalString proxied ''
             --proxy-server=socks5://127.0.0.1:${socksPort}
             --proxy-bypass-list="*.ts.net;100.64.0.0/10"
             --force-webrtc-ip-handling-policy=disable_non_proxied_udp
@@ -164,24 +256,15 @@
           fi
         '';
 
-        systemd.user.services.helium-exit = lib.mkIf (exitHost != null) {
+        systemd.user.services.helium-exit = lib.mkIf proxied {
           Unit = {
-            Description = "SOCKS tunnel for Helium via ${exitHost}";
+            Description = "Helium's SOCKS proxy, pointed by helium-exit";
             StartLimitIntervalSec = 0;
           };
           Service = {
-            ExecStart = lib.concatStringsSep " " [
-              "${pkgs.openssh}/bin/ssh -N"
-              "-D 127.0.0.1:${socksPort}"
-              "-o BatchMode=yes"
-              "-o ExitOnForwardFailure=yes"
-              "-o ServerAliveInterval=15"
-              "-o ServerAliveCountMax=3"
-              "-o StrictHostKeyChecking=accept-new"
-              exitHost
-            ];
+            ExecStart = lib.getExe exitTunnel;
             Restart = "always";
-            RestartSec = 5;
+            RestartSec = 2;
           };
           Install.WantedBy = [ "default.target" ];
         };
