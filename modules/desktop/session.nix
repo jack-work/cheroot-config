@@ -17,10 +17,7 @@
 #
 # So: `graphical` is a GUI aspect. It ships with `guiAspects`, and a host that
 # narrows itself to `coreAspects` never evaluates a line of it.
-#
-# BROWSER is deliberately NOT here. It names a specific binary (cachy-browser on
-# gluck, something else anywhere else), which makes it host-specific, not
-# class-specific. See modules/hosts/gluck.nix.
+
 { config, ... }:
 {
   flake.modules.homeManager.graphical = {

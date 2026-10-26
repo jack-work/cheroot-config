@@ -10,7 +10,6 @@
             curl
             git
             python3
-            xdg-utils
           ];
           text = ''
             export KEEL_BASE=''${KEEL_BASE:-https://keel.kelliher.info}

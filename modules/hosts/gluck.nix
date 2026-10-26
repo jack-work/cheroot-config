@@ -43,12 +43,7 @@
       my.preflight.binaries = [ "/usr/lib/polkit-kde-authentication-agent-1" ];
       my.preflight.pacman = [ "polkit-kde-agent" ];
 
-      # Names a CachyOS binary, so it is host-specific rather than part of the
-      # graphical aspect: plain Arch (cheroot) has no cachy-browser, and a
-      # BROWSER pointing at a missing binary is worse than an unset one.
-      # Rescued from gluck's hand-written ~/.profile, which home-manager
-      # replaces wholesale.
-      home.sessionVariables.BROWSER = "cachy-browser";
+      home.sessionVariables.BROWSER = "helium-browser";
 
       # Zen's profile directory, read out of ~/.zen/profiles.ini. Do not guess:
       # a wrong value configures a profile the browser never opens.
