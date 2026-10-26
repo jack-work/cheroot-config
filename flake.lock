@@ -172,6 +172,22 @@
         "type": "github"
       }
     },
+    "keel": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792965219,
+        "narHash": "sha256-IbpWbfgKw1sqFZdFHuYuJQFgreDpNxx/R5yWs9rjzYA=",
+        "ref": "refs/heads/master",
+        "rev": "6ff9acc30b795b49143f7d2bf2758111869c3e80",
+        "revCount": 193,
+        "type": "git",
+        "url": "ssh://git@spain/jack/keel.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@spain/jack/keel.git"
+      }
+    },
     "llm-agents": {
       "inputs": {
         "bun2nix": "bun2nix",
@@ -220,6 +236,7 @@
         "home-manager": "home-manager",
         "hush": "hush",
         "import-tree": "import-tree",
+        "keel": "keel",
         "llm-agents": "llm-agents",
         "nixpkgs": "nixpkgs",
         "zen-browser": "zen-browser"

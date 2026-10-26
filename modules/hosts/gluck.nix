@@ -27,6 +27,7 @@
       "greeter"
       "splash"
       "keel-sync"
+      "keel"
     ];
 
     settings = {
