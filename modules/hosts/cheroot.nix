@@ -11,8 +11,6 @@
     host = "cheroot";
     roles = [
       "laptop"
-      # Opt-in aspects, not machine classes. See modules/desktop/zen.nix.
-      "zen"
       "helium"
       "greeter"
     ];
@@ -41,17 +39,6 @@
         method = "file"
         file = "/home/marlowe/.config/hush/passphrase"
       '';
-
-      # This machine's zen (1.21.9b) uses the XDG path; gluck's (1.21.13b)
-      # still uses ~/.zen. Both values read out of the real profiles.ini; a
-      # wrong one configures a profile the browser never opens.
-      my.zen.configPath = ".config/zen";
-      my.zen.profileDir = "y9w3yl5l.Default (release)";
-
-      # Temporary: this Zen speaks shortcut schema 19, the export was taken at
-      # gluck's 20. Drop the line once `pacman -Syu zen-browser-bin` levels
-      # them, and let the default take over.
-      my.zen.shortcutsVersion = 19;
 
       # Clock centring at 1920px with the laptop module set. Measured: left
       # group ended x=137, clock 733-970, weather began x=996, so 596px slack

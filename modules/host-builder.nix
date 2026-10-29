@@ -85,15 +85,7 @@
       }:
       {
         "${user}@${host}" = inputs.home-manager.lib.homeManagerConfiguration {
-          # Instantiated rather than taken from legacyPackages for one reason:
-          # an unfree allowlist by name, without which 1Password's add-on
-          # (modules/desktop/zen.nix) aborts the whole evaluation. A predicate
-          # rather than allowUnfree, so the next unfree thing stops the build.
-          pkgs = import inputs.nixpkgs {
-            inherit system;
-            config.allowUnfreePredicate =
-              pkg: builtins.elem (lib.getName pkg) [ "1password-x-password-manager" ];
-          };
+          pkgs = inputs.nixpkgs.legacyPackages.${system};
 
           modules = map (name: config.flake.modules.homeManager.${name}) (aspects ++ roles) ++ [
             {

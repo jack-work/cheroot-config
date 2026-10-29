@@ -60,17 +60,13 @@ modules/
   prompt.nix cli.nix editor.nix tmux.nix
   desktop/             niri waybar mako rofi alacritty, and session.nix
                        (the env a graphical session needs and nothing else does)
-  desktop/zen.nix      the browser: prefs, extensions, shortcuts, not the binary
-  desktop/helium.nix   the other browser: extensions, theme, 1Password bridge
+  desktop/helium.nix   the browser: extensions, theme, 1Password bridge, default handler
   roles/               laptop desktop wsl
   hosts/               cheroot gluck wsl
-bin/                   scripts that generate checked-in data
-  zen-shortcuts-export   a Zen profile's shortcuts -> config/zen/*.json
 config/                verbatim config files, referenced by the modules
   fish/conf.d/         core fish modules — every host gets these
   fish/conf.d-graphical/  wayland repair; only hosts with a screen link it
-  zen/                 user.js and the exported keyboard shortcuts
-pkgs/                  small derivations: mako-term, firefox-xpi (AMO pins)
+pkgs/                  small derivations: mako-term
 ```
 
 ## One flake, many machines
@@ -211,28 +207,14 @@ stable path, so both come from pacman and nix only configures them.
 
 ## The browser
 
-`modules/desktop/zen.nix` owns prefs, extensions, the theme and the keyboard
-shortcuts; pacman owns the binary, so `package = null`. With no wrapper there
-are no `policies`, so extensions install as xpi files dropped into the profile.
-
-Shortcuts are the part worth knowing, since they are what you want identical on
-both machines:
-
-```sh
-./bin/zen-shortcuts-export > config/zen/keyboard-shortcuts.json
-git diff config/zen/keyboard-shortcuts.json   # exactly what you rebound
-```
-
-The export is exhaustive rather than a diff, because Zen's file does not record
-which entries were customised. That is safe: the module patches by id and
-leaves unlisted ids alone, so a Zen release that adds shortcuts does not lose
-them, and `keyboardShortcutsVersion` fails activation if the schema moves. A
-dozen alternate bindings (F5, backspace) carry no id and cannot be declared.
+`modules/desktop/helium.nix` owns Helium's extensions, theme, 1Password bridge
+and the exit proxy; pacman owns the binary. It also makes Helium the default
+handler for web links and HTML on every host that names it, by `xdg-mime
+default` during activation rather than by owning `mimeapps.list`, which other
+apps (AyuGram, Vesktop) write into.
 
 Settings *inside* an extension are not owned here, Vimium C's keymap above all.
-They live in the extension's IndexedDB, and home-manager's route to them forces
-the profile back to the legacy storage backend, hiding what every other
-extension stored (home-manager#9211). Use the extension's own export/import.
+Use the extension's own export/import.
 
 ## Things that will bite you
 
@@ -270,13 +252,3 @@ guarded in `15-brew.sh`.
 **First switch on gluck needs `-b bak`.** Real files already exist at
 `~/.config/fish`, `tmux.conf`, `alacritty.toml`, `starship.toml`; without the
 backup flag home-manager refuses rather than clobbering.
-
-**Name a Zen profile directory, never guess it.** `my.zen.profileDir` and
-`my.zen.configPath` are per-host facts, and a wrong value does not fail: it
-writes a complete profile the browser never opens. gluck keeps profiles in
-`~/.zen`, cheroot in `~/.config/zen`, from the same AUR package. Read
-`profiles.ini` first.
-
-**Close Zen before a switch that changes shortcuts.** The module patches
-`zen-keyboard-shortcuts.json` during activation, and a running Zen writes its
-own copy back on exit.

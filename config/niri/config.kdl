@@ -193,7 +193,7 @@ binds {
     Mod+Space  { spawn "rofi" "-show" "combi" "-modi" "window,run,combi" "-combi-modi" "window,run"; }
     Mod+A      { spawn "sh" "-c" "grim -g \"$(slurp)\" - | swappy -f -"; }
     Mod+W      { spawn "gnome-calculator"; }
-    Mod+M      { spawn "sh" "-c" "wl-paste > /tmp/clipboard.md && bunx markdown-to-html-cli -s /tmp/clipboard.md -o /tmp/clipboard.html --no-dark-mode && zen-browser /tmp/clipboard.html"; }
+    Mod+M      { spawn "sh" "-c" "wl-paste > /tmp/clipboard.md && bunx markdown-to-html-cli -s /tmp/clipboard.md -o /tmp/clipboard.html --no-dark-mode && helium-browser /tmp/clipboard.html"; }
     Mod+G      { power-off-monitors; }
     Mod+O      { toggle-overview; }
     Mod+Shift+Grave { spawn "alacritty" "--title" "wiremix" "-e" "wiremix"; }

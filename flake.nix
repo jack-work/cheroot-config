@@ -19,24 +19,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Zen is not in nixpkgs, so its home-manager module comes from the
-    # community flake. See modules/desktop/zen.nix: we take the module and
-    # leave the binary to pacman.
-    zen-browser = {
-      url = "github:0xc000022070/zen-browser-flake";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        home-manager.follows = "home-manager";
-      };
-    };
-
-    # Signed add-on xpis, generated from AMO. What it lacks is pinned by hand
-    # in pkgs/firefox-xpi.nix.
-    firefox-addons = {
-      url = "gitlab:rycee/nur-expressions?dir=pkgs/firefox-addons";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # figaro, for hosts that CONSUME it rather than build it.
     #
     # Deliberately not used by gluck — see modules/figaro.nix and

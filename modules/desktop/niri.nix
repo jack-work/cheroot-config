@@ -80,7 +80,7 @@
           "nemo"
           "gnome-calculator"
           "bunx"
-          "zen-browser"
+          "helium-browser"
         ];
 
         home.packages = lib.optionals config.my.platform.desktopFromNix (

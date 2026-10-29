@@ -22,7 +22,6 @@
       # names. See modules/audio.nix and modules/zig.nix.
       "audio"
       "zig"
-      "zen"
       "helium"
       "greeter"
       "splash"
@@ -42,12 +41,6 @@
       # the same my.niri.extra that carries this machine's outputs.
       my.preflight.binaries = [ "/usr/lib/polkit-kde-authentication-agent-1" ];
       my.preflight.pacman = [ "polkit-kde-agent" ];
-
-      home.sessionVariables.BROWSER = "helium-browser";
-
-      # Zen's profile directory, read out of ~/.zen/profiles.ini. Do not guess:
-      # a wrong value configures a profile the browser never opens.
-      my.zen.profileDir = "829beuvl.Default (release)";
 
       my.helium.exits = {
         seattle = "root@exit-seattle";

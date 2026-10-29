@@ -34,6 +34,21 @@
 
       onepasswordBrowserSupport = "/opt/1Password/1Password-BrowserSupport";
 
+      handledTypes = [
+        "x-scheme-handler/http"
+        "x-scheme-handler/https"
+        "x-scheme-handler/chrome"
+        "x-scheme-handler/about"
+        "x-scheme-handler/unknown"
+        "text/html"
+        "application/xhtml+xml"
+        "application/x-extension-htm"
+        "application/x-extension-html"
+        "application/x-extension-shtml"
+        "application/x-extension-xhtml"
+        "application/x-extension-xht"
+      ];
+
       cfg = config.my.helium;
       socksPort = toString cfg.socksPort;
       proxied = cfg.exits != { };
@@ -204,6 +219,18 @@
         my.preflight.binaries = [ "helium-browser" ];
 
         home.packages = lib.optional proxied exitSwitch;
+
+        home.sessionVariables.BROWSER = "helium-browser";
+
+        my.preflight.pacman = [ "xdg-utils" ];
+
+        home.activation.heliumDefaultBrowser = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+          for type in ${lib.escapeShellArgs handledTypes}; do
+            if [ "$(/usr/bin/xdg-mime query default "$type" 2>/dev/null)" != helium.desktop ]; then
+              run /usr/bin/xdg-mime default helium.desktop "$type"
+            fi
+          done
+        '';
 
         xdg.configFile = {
           "helium-browser-flags.conf".text = ''
