@@ -225,6 +225,15 @@
         my.preflight.pacman = [ "xdg-utils" ];
 
         home.activation.heliumDefaultBrowser = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+          PATH=${
+            lib.makeBinPath [
+              pkgs.gawk
+              pkgs.coreutils
+              pkgs.gnugrep
+              pkgs.gnused
+              pkgs.findutils
+            ]
+          }:$PATH
           for type in ${lib.escapeShellArgs handledTypes}; do
             if [ "$(/usr/bin/xdg-mime query default "$type" 2>/dev/null)" != helium.desktop ]; then
               run /usr/bin/xdg-mime default helium.desktop "$type"
