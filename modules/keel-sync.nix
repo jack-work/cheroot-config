@@ -47,7 +47,7 @@
           msg="$msg; report $out/$(date +%F)/report.txt"
 
           if ! figaro send @96447061 -f -- "$msg"; then
-            herald say --to gluck --from keel-sync --sender-id keel-sync "$msg" || true
+            herald-keel-sync say --to gluck --from keel-sync --sender-id keel-sync "$msg" || true
           fi
 
           [ "$rc" = 1 ] && exit 1
