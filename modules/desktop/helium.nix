@@ -56,29 +56,28 @@
       exitNames = lib.concatStringsSep " " ([ "direct" ] ++ lib.attrNames cfg.exits);
 
       exitCases = lib.concatStrings (
-        lib.mapAttrsToList (name: dest: ''
-          ${lib.escapeShellArg name}) dest=${lib.escapeShellArg dest} ;;
+        lib.mapAttrsToList (name: port: ''
+          ${lib.escapeShellArg name}) port=${toString port} ;;
         '') cfg.exits
       );
 
-      exitTunnel = pkgs.writeShellApplication {
-        name = "helium-exit-tunnel";
+      exitRelay = pkgs.writeShellApplication {
+        name = "helium-exit-relay";
         text = ''
           name=$(cat "${exitState}" 2>/dev/null || echo ${lib.escapeShellArg cfg.defaultExit})
-          dest=
+          port=
           case "$name" in
           ${exitCases}
-          direct) exec ${lib.getExe pkgs.microsocks} -i 127.0.0.1 -p ${socksPort} ;;
+          direct) exec ${lib.getExe pkgs.microsocks} -q -i 127.0.0.1 -p ${socksPort} ;;
           *)
             echo "unknown exit '$name', using ${cfg.defaultExit}" >&2
             rm -f "${exitState}"
             exit 1
             ;;
           esac
-          exec ${pkgs.openssh}/bin/ssh -N -D 127.0.0.1:${socksPort} \
-            -o BatchMode=yes -o ExitOnForwardFailure=yes \
-            -o ServerAliveInterval=15 -o ServerAliveCountMax=3 \
-            -o StrictHostKeyChecking=accept-new "$dest"
+          exec ${lib.getExe pkgs.socat} -d \
+            TCP-LISTEN:${socksPort},bind=127.0.0.1,reuseaddr,fork \
+            "TCP:${cfg.exitHost}:$port,connect-timeout=5"
         '';
       };
 
@@ -94,7 +93,7 @@
           case "''${1:-}" in
           "")
             out=$(egress) || true
-            echo "$current: ''${out:-not answering}"
+            echo "$current: ''${out:-not answering, so Helium reaches only the tailnet}"
             ;;
           -l | list)
             for n in ${exitNames}; do
@@ -118,7 +117,8 @@
               out=$(egress) && [ -n "$out" ] && { echo "$1: $out"; exit 0; }
               sleep 0.5
             done
-            echo "helium-exit: $1 is not answering; see journalctl --user -u helium-exit" >&2
+            echo "helium-exit: $1 is not answering, so Helium reaches only the tailnet." >&2
+            [ "$1" = direct ] || echo "  \`helium-exit direct\` sends it out from this machine instead." >&2
             exit 1
             ;;
           esac
@@ -181,23 +181,31 @@
     {
       options.my.helium = {
         exits = lib.mkOption {
-          type = lib.types.attrsOf lib.types.str;
-          default = { };
-          example = {
-            seattle = "root@exit-seattle";
+          type = lib.types.attrsOf lib.types.port;
+          default = {
+            seattle = 1081;
+            newjersey = 1082;
+            amsterdam = 1083;
           };
           description = ''
-            SSH destinations Helium's traffic can leave from, by name. When
-            set, Helium always talks to a SOCKS proxy on loopback, and
-            `helium-exit <name>` swaps what is behind it without restarting
-            the browser. `direct` is always available. Tailnet names and
-            addresses bypass the proxy.
+            Spain's SOCKS ports, by the exit each one leaves from. Helium
+            always talks to a relay on loopback, and `helium-exit <name>`
+            points it at another port without restarting the browser.
+            `direct` is a proxy on this machine. If spain does not answer,
+            nothing falls back to direct: Helium reaches only the tailnet,
+            whose names and addresses bypass the proxy.
           '';
+        };
+
+        exitHost = lib.mkOption {
+          type = lib.types.str;
+          default = "100.103.40.20";
+          description = "Spain's tailnet address, where the exits listen.";
         };
 
         defaultExit = lib.mkOption {
           type = lib.types.str;
-          default = "direct";
+          default = "seattle";
           description = "Exit used until `helium-exit` picks another.";
         };
 
@@ -294,11 +302,11 @@
 
         systemd.user.services.helium-exit = lib.mkIf proxied {
           Unit = {
-            Description = "Helium's SOCKS proxy, pointed by helium-exit";
+            Description = "Helium's SOCKS relay to spain, pointed by helium-exit";
             StartLimitIntervalSec = 0;
           };
           Service = {
-            ExecStart = lib.getExe exitTunnel;
+            ExecStart = lib.getExe exitRelay;
             Restart = "always";
             RestartSec = 2;
           };

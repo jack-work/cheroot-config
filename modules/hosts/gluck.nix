@@ -42,13 +42,6 @@
       my.preflight.binaries = [ "/usr/lib/polkit-kde-authentication-agent-1" ];
       my.preflight.pacman = [ "polkit-kde-agent" ];
 
-      my.helium.exits = {
-        seattle = "root@exit-seattle";
-        newjersey = "root@exit-newjersey";
-        amsterdam = "root@exit-amsterdam";
-      };
-      my.helium.defaultExit = "seattle";
-
       # THIS IS THE MACHINE WHERE FIGARO IS WRITTEN, so it does not take figaro
       # from this repo's lockfile. 76 tags and counting; the working tree is
       # routinely ahead of the newest one. Pinning here would cost
