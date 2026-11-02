@@ -41,11 +41,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793628977,
-        "narHash": "sha256-I24BkSb+Ixy2bAMIxl9iEHpP6D4xJXyHnAQlAAZC0u4=",
+        "lastModified": 1793629203,
+        "narHash": "sha256-fkS04oR0NRjraWv8yG7VpdFCNxSrWqftweKQO3K2rWk=",
         "ref": "refs/heads/main",
-        "rev": "6a0dbb74dd8a88b1ee22307e7eb1c9c76df52702",
-        "revCount": 21,
+        "rev": "26a094c75b983b3739b65648fef203c63c31ac3d",
+        "revCount": 22,
         "type": "git",
         "url": "ssh://git@spain/jack/captains-log.git"
       },
