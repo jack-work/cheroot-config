@@ -34,6 +34,26 @@
         "type": "github"
       }
     },
+    "captains-log": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1793628977,
+        "narHash": "sha256-I24BkSb+Ixy2bAMIxl9iEHpP6D4xJXyHnAQlAAZC0u4=",
+        "ref": "refs/heads/main",
+        "rev": "6a0dbb74dd8a88b1ee22307e7eb1c9c76df52702",
+        "revCount": 21,
+        "type": "git",
+        "url": "ssh://git@spain/jack/captains-log.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@spain/jack/captains-log.git"
+      }
+    },
     "figaro": {
       "inputs": {
         "nixpkgs": [
@@ -208,6 +228,7 @@
     },
     "root": {
       "inputs": {
+        "captains-log": "captains-log",
         "figaro": "figaro",
         "flake-parts": "flake-parts",
         "home-manager": "home-manager",

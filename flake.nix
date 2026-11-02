@@ -41,6 +41,11 @@
       flake = false;
     };
 
+    captains-log = {
+      url = "git+ssh://git@spain/jack/captains-log.git";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     llm-agents = {
       url = "github:numtide/llm-agents.nix";
       inputs.nixpkgs.follows = "nixpkgs";

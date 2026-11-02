@@ -27,6 +27,7 @@
       "splash"
       "keel-sync"
       "keel"
+      "captains-log"
     ];
 
     settings = {
