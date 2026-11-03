@@ -341,4 +341,5 @@ binds {
     Mod+Ctrl+Shift+D { spawn "makoctl" "dismiss" "--all"; }
     Mod+Shift+Comma  { spawn "makoctl" "restore"; }
     Mod+Shift+Period { spawn "makoctl" "menu" "rofi" "-dmenu" "-p" "Action"; }
+@BINDS_EXTRA@
 }

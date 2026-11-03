@@ -41,6 +41,15 @@
         '';
       };
 
+      options.my.niri.bindsExtra = lib.mkOption {
+        type = lib.types.lines;
+        default = "";
+        description = ''
+          KDL spliced INSIDE the single `binds` node, for aspects that bring
+          their own keybind. niri rejects a second `binds` node.
+        '';
+      };
+
       options.my.wallpaper = lib.mkOption {
         type = lib.types.path;
         default = ../../wallpaper.jpg;
@@ -111,11 +120,12 @@
 
         xdg.configFile."niri/config.kdl".text =
           builtins.replaceStrings
-            [ "@HOME@" "@WALLPAPER@" "@INPUT_EXTRA@" "@CURSOR_THEME@" ]
+            [ "@HOME@" "@WALLPAPER@" "@INPUT_EXTRA@" "@BINDS_EXTRA@" "@CURSOR_THEME@" ]
             [
               config.home.homeDirectory
               "${config.home.homeDirectory}/.local/share/wallpaper/wallpaper.jpg"
               config.my.niri.inputExtra
+              config.my.niri.bindsExtra
               cursorTheme
             ]
             (builtins.readFile ../../config/niri/config.kdl)
