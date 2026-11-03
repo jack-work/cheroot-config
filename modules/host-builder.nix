@@ -58,6 +58,7 @@
       "graphical"
       "fonts"
       "niri"
+      "idle-lock"
       "waybar"
       "mako"
       "rofi"

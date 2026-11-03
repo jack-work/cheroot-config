@@ -164,9 +164,8 @@ spawn-at-startup "swaybg" "-o" "*" "-i" "@WALLPAPER@" "-m" "stretch"
 // BOTH places yields two bars.
 spawn-at-startup "mako"
 // nm-applet removed — using iwd/iwctl via custom waybar module instead
-// The polkit agent and the idle locker are per-machine facts: gluck has
-// polkit-kde, cheroot has polkit-gnome, and only a laptop locks on idle.
-// Both arrive through my.niri.extra, from the host and the role. Naming one
+// The polkit agent is a per-machine fact: gluck has polkit-kde, cheroot has
+// polkit-gnome. It arrives through my.niri.extra from the host. Naming one
 // path here made the shared config wrong on whichever machine lacked it.
 
 // systemd/dbus integration

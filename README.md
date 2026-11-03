@@ -58,7 +58,7 @@ modules/
   shell/bash.nix       bash rendering
   figaro.nix           figaro across BOTH shells: prompt hooks + completions
   prompt.nix cli.nix editor.nix tmux.nix
-  desktop/             niri waybar mako rofi alacritty, and session.nix
+  desktop/             niri waybar mako rofi alacritty idle-lock, and session.nix
                        (the env a graphical session needs and nothing else does)
   desktop/helium.nix   the browser: extensions, theme, 1Password bridge, default handler
   roles/               laptop desktop wsl

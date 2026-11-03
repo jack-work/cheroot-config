@@ -16,12 +16,8 @@
       "battery"
     ];
 
-    # A laptop locks when it is left alone; a desktop does not, and gluck has
-    # no swayidle installed to do it with. The spawn lives with the reason.
     my.niri.extra = ''
       // ===== role: laptop =====
-      spawn-at-startup "swayidle" "-w" "timeout" "300" "swaylock -f -c 000000" "before-sleep" "swaylock -f -c 000000"
-
       switch-events {
           lid-close { spawn "swaylock" "-f" "-c" "000000"; }
       }
@@ -58,7 +54,6 @@
     };
 
     my.preflight.binaries = [
-      "swayidle"
       "swaylock"
       "brightnessctl"
     ];

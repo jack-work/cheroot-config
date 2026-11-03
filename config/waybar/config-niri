@@ -10,7 +10,8 @@
 
     "modules-left": [
         "niri/workspaces",
-        "temperature"
+        "temperature",
+        "custom/idle-lock"
     ],
     "modules-center": [
         "clock#date"
@@ -114,6 +115,13 @@
         "format-icons": ["", ""],
         "on-scroll-down": "brightnessctl s 5%-",
         "on-scroll-up": "brightnessctl s +5%"
+    },
+    "custom/idle-lock": {
+        "exec": "idle-lock waybar",
+        "return-type": "json",
+        "interval": "once",
+        "signal": 9,
+        "on-click": "idle-lock toggle"
     },
     "idle_inhibitor": {
         "format": "{icon}",

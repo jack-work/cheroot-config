@@ -82,6 +82,13 @@ window#waybar.hidden {
     color: #727169;
 }
 
+#custom-idle-lock {
+    background: transparent;
+    padding: 2px 8px;
+    margin: 1px 2px;
+    color: #54546D;
+}
+
 #temperature.critical {
     color: #E82424;
 }
