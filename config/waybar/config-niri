@@ -11,7 +11,7 @@
     "modules-left": [
         "niri/workspaces",
         "temperature",
-        "custom/idle-lock"
+        "custom/cerrojo"
     ],
     "modules-center": [
         "clock#date"
@@ -116,12 +116,12 @@
         "on-scroll-down": "brightnessctl s 5%-",
         "on-scroll-up": "brightnessctl s +5%"
     },
-    "custom/idle-lock": {
-        "exec": "idle-lock waybar",
+    "custom/cerrojo": {
+        "exec": "cerrojo waybar",
         "return-type": "json",
-        "interval": "once",
-        "signal": 9,
-        "on-click": "idle-lock toggle"
+        "restart-interval": 2,
+        "on-click": "cerrojo next",
+        "on-click-right": "cerrojo prev"
     },
     "idle_inhibitor": {
         "format": "{icon}",

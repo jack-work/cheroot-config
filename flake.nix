@@ -36,6 +36,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    cerrojo = {
+      url = "github:jack-work/cerrojo";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     keel = {
       url = "git+ssh://git@spain/jack/keel.git";
       flake = false;

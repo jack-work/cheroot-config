@@ -82,11 +82,19 @@ window#waybar.hidden {
     color: #727169;
 }
 
-#custom-idle-lock {
+#custom-cerrojo {
     background: transparent;
     padding: 2px 8px;
     margin: 1px 2px;
     color: #54546D;
+}
+
+#custom-cerrojo.idle {
+    color: #727169;
+}
+
+#custom-cerrojo.soon {
+    color: #C8C093;
 }
 
 #temperature.critical {

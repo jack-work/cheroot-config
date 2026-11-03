@@ -54,6 +54,26 @@
         "url": "ssh://git@spain/jack/captains-log.git"
       }
     },
+    "cerrojo": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1793737139,
+        "narHash": "sha256-exkX0/5eomuH5JTG12WLl8n3XrjZrhg16veyPq1CdFY=",
+        "owner": "jack-work",
+        "repo": "cerrojo",
+        "rev": "b2eba71d0a8ac271e90b1ceac28290573a44a2e6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jack-work",
+        "repo": "cerrojo",
+        "type": "github"
+      }
+    },
     "figaro": {
       "inputs": {
         "nixpkgs": [
@@ -229,6 +249,7 @@
     "root": {
       "inputs": {
         "captains-log": "captains-log",
+        "cerrojo": "cerrojo",
         "figaro": "figaro",
         "flake-parts": "flake-parts",
         "home-manager": "home-manager",
