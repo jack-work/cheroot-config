@@ -61,11 +61,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793737139,
-        "narHash": "sha256-exkX0/5eomuH5JTG12WLl8n3XrjZrhg16veyPq1CdFY=",
+        "lastModified": 1793737643,
+        "narHash": "sha256-KWgq1TQ+saEgXXLPuB9QMgkE8+3yxMdYhfy6c6UKPLc=",
         "owner": "jack-work",
         "repo": "cerrojo",
-        "rev": "b2eba71d0a8ac271e90b1ceac28290573a44a2e6",
+        "rev": "e1d17938f51a509a45c937d8e1eb3107403177ef",
         "type": "github"
       },
       "original": {
