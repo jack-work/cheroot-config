@@ -3,7 +3,7 @@
 # alacritty.toml sets no `[terminal] shell`, so it launches the login shell from
 # /etc/passwd. Switching between fish and bash therefore needs no change here.
 #
-# The font it names (GoMono Nerd Font) is installed by modules/fonts.nix. That
+# The font it names (MonaspiceXe Nerd Font Mono) is installed by modules/fonts.nix. That
 # pairing is the whole reason fonts became an aspect: the config and the package
 # that satisfies it must travel together, or you get a terminal full of boxes —
 # which is exactly what happened on cheroot.
