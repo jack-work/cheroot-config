@@ -26,8 +26,16 @@ hush brave "search query here"
 ```
 
 - Pass the entire search query as a single quoted argument.
-- No other arguments are needed.
-- Results are returned as title, URL, and description for the top 5 hits.
+- There are no flags. Everything after `brave` is the query, so `hush brave --help`
+  searches the web for "--help". Run `hush --help` for the runner itself.
+- Results are the top 5 hits: a title line, an indented URL, an indented
+  description. Descriptions carry raw Brave markup (`<strong>` around the matched
+  words, entities like `&#x27;`); strip it before quoting a snippet.
+- Search operators pass through: `site:arxiv.org`, quoted phrases, `-term`.
+- A retry notice (`brave: HTTP 429, retrying in 1.2s (attempt 1/8)`) goes to
+  stderr; results still land on stdout.
+- A YouTube video ID is a good query when a downloaded file's name carries one
+  (`[H1kB2FAjePw]`): the first hit is usually the video page with its description.
 
 ### Concurrency
 
