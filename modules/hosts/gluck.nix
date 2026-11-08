@@ -28,6 +28,7 @@
       "keel-sync"
       "keel"
       "captains-log"
+      "heavy"
     ];
 
     settings = {
