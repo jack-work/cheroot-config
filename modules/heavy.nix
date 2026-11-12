@@ -10,7 +10,7 @@
         CPUWeight = 20;
         IOWeight = 20;
         CPUQuota = "1200%";
-        MemoryMax = "28G";
+        MemoryMax = "36G";
       };
     };
   };
