@@ -29,6 +29,7 @@
       "keel"
       "captains-log"
       "heavy"
+      "aria2"
     ];
 
     settings = {
