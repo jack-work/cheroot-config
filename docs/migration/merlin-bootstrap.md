@@ -151,16 +151,28 @@ Nix and model-visible commands. Root inference is not ready until Merlin's
 client enrollment and an authenticated subscription proof succeed.
 
 The pending native service-token contract has been source-checked at the same
-Figaro pin. The public gateway is `https://rou2.kelliher.info/v1` and issuer is
-`https://auth.kelliher.info`. Proposed client names are `merlin-rou2` and
-credential ID `rou2-merlin-client`; these are not provisioned grants. The
-provider would use preset `gateway`, its named service token, Responses routing,
-no replay and omitted `max_output_tokens`. A client-credentials grant must use
-the Llavero-approved `basic` or `post` authentication method, still unsettled.
-Authelia registration, rou2 public-listener/ChatGPT admission and the exact
-systemd credential-resolution contract remain external prerequisites. No active
-provider file, service-token stanza or `LoadCredential` is installed by this
-branch, and an existing unrelated grant is not permission to use ChatGPT.
+Figaro pin. The public gateway is `https://rou2.kelliher.info/v1`; the explicit
+token URL is `https://auth.kelliher.info/api/oidc/token`, with no issuer discovery
+required. The service-token entry and client ID are `merlin-rou2`, with
+`grant = client_credentials`, `auth_method = client_secret_basic` and
+`secret_credential = merlin-rou2-client-secret`. These are pending enrollment
+metadata, not provisioned grants. The provider would use preset `gateway`, its
+named service token, Responses routing,
+no replay and omitted `max_output_tokens`. The canonical native exchange is
+`client_secret_basic`, with the explicit singleton audience
+`https://rou2.kelliher.info` and `scopes = []`; the older post/implicit-audience
+hush fallback is superseded.
+
+The proposed local source file is
+`/home/jack/.local/share/figaro-secrets/merlin-rou2-client-secret`. A future
+operator-provisioned unit would load it under bare credential ID
+`merlin-rou2-client-secret`, and the native resolver reads that ID beneath
+`CREDENTIALS_DIRECTORY`. This branch does not create or read that file.
+King still owns the Llavero source packet, Inspector review and a separately
+approved deployment. Authelia registration, rou2 public-listener/ChatGPT
+admission and operator secret entry remain prerequisites. No active provider
+file, service-token stanza or `LoadCredential` is installed here, and an existing
+unrelated grant is not permission to use ChatGPT.
 
 The default is an explicit destination name, not evidence that it is reachable
 or authenticated. Methods are initially disabled so there is no undeclared
