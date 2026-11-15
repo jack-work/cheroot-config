@@ -90,7 +90,7 @@
         # home-manager runs with its own, and the session's includes the nix
         # profile and /usr/bin. Search the union, or a pacman binary reads as
         # missing on a machine that plainly has it.
-        preflight_path="${config.home.profileDirectory}/bin:$HOME/.nix-profile/bin:/usr/local/bin:/usr/bin:/bin"
+        preflight_path="${config.home.profileDirectory}/bin:$HOME/.nix-profile/bin${lib.optionalString config.my.platform.desktopFromNix ":/run/current-system/sw/bin"}:/usr/local/bin:/usr/bin:/bin"
 
         preflight_have() {
           case "$1" in

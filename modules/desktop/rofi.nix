@@ -12,7 +12,7 @@
       ...
     }:
     {
-      home.packages = lib.optionals config.my.platform.desktopFromNix [ pkgs.rofi-wayland ];
+      home.packages = lib.optionals config.my.platform.desktopFromNix [ pkgs.rofi ];
 
       xdg.configFile = {
         "rofi/config.rasi".source = ../../config/rofi/config.rasi;
