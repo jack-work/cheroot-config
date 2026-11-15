@@ -1,5 +1,5 @@
 {
-  description = "gluck / cheroot — dendritic home-manager configuration";
+  description = "gluck / cheroot / merlin configuration";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -26,6 +26,11 @@
     # binary from its own dev loop; every other machine takes this pin.
     figaro = {
       url = "github:jack-work/figaro";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    merlin-figaro = {
+      url = "github:jack-work/figaro/180d4906346f73c403c2daa8cea299f30c75ed53";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
