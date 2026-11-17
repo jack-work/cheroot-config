@@ -19,6 +19,7 @@
       "figaro-forms-bridge"
       "rou2"
       "remote-builder-host"
+      "kingdom"
     ];
 
     settings = {

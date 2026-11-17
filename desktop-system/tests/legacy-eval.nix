@@ -8,7 +8,11 @@ let
     "cig@gluck"
   ];
   added = {
-    "gluck@gluck" = [ "rou2" ];
+    "gluck@gluck" = [
+      "rou2"
+      "remote-builder-host-setup"
+      "figaro-apply-roles"
+    ];
   };
   describe =
     flake: name:
