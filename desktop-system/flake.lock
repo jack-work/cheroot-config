@@ -197,6 +197,27 @@
         "type": "github"
       }
     },
+    "gluck-service-lib": {
+      "inputs": {
+        "nixpkgs": [
+          "rou2",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1791935417,
+        "narHash": "sha256-fzxCT4vKvjSBv1o4VWQnrRUkzU0Xp81jziTJUIZjcW8=",
+        "owner": "jack-work",
+        "repo": "gluck-service-lib",
+        "rev": "09c232a04f956c6c941898c43dade1a34f98e0e8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jack-work",
+        "repo": "gluck-service-lib",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -343,7 +364,31 @@
         "keel": "keel",
         "llm-agents": "llm-agents",
         "merlin-figaro": "merlin-figaro",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "rou2": "rou2"
+      }
+    },
+    "rou2": {
+      "inputs": {
+        "gluck-service-lib": "gluck-service-lib",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1794883249,
+        "narHash": "sha256-WmAizTuX+eji5DlMA+IWyzqRqkjlAGpACG8Rt1Uo5i8=",
+        "ref": "refs/heads/feat/anthropic-max",
+        "rev": "aac52f7d0b71afd164ce434d13ada67004ccfcf0",
+        "revCount": 160,
+        "type": "git",
+        "url": "ssh://git@spain/var/lib/keel/jack/rou2.git"
+      },
+      "original": {
+        "ref": "refs/heads/feat/anthropic-max",
+        "rev": "aac52f7d0b71afd164ce434d13ada67004ccfcf0",
+        "type": "git",
+        "url": "ssh://git@spain/var/lib/keel/jack/rou2.git"
       }
     },
     "systems": {

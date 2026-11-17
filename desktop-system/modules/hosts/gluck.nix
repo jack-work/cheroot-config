@@ -17,6 +17,7 @@
       "heavy"
       "aria2"
       "figaro-forms-bridge"
+      "rou2"
     ];
 
     settings = {

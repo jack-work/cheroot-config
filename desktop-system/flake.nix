@@ -51,6 +51,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    rou2 = {
+      url = "git+ssh://git@spain/var/lib/keel/jack/rou2.git?ref=refs/heads/feat/anthropic-max&rev=aac52f7d0b71afd164ce434d13ada67004ccfcf0";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     keel = {
       url = "git+ssh://git@spain/jack/keel.git";
       flake = false;
