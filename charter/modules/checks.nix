@@ -202,10 +202,17 @@
               my.figaro = {
                 credo = "User credo.";
                 outfits.fast.system.ttl = "1h";
+                roster.lead = {
+                  kind = "leader";
+                  purpose = "Hold the order";
+                  form = "@0123456789abcdef0123456789abcdef";
+                };
                 roster.builder = {
                   kind = "builder";
-                  leader = "@0123456789abcdef0123456789abcdef";
+                  leader = "lead";
                   purpose = "Run isolated tasks";
+                  forward = [ "mason" ];
+                  forwardUntil = "2026-12-01";
                 };
                 managedRolesHook.enable = true;
               };
@@ -221,15 +228,71 @@
           assert !(builtins.tryEval (lockGate.assertGithubOnlyLock fakeSshLock)).success;
           assert !(builtins.tryEval (lockGate.assertGithubOnlyLock fakePathLock)).success;
           assert !(builtins.tryEval (lockGate.assertGithubOnlyLock fakeDualNixpkgsLock)).success;
+          assert builtins.all (r: !(builtins.tryEval (rosterLib.validateRoster r)).success) [
+            {
+              bad = {
+                kind = "unknown";
+                purpose = "";
+              };
+            }
+            {
+              orphan = {
+                kind = "builder";
+                leader = "missing";
+                purpose = "p";
+              };
+            }
+            {
+              self = {
+                kind = "builder";
+                leader = "self";
+                purpose = "p";
+              };
+            }
+            {
+              a = {
+                kind = "leader";
+                leader = "b";
+                purpose = "p";
+              };
+              b = {
+                kind = "leader";
+                leader = "a";
+                purpose = "p";
+              };
+            }
+            {
+              renamed = {
+                kind = "steward";
+                purpose = "p";
+                forward = [ "old" ];
+              };
+            }
+            {
+              a = {
+                kind = "steward";
+                purpose = "p";
+              };
+              b = {
+                kind = "steward";
+                purpose = "p";
+                forward = [ "a" ];
+                forwardUntil = "2026-12-01";
+              };
+            }
+          ];
           assert
-            !(builtins.tryEval (
-              rosterLib.validateRoster {
-                bad = {
-                  kind = "unknown";
-                  purpose = "";
-                };
-              }
-            )).success;
+            (rosterLib.validateRoster {
+              top = {
+                kind = "leader";
+                purpose = "p";
+              };
+              mid = {
+                kind = "steward";
+                leader = "top";
+                purpose = "p";
+              };
+            }) ? mid;
           pkgs.runCommand "charter-lock-github-only" { } ''
             echo "verified github-only charter lock (${toString (builtins.length (builtins.attrNames realLock.nodes))} nodes, 1 nixpkgs)" > $out
           '';

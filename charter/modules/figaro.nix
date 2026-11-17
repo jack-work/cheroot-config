@@ -50,6 +50,15 @@ let
             type = lib.types.nullOr lib.types.str;
             default = null;
           };
+          forward = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+            description = "Old names of a renamed role that keep reaching its holder until forwardUntil.";
+          };
+          forwardUntil = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+          };
         };
       }
     );
@@ -65,7 +74,7 @@ let
       toml = pkgs.formats.toml { };
       entries = lib.mapAttrsToList (name: role: {
         name = "${name}.toml";
-        path = toml.generate "roster-${name}.toml" (rosterLib.roleToTomlAttrs name role);
+        path = toml.generate "roster-${name}.toml" (rosterLib.roleToTomlAttrs checked name role);
       }) checked;
     in
     pkgs.linkFarm "figaro-roster" entries;
@@ -108,8 +117,8 @@ let
                     "purpose": role["purpose"],
                 },
             }
-            if role.get("leader", "none") != "none":
-                payload["leader"] = role["leader"]
+            if role.get("leader_form"):
+                payload["leader"] = role["leader_form"]
             if dry_run:
                 print(json.dumps({"role": name, "plan": payload}))
                 continue
