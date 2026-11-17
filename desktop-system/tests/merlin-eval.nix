@@ -8,6 +8,16 @@ let
       modules = [ flake.nixosModules.merlin ];
     }).config;
   integrated = system.home-manager.users.jack;
+  host = flake.nixosConfigurations.merlin.config;
+  hostFailedAssertions = map (entry: entry.message) (
+    builtins.filter (entry: !entry.assertion) host.assertions
+  );
+  btrfsMounts = [
+    "/"
+    "/home"
+    "/nix"
+    "/var/log"
+  ];
   unit = integrated.systemd.user.services.figaro-commander;
   failedAssertions = map (entry: entry.message) (
     builtins.filter (entry: !entry.assertion) system.assertions
@@ -32,7 +42,18 @@ let
   ) oldHosts;
 in
 assert cleanOldHosts;
-assert !(flake.nixosConfigurations ? merlin);
+assert hostFailedAssertions == [ ];
+assert host.boot.loader.systemd-boot.enable && !host.boot.loader.efi.canTouchEfiVariables;
+assert host.boot.loader.efi.efiSysMountPoint == "/boot";
+assert host.boot.initrd.systemd.enable && host.boot.initrd.systemd.tpm2.enable;
+assert host.boot.initrd.luks.devices.merlin.crypttabExtraOpts == [ "tpm2-device=auto" ];
+assert builtins.all (
+  mount:
+  builtins.all (option: builtins.elem option host.fileSystems.${mount}.options) [
+    "compress=zstd"
+    "noatime"
+  ]
+) btrfsMounts;
 assert flake.inputs.merlin-figaro.rev == "fba39fc409d15c4fa504ac5bdcbd1d4c9ceb4abe";
 assert hm.home.username == "jack" && hm.home.homeDirectory == "/home/jack";
 assert hm.programs.figaro.package.version == "0.72.1";
@@ -73,5 +94,6 @@ builtins.deepSeq oldDerivations {
   inherit failedAssertions;
   figaroRevision = flake.inputs.merlin-figaro.rev;
   rootOwner = "user:jack/figaro-commander.service";
-  hardwareReady = false;
+  merlinToplevel = flake.nixosConfigurations.merlin.config.system.build.toplevel.drvPath;
+  hardwareReady = true;
 }

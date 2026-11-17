@@ -79,6 +79,14 @@ in
     aspects = [ "merlin" ];
   };
 
+  flake.nixosConfigurations.merlin = inputs.nixpkgs.lib.nixosSystem {
+    modules = [
+      config.flake.nixosModules.merlin
+      ../../hosts/merlin/hardware-configuration.nix
+      ../../hosts/merlin/boot.nix
+    ];
+  };
+
   flake.nixosModules.merlin =
     {
       config,
