@@ -5,6 +5,7 @@ let
     "gluck@gluck"
     "marlowe@cheroot"
     "gluck@wsl"
+    "cig@gluck"
   ];
   describe =
     flake: name:
