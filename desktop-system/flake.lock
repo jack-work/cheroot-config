@@ -79,6 +79,7 @@
         "figaro": [
           "figaro"
         ],
+        "figaro-forms": "figaro-forms",
         "flake-parts": [
           "flake-parts"
         ],
@@ -97,18 +98,18 @@
       },
       "locked": {
         "dir": "charter",
-        "lastModified": 1794884501,
-        "narHash": "sha256-ZGPvPriUL6BqL5Y6YZUq1BGtIG3OlYsJ7Ga7/uX7YKg=",
+        "lastModified": 1794885652,
+        "narHash": "sha256-Lxs9OGIOF6Lwd7KhpszOXp8i8YrQ4nyntuagNgpMwWo=",
         "owner": "jack-work",
         "repo": "cheroot-config",
-        "rev": "eed7b8265ae9931e64b1fc5cdef58bc0b067be03",
+        "rev": "7f50829ca729dfaf76c23a4b087f54a449a049ed",
         "type": "github"
       },
       "original": {
         "dir": "charter",
         "owner": "jack-work",
         "repo": "cheroot-config",
-        "rev": "eed7b8265ae9931e64b1fc5cdef58bc0b067be03",
+        "rev": "7f50829ca729dfaf76c23a4b087f54a449a049ed",
         "type": "github"
       }
     },
@@ -130,6 +131,28 @@
         "owner": "jack-work",
         "ref": "v0.71.0",
         "repo": "figaro",
+        "type": "github"
+      }
+    },
+    "figaro-forms": {
+      "inputs": {
+        "nixpkgs": [
+          "charter",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1794885463,
+        "narHash": "sha256-s11COAqIm+3iDJiOHAcaIwQOGBHd77z1y1pQ9fTmN8A=",
+        "owner": "jack-work",
+        "repo": "figaro-forms",
+        "rev": "c58ce2e6cf0985253f17d1fdabd783c0a61c13d2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jack-work",
+        "repo": "figaro-forms",
+        "rev": "c58ce2e6cf0985253f17d1fdabd783c0a61c13d2",
         "type": "github"
       }
     },

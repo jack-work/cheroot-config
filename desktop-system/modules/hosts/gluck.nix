@@ -16,6 +16,7 @@
       "captains-log"
       "heavy"
       "aria2"
+      "figaro-forms-bridge"
     ];
 
     settings = {
@@ -27,6 +28,11 @@
 
       my.figaro.package = null;
       my.hush.package = null;
+
+      my.figaroFormsBridge = {
+        host = "100.92.208.109";
+        hushExecutable = "/home/gluck/go/bin/hush";
+      };
 
       my.niri.extra = ''
 
