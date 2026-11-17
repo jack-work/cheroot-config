@@ -20,6 +20,7 @@
       "rou2"
       "remote-builder-host"
       "kingdom"
+      "keel-tasks"
     ];
 
     settings = {

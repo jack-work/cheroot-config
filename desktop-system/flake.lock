@@ -281,11 +281,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794943977,
-        "narHash": "sha256-wjoc4AZqjyiHrYKxRGvkmsCRg/EE4RJ53jSS5Lpm3hw=",
+        "lastModified": 1794949787,
+        "narHash": "sha256-v4MFO4RGNpnRFjQkWEbojqSBfn1kDw9Uc7tc0TFg8qw=",
         "ref": "refs/heads/master",
-        "rev": "6d4eb2a6e7da16fe81ddf5ff0533eb16cd8f29a6",
-        "revCount": 280,
+        "rev": "7d5a41db419ea6424ff0137cd46bf81c979ce259",
+        "revCount": 284,
         "type": "git",
         "url": "ssh://git@spain/jack/keel.git"
       },
