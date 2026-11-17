@@ -2,21 +2,16 @@ let
   mkKcCli =
     {
       pkgs,
-      src,
+      package,
       baseUrl,
       oidcIssuer,
     }:
     pkgs.writeShellApplication {
       name = "kc";
-      runtimeInputs = with pkgs; [
-        curl
-        git
-        python3
-      ];
       text = ''
         export KEEL_BASE=''${KEEL_BASE:-${baseUrl}}
         export KEEL_OIDC_ISSUER=''${KEEL_OIDC_ISSUER:-${oidcIssuer}}
-        exec bash ${src}/kc.sh "$@"
+        exec ${pkgs.lib.getExe package} "$@"
       '';
     };
 in
@@ -33,9 +28,9 @@ in
     in
     {
       options.my.keel = {
-        enable = lib.mkEnableOption "keel CLI wrapper built from injected src";
-        src = lib.mkOption {
-          type = lib.types.nullOr lib.types.path;
+        enable = lib.mkEnableOption "the kc CLI from an injected keel package";
+        package = lib.mkOption {
+          type = lib.types.nullOr lib.types.package;
           default = null;
         };
         baseUrl = lib.mkOption {
@@ -51,8 +46,8 @@ in
       config = lib.mkIf cfg.enable {
         assertions = [
           {
-            assertion = cfg.src != null;
-            message = "my.keel.src must be set by the consuming system flake when my.keel.enable is true";
+            assertion = cfg.package != null;
+            message = "my.keel.package must be set by the consuming system flake when my.keel.enable is true";
           }
           {
             assertion = cfg.baseUrl != null && cfg.oidcIssuer != null;
@@ -63,7 +58,7 @@ in
         environment.systemPackages = [
           (mkKcCli {
             inherit pkgs;
-            inherit (cfg) src baseUrl oidcIssuer;
+            inherit (cfg) package baseUrl oidcIssuer;
           })
         ];
       };
@@ -85,8 +80,8 @@ in
           type = lib.types.bool;
           default = true;
         };
-        src = lib.mkOption {
-          type = lib.types.nullOr lib.types.path;
+        package = lib.mkOption {
+          type = lib.types.nullOr lib.types.package;
           default = null;
         };
         baseUrl = lib.mkOption {
@@ -102,8 +97,8 @@ in
       config = lib.mkIf cfg.enable {
         assertions = [
           {
-            assertion = cfg.src != null;
-            message = "my.keel.src must be set by the consuming system flake when the keel aspect is enabled";
+            assertion = cfg.package != null;
+            message = "my.keel.package must be set by the consuming system flake when the keel aspect is enabled";
           }
           {
             assertion = cfg.baseUrl != null && cfg.oidcIssuer != null;
@@ -114,7 +109,7 @@ in
         home.packages = [
           (mkKcCli {
             inherit pkgs;
-            inherit (cfg) src baseUrl oidcIssuer;
+            inherit (cfg) package baseUrl oidcIssuer;
           })
         ];
       };

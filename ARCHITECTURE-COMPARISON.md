@@ -26,7 +26,7 @@ The charter splits by **concern**: one file owns every class of one feature.
 |---|---|---|
 | `figaro.nix` | `my.figaro.mode = none\|system\|container`, credo, outfits, providers, typed roster, `managedRolesHook` unit | package (nullable), credo, outfits, providers, skills, roster, prompt hooks |
 | `hush.nix` | `my.hush.agent`, `my.hush.cred` (per-node minter over `services.hush-cred`) | package (nullable), unlock policy, brave command |
-| `keel.nix` | `kc` from `my.keel.src` | same, user scope |
+| `keel.nix` | `kc` from `my.keel.package` | same, user scope |
 | `captains-log.nix` | append-only `cl serve` unit | `cl`, skill, snapshot/analyse/health timers |
 | `heavy.nix` | `heavy.slice` | user `heavy.slice` |
 | `shell`, `tmux`, `git`, `go`, `editor`, `cli`, `prompt` | system half | user half |
@@ -37,19 +37,19 @@ What that buys:
 - **Roster is typed, not a directory.** `my.figaro.roster.<name>` is a submodule with an enum `kind` and a `leader` regex; `lib/roster.nix` rejects bad entries at eval. nixos-wsl validates the same rules in Python at apply time.
 - **The cost is honest:** a feature whose NixOS half reads the HM half (nixos-wsl's `captains-log-service` reads `home-manager.users.gluck.my.captainsLog.package`) has to be untangled into options. The charter does that: the service takes `package` or `src`, never a user's HM config.
 
-## 2. `src` as a typed option, not a charter input
+## 2. `src` and `package` as typed options, not charter inputs
 
 The blocker: cheroot-config 5f6c2d5 locks `keel` and `captains-log` as `git+ssh://git@spain/...`. Nix locks every input of every input, so any flake taking cheroot-config as an input must reach spain over ssh. gluk cannot (`captains-log/2026/11/15/cheroot-config-pin-block-finding.md`).
 
 The charter takes neither:
 
 ```nix
-my.keel.src = inputs.keel;                 # desktop-system/modules/estate.nix
+my.keel.package = inputs.keel.packages.${system}.kc;  # desktop-system/modules/estate.nix
 my.captainsLog.src = inputs.captains-log;  # same
-my.keel.src = keel;                        # spain-flake charter-wiring.nix
+my.keel.src = keel;                        # spain-flake charter-wiring.nix, until it repins to package
 ```
 
-and asserts when the aspect is on and `src` is missing. Two gates enforce the rule:
+and asserts when the aspect is on and `src` or `package` is missing. Two gates enforce the rule:
 
 - `charter/flake.nix` evaluates `lib/lock-gate.nix` against its own `flake.lock` before `mkFlake`: any node whose `locked.type` or `original.type` is not `github`, or any `git+ssh:`/`path:`/`file:`/`tarball` URL, throws. So does a second `nixpkgs` node. The `lock-github-only` check also proves the gate fires on a synthetic `git+ssh` lock, a `path:` lock and a dual-nixpkgs lock.
 - `charter-zero-host-leaks` greps every charter `.nix` for node names, `kelliher.info`, tailnet IPs, `sopsFile` and `git+ssh://`. Helium's exit host, origin override and ports moved from charter defaults into `desktop-system/modules/estate.nix` because of it.

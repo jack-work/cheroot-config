@@ -65,7 +65,7 @@
         };
       };
 
-      fakeKeelSrc = pkgs.writeTextDir "kc.sh" ''
+      fakeKcPkg = pkgs.writeShellScriptBin "kc" ''
         echo "kc stub"
       '';
 
@@ -139,7 +139,7 @@
               };
               my.keel = {
                 enable = true;
-                src = fakeKeelSrc;
+                package = fakeKcPkg;
                 baseUrl = "https://keel.example.invalid";
                 oidcIssuer = "https://auth.example.invalid";
               };
@@ -208,7 +208,7 @@
               home.username = "operator";
               home.homeDirectory = "/home/operator";
               my.keel = {
-                src = fakeKeelSrc;
+                package = fakeKcPkg;
                 baseUrl = "https://keel.example.invalid";
                 oidcIssuer = "https://auth.example.invalid";
               };
@@ -369,7 +369,7 @@
           assert lib.hasInfix "-s 192.0.2.20 -p tcp --dport 22 -j nixos-fw-accept" sampleNixos.networking.firewall.extraCommands;
           assert builtins.elem "sample-1:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" sampleNixos.nix.settings.extra-trusted-public-keys;
           assert !(builtins.elem "nixremote" (sampleNixos.nix.settings.trusted-users or [ ]));
-          assert builtins.any (lib.hasInfix "my.keel.src") missingSrcFailed;
+          assert builtins.any (lib.hasInfix "my.keel.package") missingSrcFailed;
           assert builtins.any (lib.hasInfix "my.captainsLog.service") missingSrcFailed;
           assert sampleHm.systemd.user.slices ? heavy;
           assert sampleHm.systemd.user.timers ? captains-log-snapshot;
