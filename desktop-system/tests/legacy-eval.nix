@@ -7,6 +7,9 @@ let
     "gluck@wsl"
     "cig@gluck"
   ];
+  added = {
+    "gluck@gluck" = [ "rou2" ];
+  };
   describe =
     flake: name:
     let
@@ -27,7 +30,9 @@ let
       before = describe baseline name;
       after = describe current name;
     in
-    assert before.packages == after.packages;
+    assert
+      before.packages == builtins.filter (p: !(builtins.elem p (added.${name} or [ ]))) after.packages;
+    assert builtins.all (p: builtins.elem p after.packages) (added.${name} or [ ]);
     assert before.platform == after.platform;
     assert before.shellAliases == after.shellAliases;
     assert before.gitUser == after.gitUser;
