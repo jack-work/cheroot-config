@@ -7,7 +7,7 @@
       ...
     }:
     let
-      cursorTheme = "Vimix-Kanagawa";
+      cursorTheme = "vimix-kanagawa-cursors-lotus";
     in
     {
       options.my.niri.extra = lib.mkOption {
