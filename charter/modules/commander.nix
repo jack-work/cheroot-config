@@ -84,6 +84,7 @@
         home.packages = [ check ];
         home.sessionVariables = environment // {
           FIGARO_RUNTIME_DIR = "\${XDG_RUNTIME_DIR}/${instance}";
+          FIGARO_SYSTEMD_UNIT = "figaro-commander.service";
         };
 
         xdg.configFile = {
@@ -133,6 +134,7 @@
               // {
                 HOME = config.home.homeDirectory;
                 FIGARO_RUNTIME_DIR = "%t/${instance}";
+                FIGARO_SYSTEMD_UNIT = "figaro-commander.service";
                 PATH = "${
                   lib.makeBinPath [
                     pkgs.bash
