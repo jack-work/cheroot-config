@@ -184,7 +184,14 @@
             config.flake.modules.homeManager.keel
             config.flake.modules.homeManager.captains-log
             config.flake.modules.homeManager.figaro-forms-bridge
+            config.flake.modules.homeManager.remote-builder-host
             {
+              my.remoteBuilderHost = {
+                enable = true;
+                clientKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIH5ozXOcnYVTNKRnp6bO7ywYhsuimKYDOg+3yOND2qC sample";
+                clientAddress = "192.0.2.20";
+                clientSigningKey = "sample-1:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+              };
               my.figaroFormsBridge.host = "192.0.2.10";
               my.figaroFormsBridge.hushExecutable = "/opt/hush/bin/hush";
               home.username = "operator";
@@ -353,6 +360,7 @@
           assert sampleHm.xdg.configFile ? "figaro/outfits/fast.toml";
           assert sampleHm.xdg.configFile ? "figaro/roster";
           assert sampleHm.systemd.user.services ? figaro-forms-bridge;
+          assert builtins.any (p: lib.getName p == "remote-builder-host-setup") sampleHm.home.packages;
           assert
             bridgeSpec.args == [
               "--hierarchy-only"
