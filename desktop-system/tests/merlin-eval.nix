@@ -33,9 +33,9 @@ let
 in
 assert cleanOldHosts;
 assert !(flake.nixosConfigurations ? merlin);
-assert flake.inputs.merlin-figaro.rev == "180d4906346f73c403c2daa8cea299f30c75ed53";
+assert flake.inputs.merlin-figaro.rev == "fba39fc409d15c4fa504ac5bdcbd1d4c9ceb4abe";
 assert hm.home.username == "jack" && hm.home.homeDirectory == "/home/jack";
-assert hm.programs.figaro.package.version == "0.69.9";
+assert hm.programs.figaro.package.version == "0.72.1";
 assert !hm.programs.figaro.restartOnSwitch && !hm.systemd.user.startServices;
 assert !integrated.programs.figaro.restartOnSwitch && !integrated.systemd.user.startServices;
 assert !system.services.figaro.enable;
@@ -53,6 +53,8 @@ assert integrated.home.sessionVariables.FIGARO_RUNTIME_DIR == "\${XDG_RUNTIME_DI
 assert integrated.home.sessionVariables.FIGARO_NO_SELF_SPAWN == "1";
 assert builtins.elem "FIGARO_ARIA" unit.Service.UnsetEnvironment;
 assert builtins.elem "FIGARO_RUNTIME_DIR=%t/figaro-merlin" unit.Service.Environment;
+assert builtins.elem "FIGARO_SYSTEMD_UNIT=figaro-commander.service" unit.Service.Environment;
+assert integrated.home.sessionVariables.FIGARO_SYSTEMD_UNIT == "figaro-commander.service";
 assert
   builtins.head unit.Service.ExecStart
   == "${lib.getExe integrated.programs.figaro.package} --angelus";

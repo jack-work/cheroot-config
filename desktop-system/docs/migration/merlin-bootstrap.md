@@ -22,8 +22,10 @@ The commander is not a second Nix registry. Nix installs a package, configuratio
 and one user service; Figaro owns the role form, its binding and conversations.
 No rebuild runs `new`, `cast`, `bind` or a proposed formation reconciler.
 
-Figaro is independently pinned to v0.69.9, source
-`180d4906346f73c403c2daa8cea299f30c75ed53`, through `merlin-figaro`. Existing
+Figaro is independently pinned to v0.72.1, source
+`fba39fc409d15c4fa504ac5bdcbd1d4c9ceb4abe`, through `merlin-figaro`. It is
+the first release whose client finds the daemon through
+`FIGARO_SYSTEMD_UNIT` (#60), which the commander exports. Existing
 consumers keep the original `figaro` input and its lock. No package update or
 running daemon upgrade on gluck is implied.
 

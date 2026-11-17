@@ -22,7 +22,7 @@
     };
 
     merlin-figaro = {
-      url = "github:jack-work/figaro/180d4906346f73c403c2daa8cea299f30c75ed53";
+      url = "github:jack-work/figaro/v0.72.1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

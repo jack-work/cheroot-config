@@ -69,7 +69,7 @@
         assert !(builtins.elem "captains-log" cherootPkgNames);
         assert merlinSystem.networking.hostName == "merlin";
         assert !merlinSystem.services.figaro.enable;
-        assert merlinSystem.home-manager.users.jack.programs.figaro.package.version == "0.69.9";
+        assert merlinSystem.home-manager.users.jack.programs.figaro.package.version == "0.72.1";
         pkgs.runCommand "desktop-hosts-eval"
           {
             summary = builtins.toJSON {
