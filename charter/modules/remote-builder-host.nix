@@ -1,3 +1,4 @@
+top@{ ... }:
 let
   options =
     lib: with lib; {
@@ -44,7 +45,13 @@ in
     {
       options.my.remoteBuilderHost = options lib;
 
-      config = lib.mkIf cfg.enable {
+      config = lib.mkIf cfg.enable (lib.mkMerge [
+        (top.config.flake.lib.tailnetAllow {
+          inherit config;
+          from = [ cfg.clientAddress ];
+          port = 22;
+        })
+        {
         users.groups.${cfg.user} = { };
         users.users.${cfg.user} = {
           isSystemUser = true;
@@ -57,7 +64,8 @@ in
           CPUWeight = cfg.cpuWeight;
           IOWeight = cfg.ioWeight;
         };
-      };
+        }
+      ]);
     };
 
   flake.modules.homeManager.remote-builder-host =

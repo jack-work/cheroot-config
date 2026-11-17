@@ -82,6 +82,17 @@
         (inputs.nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [
+            config.flake.modules.nixos.figaro-forms-bridge
+            config.flake.modules.nixos.remote-builder-host
+            {
+              my.figaroFormsBridge.allowFrom = [ "192.0.2.20" ];
+              my.remoteBuilderHost = {
+                enable = true;
+                clientKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIH5ozXOcnYVTNKRnp6bO7ywYhsuimKYDOg+3yOND2qC sample";
+                clientAddress = "192.0.2.20";
+                clientSigningKey = "sample-1:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+              };
+            }
             config.flake.modules.nixos.base
             config.flake.modules.nixos.shell
             config.flake.modules.nixos.tmux
@@ -354,6 +365,10 @@
           assert sampleNixos.services.hush-agent.enable;
           assert sampleNixos.systemd.services ? captains-log-append;
           assert sampleNixos.systemd.slices ? heavy;
+          assert lib.hasInfix "-s 192.0.2.20 -p tcp --dport 7481 -j nixos-fw-accept" sampleNixos.networking.firewall.extraCommands;
+          assert lib.hasInfix "-s 192.0.2.20 -p tcp --dport 22 -j nixos-fw-accept" sampleNixos.networking.firewall.extraCommands;
+          assert builtins.elem "sample-1:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" sampleNixos.nix.settings.extra-trusted-public-keys;
+          assert !(builtins.elem "nixremote" (sampleNixos.nix.settings.trusted-users or [ ]));
           assert builtins.any (lib.hasInfix "my.keel.src") missingSrcFailed;
           assert builtins.any (lib.hasInfix "my.captainsLog.service") missingSrcFailed;
           assert sampleHm.systemd.user.slices ? heavy;

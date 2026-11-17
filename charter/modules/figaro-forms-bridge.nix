@@ -1,5 +1,30 @@
-{ inputs, ... }:
+top@{ inputs, ... }:
 {
+  flake.modules.nixos.figaro-forms-bridge =
+    { config, lib, ... }:
+    let
+      cfg = config.my.figaroFormsBridge;
+    in
+    {
+      options.my.figaroFormsBridge = {
+        port = lib.mkOption {
+          type = lib.types.port;
+          default = 7481;
+        };
+        allowFrom = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [ ];
+          description = "Addresses on the tailnet allowed to reach the bridge port; the edge that injects the bearer.";
+        };
+      };
+
+      config = top.config.flake.lib.tailnetAllow {
+        inherit config;
+        inherit (cfg) port;
+        from = cfg.allowFrom;
+      };
+    };
+
   flake.modules.homeManager.figaro-forms-bridge =
     hm@{ lib, pkgs, ... }:
     let

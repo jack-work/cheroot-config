@@ -4,6 +4,7 @@
     linkDir = import ../lib/link-dir.nix lib;
     lockGate = import ../lib/lock-gate.nix { inherit lib; };
     roster = import ../lib/roster.nix { inherit lib; };
+    tailnetAllow = import ../lib/tailnet-allow.nix { inherit lib; };
 
     nixosAspectFrom =
       modulesSet: name:
