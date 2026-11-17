@@ -59,6 +59,18 @@ let
             type = lib.types.nullOr lib.types.str;
             default = null;
           };
+          charter = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+            description = "The role form's charter, applied by figaro-apply-roles to the exact form.";
+          };
+          mode = lib.mkOption {
+            type = lib.types.enum [
+              "check"
+              "apply"
+            ];
+            default = "check";
+          };
         };
       }
     );
@@ -274,6 +286,28 @@ in
         figaroPkg = cfg.package;
         rosterDir = "${rosterDrv}";
       };
+      chartered = lib.filterAttrs (_: r: r.charter != null) (rosterLib.validateRoster cfg.roster);
+      charterOutfit = name: "role-${name}-charter";
+      manifest = toml.generate "figaro-roles.toml" {
+        roles = lib.mapAttrs (name: role: {
+          id = role.form;
+          outfits = [ (charterOutfit name) ];
+          managed = [ "charter" ];
+          inherit (role) mode;
+        }) chartered;
+      };
+      applyRoles = pkgs.writeShellApplication {
+        name = "figaro-apply-roles";
+        text = ''
+          unset FIGARO_ARIA FIGARO_TROUPE
+          ${lib.optionalString (
+            cfg.roleRuntimeDir != null
+          ) "export FIGARO_RUNTIME_DIR=${lib.escapeShellArg cfg.roleRuntimeDir}"}
+          exec ${
+            if cfg.package != null then lib.getExe' cfg.package "figaro" else "figaro"
+          } form apply --manifest ${manifest} "$@"
+        '';
+      };
     in
     {
       options.my.figaro = {
@@ -303,6 +337,11 @@ in
           default = { };
         };
         managedRolesHook.enable = lib.mkEnableOption "install figaro-roster-reconcile in user profile";
+        roleRuntimeDir = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          description = "Runtime directory of the daemon figaro-apply-roles addresses; null keeps figaro's default.";
+        };
       };
 
       config = {
@@ -311,11 +350,16 @@ in
             assertion = !cfg.managedRolesHook.enable || cfg.roster != { };
             message = "my.figaro.managedRolesHook.enable requires non-empty my.figaro.roster";
           }
-        ];
+        ]
+        ++ map (n: {
+          assertion = builtins.match "@([0-9a-f]{8}|[0-9a-f]{32})" (cfg.roster.${n}.form or "") != null;
+          message = "my.figaro.roster.${n}: a charter applies only to an exact form, @ and 8 or 32 hex digits";
+        }) (builtins.attrNames chartered);
 
         home.packages =
           lib.optional (cfg.package != null) cfg.package
-          ++ lib.optional cfg.managedRolesHook.enable reconcilePkg;
+          ++ lib.optional cfg.managedRolesHook.enable reconcilePkg
+          ++ lib.optional (chartered != { }) applyRoles;
 
         xdg.configFile =
           config.flake.lib.linkDir ../config/figaro/skills "figaro/skills"
@@ -342,7 +386,13 @@ in
           ) cfg.skills
           // lib.optionalAttrs (cfg.roster != { }) {
             "figaro/roster".source = rosterDrv;
-          };
+          }
+          // lib.mapAttrs' (
+            name: role:
+            lib.nameValuePair "figaro/outfits/${charterOutfit name}.toml" {
+              source = toml.generate "outfit-${charterOutfit name}.toml" { inherit (role) charter; };
+            }
+          ) chartered;
 
         home.file.".bashrc.d/65-figaro-prompt.sh".source = ../config/figaro/prompt.bash;
       };

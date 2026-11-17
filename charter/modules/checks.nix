@@ -213,6 +213,7 @@
                   kind = "leader";
                   purpose = "Hold the order";
                   form = "@0123456789abcdef0123456789abcdef";
+                  charter = "Holds the order.";
                 };
                 roster.builder = {
                   kind = "builder";
@@ -361,6 +362,9 @@
           assert sampleHm.xdg.configFile ? "figaro/roster";
           assert sampleHm.systemd.user.services ? figaro-forms-bridge;
           assert builtins.any (p: lib.getName p == "remote-builder-host-setup") sampleHm.home.packages;
+          assert builtins.any (p: lib.getName p == "figaro-apply-roles") sampleHm.home.packages;
+          assert sampleHm.xdg.configFile ? "figaro/outfits/role-lead-charter.toml";
+          assert !(sampleHm.xdg.configFile ? "figaro/outfits/role-builder-charter.toml");
           assert
             bridgeSpec.args == [
               "--hierarchy-only"
