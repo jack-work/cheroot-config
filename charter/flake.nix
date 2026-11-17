@@ -25,6 +25,11 @@
       url = "github:jack-work/hush/v0.15.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    figaro-forms = {
+      url = "github:jack-work/figaro-forms/c58ce2e6cf0985253f17d1fdabd783c0a61c13d2";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =

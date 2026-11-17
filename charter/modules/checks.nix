@@ -183,7 +183,10 @@
             config.flake.modules.homeManager.heavy
             config.flake.modules.homeManager.keel
             config.flake.modules.homeManager.captains-log
+            config.flake.modules.homeManager.figaro-forms-bridge
             {
+              my.figaroFormsBridge.host = "192.0.2.10";
+              my.figaroFormsBridge.hushExecutable = "/opt/hush/bin/hush";
               home.username = "operator";
               home.homeDirectory = "/home/operator";
               my.keel = {
@@ -209,6 +212,7 @@
             }
           ];
         }).config;
+      bridgeSpec = sampleHm.my.figaroFormsBridge.commandSpec;
     in
     {
       checks = {
@@ -285,6 +289,16 @@
           assert sampleHm.systemd.user.timers ? captains-log-snapshot;
           assert sampleHm.xdg.configFile ? "figaro/outfits/fast.toml";
           assert sampleHm.xdg.configFile ? "figaro/roster";
+          assert sampleHm.systemd.user.services ? figaro-forms-bridge;
+          assert
+            bridgeSpec.args == [
+              "--hierarchy-only"
+              "--host"
+              "192.0.2.10"
+              "--port"
+              "7481"
+            ];
+          assert bridgeSpec.secrets == { token = "FIGARO_FORMS_BRIDGE_TOKEN"; };
           assert containerNixos.services.figaro-container.enable;
           assert lib.getName containerNixos.services.figaro-container.package == "figaro";
           assert containerNixos.containers.figaro.config.services.figaro.outfits ? shell;
