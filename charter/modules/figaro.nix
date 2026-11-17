@@ -221,7 +221,7 @@ in
         (lib.mkIf (cfg.mode == "container") {
           services.figaro-container = {
             enable = true;
-            package = lib.mkDefault cfg.package;
+            package = cfg.package;
             figaro.services.figaro = {
               settings = cfg.settings;
               providers = cfg.providers;

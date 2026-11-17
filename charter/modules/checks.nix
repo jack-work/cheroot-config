@@ -162,6 +162,20 @@
         builtins.filter (a: !a.assertion) missingSrcNixos.assertions
       );
 
+      containerNixos =
+        (inputs.nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [
+            config.flake.modules.nixos.figaro
+            {
+              my.figaro = {
+                mode = "container";
+                outfits.shell.system.tools = [ "bash" ];
+              };
+            }
+          ];
+        }).config;
+
       sampleHm =
         (inputs.home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
@@ -271,6 +285,9 @@
           assert sampleHm.systemd.user.timers ? captains-log-snapshot;
           assert sampleHm.xdg.configFile ? "figaro/outfits/fast.toml";
           assert sampleHm.xdg.configFile ? "figaro/roster";
+          assert containerNixos.services.figaro-container.enable;
+          assert lib.getName containerNixos.services.figaro-container.package == "figaro";
+          assert containerNixos.containers.figaro.config.services.figaro.outfits ? shell;
           pkgs.runCommand "charter-eval-aspects"
             {
               nixosDrv = builtins.unsafeDiscardStringContext sampleNixos.system.build.toplevel.drvPath;
