@@ -98,18 +98,18 @@
       },
       "locked": {
         "dir": "charter",
-        "lastModified": 1794930797,
-        "narHash": "sha256-yMP2YXk+kzmR3MvRlzpobe3ZjAvX04BCp7ycA0tuUtE=",
+        "lastModified": 1794944078,
+        "narHash": "sha256-mH/b1DtIHcLKINY14O/1bPuuA8iI/I0kRZbgzdH64nQ=",
         "owner": "jack-work",
         "repo": "cheroot-config",
-        "rev": "bbb4d2a752a676234faaa30bff01c546f1619331",
+        "rev": "ee80137f31971ab18a337ab33703ab5c786de91d",
         "type": "github"
       },
       "original": {
         "dir": "charter",
         "owner": "jack-work",
         "repo": "cheroot-config",
-        "rev": "bbb4d2a752a676234faaa30bff01c546f1619331",
+        "rev": "ee80137f31971ab18a337ab33703ab5c786de91d",
         "type": "github"
       }
     },
@@ -275,13 +275,17 @@
       }
     },
     "keel": {
-      "flake": false,
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
       "locked": {
-        "lastModified": 1794934029,
-        "narHash": "sha256-PcrxLAdalBXgCX5CbV/4LkeIlN/f9TIlZzp3FsvtqVQ=",
+        "lastModified": 1794943977,
+        "narHash": "sha256-wjoc4AZqjyiHrYKxRGvkmsCRg/EE4RJ53jSS5Lpm3hw=",
         "ref": "refs/heads/master",
-        "rev": "de0403dded3bfd6d017504162ca63c7160073b3e",
-        "revCount": 277,
+        "rev": "6d4eb2a6e7da16fe81ddf5ff0533eb16cd8f29a6",
+        "revCount": 280,
         "type": "git",
         "url": "ssh://git@spain/jack/keel.git"
       },

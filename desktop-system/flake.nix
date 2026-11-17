@@ -32,7 +32,7 @@
     };
 
     charter = {
-      url = "github:jack-work/cheroot-config/bbb4d2a752a676234faaa30bff01c546f1619331?dir=charter";
+      url = "github:jack-work/cheroot-config/ee80137f31971ab18a337ab33703ab5c786de91d?dir=charter";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
       inputs.flake-parts.follows = "flake-parts";
@@ -58,7 +58,7 @@
 
     keel = {
       url = "git+ssh://git@spain/jack/keel.git";
-      flake = false;
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     captains-log = {

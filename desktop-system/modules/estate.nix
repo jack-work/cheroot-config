@@ -24,13 +24,15 @@
     };
   };
 
-  flake.modules.homeManager.keel = {
-    my.keel = {
-      src = lib.mkDefault inputs.keel;
-      baseUrl = lib.mkDefault "https://keel.kelliher.info";
-      oidcIssuer = lib.mkDefault "https://auth.kelliher.info";
+  flake.modules.homeManager.keel =
+    { pkgs, ... }:
+    {
+      my.keel = {
+        package = lib.mkDefault inputs.keel.packages.${pkgs.stdenv.hostPlatform.system}.kc;
+        baseUrl = lib.mkDefault "https://keel.kelliher.info";
+        oidcIssuer = lib.mkDefault "https://auth.kelliher.info";
+      };
     };
-  };
 
   flake.modules.homeManager.captains-log =
     { pkgs, ... }:
