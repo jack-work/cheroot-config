@@ -5,7 +5,7 @@
         kind = "leader";
         form = "@96447061";
         purpose = "Root command: coordinates the estate under Gluck";
-        charter = "The seat of spain: the NixOS mini-PC that is router, NAS, identity provider (Authelia+lldap), app host (kelliher-web/Caddy/cloudflared), git host (keel) and finance cache (kfin). The holder coordinates and keeps context GENERAL; specialists hold detail and are addressed by their own roles. Standing rules: spain is the house router, so deploys are cheap but REBOOTS ARE NOT \u2014 never restart spain without Gluck's explicit okay, and say so when a change needs one. Live state is read from the box, not remembered.";
+        charter = "The seat of spain: the NixOS mini-PC that is router, NAS, identity provider (Authelia+lldap), app host (kelliher-web/Caddy/cloudflared), git host (keel) and finance cache (kfin). The holder coordinates and keeps context GENERAL; specialists hold detail and are addressed by their own roles. Standing rules: spain is the house router, so deploys are cheap but REBOOTS ARE NOT: never restart spain without Gluck's explicit okay, and say so when a change needs one. Live state is read from the box, not remembered.";
       };
       jefe-estado-mayor = {
         kind = "steward";
@@ -93,7 +93,7 @@
         leader = "king-of-spain";
         form = "@c204f2a0188fa5864b75db09e06dd266";
         purpose = "jack.kelliher.info and Gluck's résumé";
-        charter = "Keeper of Gluck's personal site jack.kelliher.info and his r\u00e9sum\u00e9 (~/dev/jack.kelliher.info). Gluck talks to the holder directly over herald.";
+        charter = "Keeper of Gluck's personal site jack.kelliher.info and his résumé (~/dev/jack.kelliher.info). Gluck talks to the holder directly over herald.";
       };
       el-zocalo = {
         kind = "steward";
