@@ -225,6 +225,14 @@
                   purpose = "Hold the order";
                   form = "@0123456789abcdef0123456789abcdef";
                   charter = "Holds the order.";
+                  maxChildren = 3;
+                };
+                roster.clerk = {
+                  kind = "secretary";
+                  leader = "lead";
+                  purpose = "Keep the ledger";
+                  form = "@89abcdef";
+                  maxChildren = 0;
                 };
                 roster.builder = {
                   kind = "builder";
@@ -252,6 +260,13 @@
               bad = {
                 kind = "unknown";
                 purpose = "";
+              };
+            }
+            {
+              bad = {
+                kind = "steward";
+                purpose = "p";
+                maxChildren = -1;
               };
             }
             {
@@ -311,7 +326,8 @@
                 leader = "top";
                 purpose = "p";
               };
-            }) ? mid;
+            })
+              ? mid;
           pkgs.runCommand "charter-lock-github-only" { } ''
             echo "verified github-only charter lock (${toString (builtins.length (builtins.attrNames realLock.nodes))} nodes, 1 nixpkgs)" > $out
           '';
@@ -357,6 +373,43 @@
               echo "zero host/IP/port/sops leaks in charter nix modules" > $out
             '';
 
+        charter-roster-fanout =
+          let
+            files = sampleHm.xdg.configFile;
+            apply = lib.findFirst (p: lib.getName p == "figaro-apply-roles") null sampleHm.home.packages;
+          in
+          pkgs.runCommand "charter-roster-fanout"
+            {
+              nativeBuildInputs = [
+                pkgs.python3
+                pkgs.gnugrep
+              ];
+            }
+            ''
+              python3 - <<'PY'
+              import re, tomllib
+              def load(p):
+                  return tomllib.load(open(p, "rb"))
+              roster = "${files."figaro/roster".source}"
+              assert load(f"{roster}/lead.toml")["max_children"] == 3
+              assert load(f"{roster}/clerk.toml")["max_children"] == 0
+              assert "max_children" not in load(f"{roster}/builder.toml")
+              assert load("${
+                files."figaro/outfits/role-lead-fanout.toml".source
+              }") == {"system": {"fanout": {"max_children": 3}}}
+              assert load("${
+                files."figaro/outfits/role-clerk-fanout.toml".source
+              }") == {"system": {"fanout": {"max_children": 0}}}
+              script = open("${lib.getExe apply}").read()
+              manifest = load(re.search(r"--manifest (\S+)", script).group(1))["roles"]
+              assert manifest["lead"]["outfits"] == ["role-lead-charter", "role-lead-fanout"], manifest
+              assert manifest["lead"]["managed"] == ["charter", "system.fanout.max_children"], manifest
+              assert manifest["clerk"] == {"id": "@89abcdef", "outfits": ["role-clerk-fanout"], "managed": ["system.fanout.max_children"], "mode": "check"}, manifest
+              assert "builder" not in manifest, manifest
+              PY
+              touch $out
+            '';
+
         charter-eval-aspects =
           assert sampleNixos.services.figaro.enable;
           assert sampleNixos.services.figaro.outfits.builder.system.credo == "Sample shared credo.";
@@ -365,9 +418,12 @@
           assert sampleNixos.services.hush-agent.enable;
           assert sampleNixos.systemd.services ? captains-log-append;
           assert sampleNixos.systemd.slices ? heavy;
-          assert lib.hasInfix "-s 192.0.2.20 -p tcp --dport 7481 -j nixos-fw-accept" sampleNixos.networking.firewall.extraCommands;
-          assert lib.hasInfix "-s 192.0.2.20 -p tcp --dport 22 -j nixos-fw-accept" sampleNixos.networking.firewall.extraCommands;
-          assert builtins.elem "sample-1:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" sampleNixos.nix.settings.extra-trusted-public-keys;
+          assert lib.hasInfix "-s 192.0.2.20 -p tcp --dport 7481 -j nixos-fw-accept"
+            sampleNixos.networking.firewall.extraCommands;
+          assert lib.hasInfix "-s 192.0.2.20 -p tcp --dport 22 -j nixos-fw-accept"
+            sampleNixos.networking.firewall.extraCommands;
+          assert builtins.elem "sample-1:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+            sampleNixos.nix.settings.extra-trusted-public-keys;
           assert !(builtins.elem "nixremote" (sampleNixos.nix.settings.trusted-users or [ ]));
           assert builtins.any (lib.hasInfix "my.keel.package") missingSrcFailed;
           assert builtins.any (lib.hasInfix "my.captainsLog.service") missingSrcFailed;
@@ -380,6 +436,17 @@
           assert builtins.any (p: lib.getName p == "figaro-apply-roles") sampleHm.home.packages;
           assert sampleHm.xdg.configFile ? "figaro/outfits/role-lead-charter.toml";
           assert !(sampleHm.xdg.configFile ? "figaro/outfits/role-builder-charter.toml");
+          assert sampleHm.xdg.configFile ? "figaro/outfits/role-lead-fanout.toml";
+          assert sampleHm.xdg.configFile ? "figaro/outfits/role-clerk-fanout.toml";
+          assert !(sampleHm.xdg.configFile ? "figaro/outfits/role-clerk-charter.toml");
+          assert !(sampleHm.xdg.configFile ? "figaro/outfits/role-builder-fanout.toml");
+          assert
+            (rosterLib.roleToTomlAttrs { lead = { }; } "x" {
+              kind = "builder";
+              purpose = "p";
+              mint = false;
+              maxChildren = 0;
+            }).max_children == 0;
           assert
             bridgeSpec.args == [
               "--hierarchy-only"

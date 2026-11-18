@@ -50,6 +50,16 @@ let
             type = lib.types.nullOr lib.types.str;
             default = null;
           };
+          maxChildren = lib.mkOption {
+            type = lib.types.nullOr lib.types.ints.unsigned;
+            default = null;
+            description = ''
+              Fork limit of this seat, applied to its role form as the managed key
+              system.fanout.max_children. Null leaves the key alone, so a seat that a
+              holder shares with a role it must not cap stays unset. A holder is capped
+              by the smallest limit across the role forms it holds.
+            '';
+          };
           forward = lib.mkOption {
             type = lib.types.listOf lib.types.str;
             default = [ ];
@@ -286,15 +296,22 @@ in
         figaroPkg = cfg.package;
         rosterDir = "${rosterDrv}";
       };
-      chartered = lib.filterAttrs (_: r: r.charter != null) (rosterLib.validateRoster cfg.roster);
+      applied = lib.filterAttrs (_: r: r.charter != null || r.maxChildren != null) (
+        rosterLib.validateRoster cfg.roster
+      );
       charterOutfit = name: "role-${name}-charter";
+      fanoutOutfit = name: "role-${name}-fanout";
       manifest = toml.generate "figaro-roles.toml" {
         roles = lib.mapAttrs (name: role: {
           id = role.form;
-          outfits = [ (charterOutfit name) ];
-          managed = [ "charter" ];
+          outfits =
+            lib.optional (role.charter != null) (charterOutfit name)
+            ++ lib.optional (role.maxChildren != null) (fanoutOutfit name);
+          managed =
+            lib.optional (role.charter != null) "charter"
+            ++ lib.optional (role.maxChildren != null) "system.fanout.max_children";
           inherit (role) mode;
-        }) chartered;
+        }) applied;
       };
       applyRoles = pkgs.writeShellApplication {
         name = "figaro-apply-roles";
@@ -353,13 +370,13 @@ in
         ]
         ++ map (n: {
           assertion = builtins.match "@([0-9a-f]{8}|[0-9a-f]{32})" (cfg.roster.${n}.form or "") != null;
-          message = "my.figaro.roster.${n}: a charter applies only to an exact form, @ and 8 or 32 hex digits";
-        }) (builtins.attrNames chartered);
+          message = "my.figaro.roster.${n}: a charter or fork limit applies only to an exact form, @ and 8 or 32 hex digits";
+        }) (builtins.attrNames applied);
 
         home.packages =
           lib.optional (cfg.package != null) cfg.package
           ++ lib.optional cfg.managedRolesHook.enable reconcilePkg
-          ++ lib.optional (chartered != { }) applyRoles;
+          ++ lib.optional (applied != { }) applyRoles;
 
         xdg.configFile =
           config.flake.lib.linkDir ../config/figaro/skills "figaro/skills"
@@ -392,7 +409,15 @@ in
             lib.nameValuePair "figaro/outfits/${charterOutfit name}.toml" {
               source = toml.generate "outfit-${charterOutfit name}.toml" { inherit (role) charter; };
             }
-          ) chartered;
+          ) (lib.filterAttrs (_: r: r.charter != null) applied)
+          // lib.mapAttrs' (
+            name: role:
+            lib.nameValuePair "figaro/outfits/${fanoutOutfit name}.toml" {
+              source = toml.generate "outfit-${fanoutOutfit name}.toml" {
+                system.fanout.max_children = role.maxChildren;
+              };
+            }
+          ) (lib.filterAttrs (_: r: r.maxChildren != null) applied);
 
         home.file.".bashrc.d/65-figaro-prompt.sh".source = ../config/figaro/prompt.bash;
       };

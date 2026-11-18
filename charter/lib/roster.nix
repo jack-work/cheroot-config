@@ -34,6 +34,9 @@ let
     ++ lib.optional (
       forward != [ ] && !(isDate (role.forwardUntil or null))
     ) "${name}: forward needs forwardUntil = \"YYYY-MM-DD\""
+    ++ lib.optional (
+      (role.maxChildren or null) != null && role.maxChildren < 0
+    ) "${name}: maxChildren must not be negative"
     ++ map (old: "${name}: forward name '${old}' is a declared role") (
       builtins.filter (old: roster ? ${old}) forward
     );
@@ -96,6 +99,7 @@ let
       provider = role.provider or null;
       model = role.model or null;
       cache_control = role.cacheControl or null;
+      max_children = role.maxChildren or null;
       forward = role.forward or [ ];
       forward_until = role.forwardUntil or null;
     };
