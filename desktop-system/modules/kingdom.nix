@@ -56,7 +56,7 @@
       king-of-spain = {
         kind = "leader";
         form = "@96447061";
-        maxChildren = 3;
+        maxChildren = 24;
         reach = "fleet";
         reportsTo = [ "el-zapador" ];
         purpose = "Root command: coordinates the estate under Gluck";
