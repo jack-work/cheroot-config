@@ -1,6 +1,7 @@
 { inputs, config, ... }:
 let
   rosterLib = import ../lib/roster.nix { inherit (inputs.nixpkgs) lib; };
+  regimentLib = import ../lib/regiment.nix { inherit (inputs.nixpkgs) lib; };
 
   mkRoleSubmodule =
     lib:
@@ -74,6 +75,15 @@ let
             default = null;
             description = "The role form's charter, applied by figaro-apply-roles to the exact form.";
           };
+          fields = lib.mkOption {
+            type = lib.types.attrsOf lib.types.anything;
+            default = { };
+            description = ''
+              Further keys of the role form, applied by figaro-apply-roles through the outfit
+              role-<name>-fields; each top-level key is one managed path. Keys with their own
+              option (charter, system) and keys the daemon holds are refused.
+            '';
+          };
           mode = lib.mkOption {
             type = lib.types.enum [
               "check"
@@ -84,6 +94,152 @@ let
         };
       }
     );
+
+  mkKindOption =
+    lib: maxChildren:
+    lib.mkOption {
+      default = { };
+      type = lib.types.submodule {
+        options = {
+          provider = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+          };
+          model = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+          };
+          maxChildren = lib.mkOption {
+            type = lib.types.nullOr lib.types.ints.unsigned;
+            default = maxChildren;
+            description = "Fork limit, applied as system.fanout.max_children on the seat's role form.";
+          };
+          quota = lib.mkOption {
+            type = lib.types.nullOr lib.types.ints.unsigned;
+            default = null;
+            description = "system.fanout.quota. Renders nothing until figaro P6 (quota) lands; setting it warns.";
+          };
+          scopes = lib.mkOption {
+            type = lib.types.nullOr (lib.types.listOf lib.types.str);
+            default = null;
+            description = "system.scopes. Renders nothing until figaro P5 (key-path grants) lands; setting it warns.";
+          };
+          childPolicy = lib.mkOption {
+            type = lib.types.nullOr (lib.types.attrsOf lib.types.anything);
+            default = null;
+            description = "system.child_policy. Renders nothing until figaro P5 (child_policy) lands; setting it warns.";
+          };
+        };
+      };
+    };
+
+  mkRegimentSubmodule =
+    lib:
+    lib.types.submodule {
+      options = {
+        leader = lib.mkOption {
+          type = lib.types.str;
+          default = "none";
+          description = "The role every seat reports to: a declared role or another regiment's seat.";
+        };
+        mode = lib.mkOption {
+          type = lib.types.enum [
+            "check"
+            "apply"
+          ];
+          default = "check";
+        };
+        seats = lib.mkOption {
+          description = ''
+            The standing seats, keyed by role name: exactly one strategist, one knight and
+            one steward. Reviewers are never seats; they are forks dressed in
+            regiment-<regiment>-reviewer. A seat with a form is adopted in place and its
+            managed keys are applied; a seat without one renders only role-<seat>-mint,
+            the outfit to mint its role form from.
+          '';
+          type = lib.types.attrsOf (
+            lib.types.submodule {
+              options = {
+                kind = lib.mkOption { type = lib.types.enum regimentLib.seatKinds; };
+                title = lib.mkOption {
+                  type = lib.types.str;
+                  description = "The role form's name and role-name.";
+                };
+                purpose = lib.mkOption { type = lib.types.str; };
+                form = lib.mkOption {
+                  type = lib.types.nullOr lib.types.str;
+                  default = null;
+                };
+                charter = lib.mkOption {
+                  type = lib.types.nullOr lib.types.str;
+                  default = null;
+                };
+                handoff = lib.mkOption {
+                  type = lib.types.nullOr lib.types.str;
+                  default = null;
+                  description = "Handoff path. The daemon holds the handoff key, so it reaches only a minted form.";
+                };
+                mantra = lib.mkOption {
+                  type = lib.types.nullOr lib.types.str;
+                  default = null;
+                };
+              };
+            }
+          );
+        };
+        kinds = {
+          strategist = mkKindOption lib 6;
+          knight = mkKindOption lib 1;
+          steward = mkKindOption lib 3;
+          reviewer = mkKindOption lib null;
+        };
+        reviewer = {
+          ttl = lib.mkOption {
+            type = lib.types.str;
+            default = "4h";
+            description = "system.ttl of a reviewer fork.";
+          };
+          retireTtl = lib.mkOption {
+            type = lib.types.str;
+            default = "10m";
+          };
+        };
+        orchestration = lib.mkOption {
+          type = lib.types.str;
+          default = "Classify every dispatched child as one-off tail fork or continuing owner. One-offs need an explicit bounded deliverable, parent, completion criterion and finite TTL. Preserve outcomes/evidence/open obligations in dated captains-log entries, then retire with a short TTL, normally 10m, after accepted handoff. Do not retire active work or current role holders blindly. Parent owns child inventory and integration: keep active forks manageable, avoid duplicate owners and unbounded recursive fan-out, but delegate independent work when it removes a real bottleneck. Include this rule in handoffs, successors and child prompts. No standing role for a one-off.";
+          description = "orchestration.policy of every seat.";
+        };
+        agreement = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          description = ''
+            The working agreement, one clause per item, applied as regiment.agreement on
+            every seat and carried by reviewers. {strategist}, {knight}, {steward},
+            {reviewer-outfit} and {retire-ttl} are replaced.
+          '';
+          default = [
+            "{strategist} builds the whole plan with transient forks and keeps the final vision. It restacks the work into incremental, non-conflicting commits for {knight}, and again as {knight} lands fixes on main. A hard rejection sends that part back to {strategist}, not into patch-on-patch."
+            "{knight} carries only mutually non-conflicting changes at a time, produces the validated build of each and asks {steward} for a reviewer. It never merges to main."
+            "{knight} and {strategist} talk directly with figaro send -f: {strategist} warns of anything found in later parts before {knight} reaches them; {knight} asks when a review makes a part unclear."
+            "{steward} mints one reviewer per change as a turn-1 fork of {strategist} dressed in {reviewer-outfit}, points it at the validated build, relays the verdict and retires it."
+            "Fan-out forks and reviewers are transient: finite system.ttl, never seats, retired with --ttl {retire-ttl} once their harvest (what they did, branch and sha, evidence, open obligations, lessons) is in a dated captains-log entry."
+            "Ask your parent for quota before you need it, in one line: what for, how many, how long."
+          ];
+        };
+        successionLayers = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [ "succession-standard" ];
+          description = "Outfits role-<seat>-mint is layered on, for its succession policy.";
+        };
+        successorBase = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [
+            "default"
+            "succession-standard"
+          ];
+          description = "Outfits a successor is minted in, before regiment-<regiment>-<kind>.";
+        };
+      };
+    };
 
   mkRosterDrv =
     {
@@ -287,29 +443,33 @@ in
     let
       cfg = hm.config.my.figaro;
       toml = pkgs.formats.toml { };
+      regiments = regimentLib.render cfg.roster cfg.regiments;
+      roster = cfg.roster // regiments.roster;
       rosterDrv = mkRosterDrv {
-        inherit pkgs lib;
-        inherit (cfg) roster;
+        inherit pkgs lib roster;
       };
       reconcilePkg = mkRosterReconcileScript {
         inherit pkgs lib;
         figaroPkg = cfg.package;
         rosterDir = "${rosterDrv}";
       };
-      applied = lib.filterAttrs (_: r: r.charter != null || r.maxChildren != null) (
-        rosterLib.validateRoster cfg.roster
+      applied = lib.filterAttrs (_: r: r.charter != null || r.maxChildren != null || r.fields != { }) (
+        rosterLib.validateRoster roster
       );
       charterOutfit = name: "role-${name}-charter";
       fanoutOutfit = name: "role-${name}-fanout";
+      fieldsOutfit = name: "role-${name}-fields";
       manifest = toml.generate "figaro-roles.toml" {
         roles = lib.mapAttrs (name: role: {
           id = role.form;
           outfits =
             lib.optional (role.charter != null) (charterOutfit name)
-            ++ lib.optional (role.maxChildren != null) (fanoutOutfit name);
+            ++ lib.optional (role.maxChildren != null) (fanoutOutfit name)
+            ++ lib.optional (role.fields != { }) (fieldsOutfit name);
           managed =
             lib.optional (role.charter != null) "charter"
-            ++ lib.optional (role.maxChildren != null) "system.fanout.max_children";
+            ++ lib.optional (role.maxChildren != null) "system.fanout.max_children"
+            ++ builtins.attrNames role.fields;
           inherit (role) mode;
         }) applied;
       };
@@ -353,6 +513,17 @@ in
           type = lib.types.attrsOf (mkRoleSubmodule lib);
           default = { };
         };
+        regiments = lib.mkOption {
+          type = lib.types.attrsOf (mkRegimentSubmodule lib);
+          default = { };
+          description = ''
+            Regiments: a strategist, a knight and a steward with a pool of transient reviewers,
+            bound by a working agreement. Each seat joins the roster as a role and is applied
+            by figaro-apply-roles like any other; each regiment also renders the outfits
+            regiment-<regiment>-<kind> (provider and model of a holder, or of a reviewer fork)
+            and role-<seat>-mint.
+          '';
+        };
         managedRolesHook.enable = lib.mkEnableOption "install figaro-roster-reconcile in user profile";
         roleRuntimeDir = lib.mkOption {
           type = lib.types.nullOr lib.types.str;
@@ -364,14 +535,16 @@ in
       config = {
         assertions = [
           {
-            assertion = !cfg.managedRolesHook.enable || cfg.roster != { };
+            assertion = !cfg.managedRolesHook.enable || roster != { };
             message = "my.figaro.managedRolesHook.enable requires non-empty my.figaro.roster";
           }
         ]
         ++ map (n: {
-          assertion = builtins.match "@([0-9a-f]{8}|[0-9a-f]{32})" (cfg.roster.${n}.form or "") != null;
-          message = "my.figaro.roster.${n}: a charter or fork limit applies only to an exact form, @ and 8 or 32 hex digits";
+          assertion = builtins.match "@([0-9a-f]{8}|[0-9a-f]{32})" (roster.${n}.form or "") != null;
+          message = "my.figaro.roster.${n}: a charter, fork limit or field applies only to an exact form, @ and 8 or 32 hex digits";
         }) (builtins.attrNames applied);
+
+        warnings = map (f: "${f} renders nothing until figaro supports it") regiments.inert;
 
         home.packages =
           lib.optional (cfg.package != null) cfg.package
@@ -401,9 +574,21 @@ in
           // lib.mapAttrs' (
             name: path: lib.nameValuePair "figaro/skills/${name}.md" { source = path; }
           ) cfg.skills
-          // lib.optionalAttrs (cfg.roster != { }) {
+          // lib.optionalAttrs (roster != { }) {
             "figaro/roster".source = rosterDrv;
           }
+          // lib.mapAttrs' (
+            name: spec:
+            lib.nameValuePair "figaro/outfits/${name}.toml" {
+              source = toml.generate "outfit-${name}.toml" spec;
+            }
+          ) regiments.outfits
+          // lib.mapAttrs' (
+            name: role:
+            lib.nameValuePair "figaro/outfits/${fieldsOutfit name}.toml" {
+              source = toml.generate "outfit-${fieldsOutfit name}.toml" role.fields;
+            }
+          ) (lib.filterAttrs (_: r: r.fields != { }) applied)
           // lib.mapAttrs' (
             name: role:
             lib.nameValuePair "figaro/outfits/${charterOutfit name}.toml" {

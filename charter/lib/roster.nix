@@ -8,6 +8,14 @@ let
     "reviewer"
   ];
 
+  reservedFields = [
+    "charter"
+    "handoff"
+    "system"
+    "target-aria"
+    "succession-policy"
+  ];
+
   isFormId = s: builtins.isString s && builtins.match "@[0-9a-f]{8,32}" s != null;
   isDate = s: builtins.isString s && builtins.match "[0-9]{4}-[0-9]{2}-[0-9]{2}" s != null;
 
@@ -37,6 +45,9 @@ let
     ++ lib.optional (
       (role.maxChildren or null) != null && role.maxChildren < 0
     ) "${name}: maxChildren must not be negative"
+    ++ map (k: "${name}: fields.${k} has its own option or belongs to the daemon") (
+      builtins.filter (k: builtins.elem k reservedFields) (builtins.attrNames (role.fields or { }))
+    )
     ++ map (old: "${name}: forward name '${old}' is a declared role") (
       builtins.filter (old: roster ? ${old}) forward
     );
@@ -107,6 +118,7 @@ in
 {
   inherit
     validKinds
+    reservedFields
     validateRole
     validateRoster
     roleToTomlAttrs

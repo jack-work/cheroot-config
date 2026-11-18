@@ -6,6 +6,44 @@
       inherit (pkgs) lib;
       lockGate = config.flake.lib.lockGate;
       rosterLib = config.flake.lib.roster;
+      regimentLib = config.flake.lib.regiment;
+
+      kindDefaults = {
+        provider = null;
+        model = null;
+        maxChildren = null;
+        quota = null;
+        scopes = null;
+        childPolicy = null;
+      };
+      mkSeat = kind: form: {
+        inherit kind form;
+        title = "Seat ${kind}";
+        purpose = "p";
+        charter = "c";
+        handoff = null;
+        mantra = null;
+      };
+      mkRegiment = leader: seats: {
+        inherit leader seats;
+        mode = "check";
+        kinds = lib.genAttrs regimentLib.kinds (_: kindDefaults);
+        reviewer = {
+          ttl = "1h";
+          retireTtl = "10m";
+        };
+        orchestration = "o";
+        agreement = [ "{strategist} {knight} {steward}" ];
+        successionLayers = [ ];
+        successorBase = [ "default" ];
+      };
+      fullSeats = {
+        s = mkSeat "strategist" "@01234567";
+        k = mkSeat "knight" "@11234567";
+        w = mkSeat "steward" null;
+      };
+      regimentFails =
+        roster: regiments: !(builtins.tryEval (regimentLib.render roster regiments).roster).success;
       realLock = builtins.fromJSON (builtins.readFile ../flake.lock);
 
       fakeSshLock = {
@@ -241,6 +279,38 @@
                   forward = [ "mason" ];
                   forwardUntil = "2026-12-01";
                 };
+                regiments.sample = {
+                  leader = "lead";
+                  seats = {
+                    thinker = {
+                      kind = "strategist";
+                      title = "Sample Strategist";
+                      purpose = "Plan";
+                      form = "@fedcba9876543210fedcba9876543210";
+                      charter = "Plans.";
+                      handoff = "/tmp/thinker.md";
+                    };
+                    vanguard = {
+                      kind = "knight";
+                      title = "Sample Knight";
+                      purpose = "Ship";
+                      form = "@76543210";
+                      charter = "Ships.";
+                    };
+                    pool = {
+                      kind = "steward";
+                      title = "Sample Steward";
+                      purpose = "Keep reviewers";
+                      charter = "Keeps reviewers.";
+                    };
+                  };
+                  kinds.strategist.model = "big";
+                  kinds.knight.quota = 5;
+                  kinds.reviewer = {
+                    provider = "cheap";
+                    model = "small";
+                  };
+                };
                 managedRolesHook.enable = true;
               };
             }
@@ -409,6 +479,90 @@
               PY
               touch $out
             '';
+
+        charter-regiment =
+          let
+            files = sampleHm.xdg.configFile;
+            apply = lib.findFirst (p: lib.getName p == "figaro-apply-roles") null sampleHm.home.packages;
+            outfit = n: files."figaro/outfits/${n}.toml".source;
+          in
+          assert regimentFails { lead = { }; } {
+            r = mkRegiment "lead" (fullSeats // { s2 = mkSeat "strategist" null; });
+          };
+          assert regimentFails { lead = { }; } { r = mkRegiment "lead" (removeAttrs fullSeats [ "k" ]); };
+          assert regimentFails { } { r = mkRegiment "missing" fullSeats; };
+          assert regimentFails { lead = { }; } { r = mkRegiment "s" fullSeats; };
+          assert regimentFails { s = { }; } { r = mkRegiment "none" fullSeats; };
+          assert regimentFails { lead = { }; } {
+            r = mkRegiment "lead" (fullSeats // { k = mkSeat "knight" "@xyz"; });
+          };
+          assert regimentFails { lead = { }; } {
+            r = mkRegiment "lead" fullSeats;
+            r2 = mkRegiment "lead" fullSeats;
+          };
+          assert !(regimentFails { lead = { }; } { r = mkRegiment "lead" fullSeats; });
+          assert
+            !(regimentFails { } {
+              a = mkRegiment "none" fullSeats;
+              b = mkRegiment "s" {
+                s9 = mkSeat "strategist" null;
+                k9 = mkSeat "knight" null;
+                w9 = mkSeat "steward" null;
+              };
+            });
+          assert
+            !(builtins.tryEval (
+              rosterLib.validateRoster {
+                x = {
+                  kind = "steward";
+                  purpose = "p";
+                  fields.charter = "c";
+                };
+              }
+            )).success;
+          assert builtins.any (lib.hasInfix "regiment sample: knight.quota") sampleHm.warnings;
+          pkgs.runCommand "charter-regiment" { nativeBuildInputs = [ pkgs.python3 ]; } ''
+            python3 - <<'PY'
+            import re, tomllib
+            def load(p):
+                return tomllib.load(open(p, "rb"))
+            roster = "${files."figaro/roster".source}"
+            thinker = load(f"{roster}/thinker.toml")
+            assert (thinker["kind"], thinker["leader"], thinker["leader_form"]) == ("leader", "lead", "@0123456789abcdef0123456789abcdef"), thinker
+            assert thinker["max_children"] == 6 and thinker["model"] == "big", thinker
+            assert load(f"{roster}/vanguard.toml")["kind"] == "builder"
+            pool = load(f"{roster}/pool.toml")
+            assert pool["kind"] == "steward" and "form" not in pool and "max_children" not in pool, pool
+            script = open("${lib.getExe apply}").read()
+            manifest = load(re.search(r"--manifest (\S+)", script).group(1))["roles"]
+            assert manifest["thinker"] == {
+                "id": "@fedcba9876543210fedcba9876543210",
+                "outfits": ["role-thinker-charter", "role-thinker-fanout", "role-thinker-fields"],
+                "managed": ["charter", "system.fanout.max_children", "name", "orchestration", "regiment", "role-name"],
+                "mode": "check",
+            }, manifest["thinker"]
+            assert manifest["vanguard"]["outfits"][-1] == "role-vanguard-fields"
+            assert "pool" not in manifest, manifest
+            fields = load("${outfit "role-thinker-fields"}")
+            assert fields["name"] == fields["role-name"] == "Sample Strategist", fields
+            assert fields["regiment"]["name"] == "sample" and fields["regiment"]["seat"] == "strategist", fields
+            agreement = fields["regiment"]["agreement"]
+            assert "Sample Knight" in agreement and "regiment-sample-reviewer" in agreement and "{" not in agreement, agreement
+            assert fields["orchestration"]["policy"].startswith("Classify every dispatched child"), fields
+            assert load("${outfit "regiment-sample-strategist"}") == {"system": {"model": "big"}}
+            assert load("${outfit "regiment-sample-knight"}") == {}
+            reviewer = load("${outfit "regiment-sample-reviewer"}")
+            assert reviewer["system"] == {"provider": "cheap", "model": "small", "ttl": "4h"}, reviewer
+            assert reviewer["regiment"]["seat"] == "reviewer" and reviewer["regiment"]["agreement"] == agreement, reviewer
+            mint = load("${outfit "role-pool-mint"}")
+            assert mint["layers"] == ["succession-standard"], mint
+            assert mint["succession-policy"] == {"outfit": "default,succession-standard,regiment-sample-steward"}, mint
+            assert mint["system"] == {"fanout": {"max_children": 3}}, mint
+            assert mint["charter"] == "Keeps reviewers." and mint["regiment"]["seat"] == "steward", mint
+            assert load("${outfit "role-thinker-mint"}")["handoff"] == "/tmp/thinker.md"
+            PY
+            touch $out
+          '';
 
         charter-eval-aspects =
           assert sampleNixos.services.figaro.enable;
