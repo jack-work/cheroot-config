@@ -13,8 +13,9 @@
         model = null;
         maxChildren = null;
         quota = null;
-        scopes = null;
-        childPolicy = null;
+        reach = "lineage";
+        reportsTo = [ ];
+        childPolicy = { };
       };
       mkSeat = kind: form: {
         inherit kind form;
@@ -264,6 +265,15 @@
                   form = "@0123456789abcdef0123456789abcdef";
                   charter = "Holds the order.";
                   maxChildren = 3;
+                  reach = "fleet";
+                  reportsTo = [ "clerk" ];
+                };
+                roster.aide = {
+                  kind = "secretary";
+                  leader = "lead";
+                  purpose = "Keep the calendar";
+                  form = "@abcdef01";
+                  companionOf = "lead";
                 };
                 roster.clerk = {
                   kind = "secretary";
@@ -385,6 +395,56 @@
                 forwardUntil = "2026-12-01";
               };
             }
+            {
+              a = {
+                kind = "leader";
+                purpose = "p";
+                form = "@01234567";
+              };
+              b = {
+                kind = "steward";
+                purpose = "p";
+                form = "@11234567";
+                companionOf = "a";
+                maxChildren = 1;
+              };
+            }
+            {
+              b = {
+                kind = "steward";
+                purpose = "p";
+                form = "@11234567";
+                companionOf = "missing";
+              };
+            }
+            {
+              a = {
+                kind = "leader";
+                purpose = "p";
+              };
+              b = {
+                kind = "steward";
+                purpose = "p";
+                form = "@11234567";
+                reportsTo = [ "a" ];
+              };
+            }
+            {
+              b = {
+                kind = "steward";
+                purpose = "p";
+                form = "@11234567";
+                childPolicy."system.scopes" = [ "send:role:knight" ];
+              };
+            }
+            {
+              b = {
+                kind = "steward";
+                purpose = "p";
+                form = "@11234567";
+                childPolicy."runtime.retired" = true;
+              };
+            }
           ];
           assert
             (rosterLib.validateRoster {
@@ -467,16 +527,32 @@
               assert "max_children" not in load(f"{roster}/builder.toml")
               assert load("${
                 files."figaro/outfits/role-lead-fanout.toml".source
-              }") == {"system": {"fanout": {"max_children": 3}}}
+              }") == {"system": {"fanout": {"max_children": 3, "quota": 3}}}
               assert load("${
                 files."figaro/outfits/role-clerk-fanout.toml".source
-              }") == {"system": {"fanout": {"max_children": 0}}}
+              }") == {"system": {"fanout": {"max_children": 0, "quota": 0}}}
               script = open("${lib.getExe apply}").read()
-              manifest = load(re.search(r"--manifest (\S+)", script).group(1))["roles"]
+              manifest = load(re.search(r"FIGARO_APPLY_MANIFEST=(\S+)", script).group(1))["roles"]
               assert manifest["lead"]["outfits"] == ["role-lead-charter", "role-lead-fanout"], manifest
-              assert manifest["lead"]["managed"] == ["charter", "system.fanout.max_children"], manifest
-              assert manifest["clerk"] == {"id": "@89abcdef", "outfits": ["role-clerk-fanout"], "managed": ["system.fanout.max_children"], "mode": "check"}, manifest
-              assert "builder" not in manifest, manifest
+              assert manifest["lead"]["managed"] == ["charter", "system.fanout.max_children", "system.fanout.quota"], manifest
+              assert manifest["clerk"] == {"id": "@89abcdef", "outfits": ["role-clerk-fanout"], "managed": ["system.fanout.max_children", "system.fanout.quota"], "mode": "check"}, manifest
+              assert "builder" not in manifest and "aide" not in manifest, manifest
+              lane = ["send:parent", "read:aria:self", "write:aria:self#@self", "delete:aria:self#@self"]
+              lead = load(f"{roster}/lead.toml")
+              assert (lead["quota"], lead["reach"], lead["scopes"]) == (3, "fleet", ["*:*"]), lead
+              assert lead["child_policy"] == {"system.scopes": lane + ["send:role:@0123456789abcdef0123456789abcdef", "read:aria:@0123456789abcdef0123456789abcdef", "send:role:@89abcdef", "read:aria:@89abcdef"]}, lead
+              clerk = load(f"{roster}/clerk.toml")
+              assert clerk["reach"] == "lineage" and "scopes" not in clerk, clerk
+              assert clerk["child_policy"] == {"system.scopes": lane + ["send:role:@89abcdef", "read:aria:@89abcdef"]}, clerk
+              aide = load(f"{roster}/aide.toml")
+              assert aide["companion_of"] == "lead" and not {"quota", "scopes", "child_policy", "max_children"} & aide.keys(), aide
+              assert load("${files."figaro/outfits/role-lead-grants.toml".source}") == {"system": {"scopes": ["*:*"]}}
+              import json
+              seats = json.load(open(re.search(r"FIGARO_APPLY_SEATS=(\S+)", script).group(1)))
+              assert seats["lead"] == {"form": "@0123456789abcdef0123456789abcdef", "mode": "check", "outfit": "role-lead-grants",
+                                       "grants": {"system.scopes": ["*:*"], "system.child_policy": lead["child_policy"]}}, seats["lead"]
+              assert seats["clerk"]["outfit"] is None and "system.scopes" not in seats["clerk"]["grants"], seats["clerk"]
+              assert "aide" not in seats and "builder" not in seats, seats
               PY
               touch $out
             '';
@@ -521,7 +597,8 @@
                 };
               }
             )).success;
-          assert builtins.any (lib.hasInfix "regiment sample: knight.quota") sampleHm.warnings;
+          assert !(sampleHm.xdg.configFile ? "figaro/outfits/role-aide-grants.toml");
+          assert !(sampleHm.xdg.configFile ? "figaro/outfits/role-clerk-grants.toml");
           pkgs.runCommand "charter-regiment" { nativeBuildInputs = [ pkgs.python3 ]; } ''
             python3 - <<'PY'
             import re, tomllib
@@ -530,19 +607,24 @@
             roster = "${files."figaro/roster".source}"
             thinker = load(f"{roster}/thinker.toml")
             assert (thinker["kind"], thinker["leader"], thinker["leader_form"]) == ("leader", "lead", "@0123456789abcdef0123456789abcdef"), thinker
-            assert thinker["max_children"] == 6 and thinker["model"] == "big", thinker
+            assert thinker["max_children"] == 6 and thinker["quota"] == 6 and thinker["model"] == "big", thinker
+            assert thinker["reach"] == "lineage" and "scopes" not in thinker, thinker
+            assert thinker["child_policy"]["system.scopes"][4:] == ["send:role:@fedcba9876543210fedcba9876543210", "read:aria:@fedcba9876543210fedcba9876543210", "send:role:@76543210", "read:aria:@76543210"], thinker
+            vanguard = load(f"{roster}/vanguard.toml")
+            assert vanguard["scopes"] == ["*:*"] and vanguard["quota"] == 5 and "max_children" not in vanguard, vanguard
             assert load(f"{roster}/vanguard.toml")["kind"] == "builder"
             pool = load(f"{roster}/pool.toml")
             assert pool["kind"] == "steward" and "form" not in pool and "max_children" not in pool, pool
             script = open("${lib.getExe apply}").read()
-            manifest = load(re.search(r"--manifest (\S+)", script).group(1))["roles"]
+            manifest = load(re.search(r"FIGARO_APPLY_MANIFEST=(\S+)", script).group(1))["roles"]
             assert manifest["thinker"] == {
                 "id": "@fedcba9876543210fedcba9876543210",
                 "outfits": ["role-thinker-charter", "role-thinker-fanout", "role-thinker-fields"],
-                "managed": ["charter", "system.fanout.max_children", "name", "orchestration", "regiment", "role-name"],
+                "managed": ["charter", "system.fanout.max_children", "system.fanout.quota", "name", "orchestration", "regiment", "role-name"],
                 "mode": "check",
             }, manifest["thinker"]
             assert manifest["vanguard"]["outfits"][-1] == "role-vanguard-fields"
+            assert manifest["vanguard"]["managed"][:1] == ["system.fanout.quota"] or "system.fanout.quota" in manifest["vanguard"]["managed"], manifest["vanguard"]
             assert "pool" not in manifest, manifest
             fields = load("${outfit "role-thinker-fields"}")
             assert fields["name"] == fields["role-name"] == "Sample Strategist", fields
@@ -558,7 +640,7 @@
             mint = load("${outfit "role-pool-mint"}")
             assert mint["layers"] == ["succession-standard"], mint
             assert mint["succession-policy"] == {"outfit": "default,succession-standard,regiment-sample-steward"}, mint
-            assert mint["system"] == {"fanout": {"max_children": 3}}, mint
+            assert mint["system"] == {"fanout": {"max_children": 3, "quota": 3}}, mint
             assert mint["charter"] == "Keeps reviewers." and mint["regiment"]["seat"] == "steward", mint
             assert load("${outfit "role-thinker-mint"}")["handoff"] == "/tmp/thinker.md"
             assert "system" not in load("${outfit "role-vanguard-mint"}"), "a null maxChildren renders no fork limit"

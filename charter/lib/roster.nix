@@ -1,5 +1,7 @@
 { lib }:
 let
+  grants = import ./grants.nix { inherit lib; };
+
   validKinds = [
     "secretary"
     "steward"
@@ -20,6 +22,24 @@ let
   isDate = s: builtins.isString s && builtins.match "[0-9]{4}-[0-9]{2}-[0-9]{2}" s != null;
 
   leaderOf = role: role.leader or "none";
+
+  companionOf = role: role.companionOf or null;
+
+  seated = role: (role.form or null) != null && companionOf role == null;
+
+  authorityOf =
+    roster: name: role:
+    if !(seated role) then
+      null
+    else
+      grants.render {
+        inherit (role) form;
+        reach = role.reach or "lineage";
+        reportsTo = builtins.filter grants.isFormId (map (n: roster.${n}.form or null) (role.reportsTo or [ ]));
+        maxChildren = role.maxChildren or null;
+        quota = role.quota or null;
+        childPolicy = role.childPolicy or { };
+      };
 
   validateRole =
     roster: name: role:
@@ -50,6 +70,40 @@ let
     )
     ++ map (old: "${name}: forward name '${old}' is a declared role") (
       builtins.filter (old: roster ? ${old}) forward
+    )
+    ++ companionErrors roster name role
+    ++ map (n: "${name}: reportsTo '${n}' must be a declared role with an exact form") (
+      builtins.filter (n: !(roster ? ${n}) || !(grants.isFormId (roster.${n}.form or null))) (
+        role.reportsTo or [ ]
+      )
+    )
+    ++ lib.optionals (seated role) (grants.seatFaults name (authorityOf roster name role));
+
+  companionErrors =
+    roster: name: role:
+    let
+      primary = companionOf role;
+    in
+    lib.optionals (primary != null) (
+      lib.optional (primary == name) "${name}: a role cannot be its own companion"
+      ++ lib.optional (
+        primary != name && !(roster ? ${primary} && seated roster.${primary})
+      ) "${name}: companionOf '${primary}' must be a declared seat with a form, held on its own"
+      ++
+        map
+          (
+            o:
+            "${name}: a companion is capped and granted by ${primary}'s holder, so it sets no ${o}; a limit on a companion's role form would cap ${primary} too"
+          )
+          (
+            builtins.filter (o: (role.${o} or null) != null && (role.${o} or null) != [ ] && (role.${o} or null) != { }) [
+              "maxChildren"
+              "quota"
+              "reportsTo"
+              "childPolicy"
+            ]
+            ++ lib.optional ((role.reach or "lineage") != "lineage") "reach"
+          )
     );
 
   chainErrors =
@@ -95,6 +149,7 @@ let
     roster: name: role:
     let
       leader = leaderOf role;
+      authority = authorityOf roster name role;
     in
     lib.filterAttrs (_: v: v != null && v != [ ]) {
       inherit name leader;
@@ -111,6 +166,11 @@ let
       model = role.model or null;
       cache_control = role.cacheControl or null;
       max_children = role.maxChildren or null;
+      quota = if authority == null then null else authority.quota;
+      reach = if authority == null then null else role.reach or "lineage";
+      scopes = if authority == null then null else authority.scopes;
+      child_policy = if authority == null then null else authority.childPolicy;
+      companion_of = companionOf role;
       forward = role.forward or [ ];
       forward_until = role.forwardUntil or null;
     };
@@ -119,6 +179,7 @@ in
   inherit
     validKinds
     reservedFields
+    authorityOf
     validateRole
     validateRoster
     roleToTomlAttrs

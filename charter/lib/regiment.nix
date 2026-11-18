@@ -1,5 +1,7 @@
 { lib }:
 let
+  grants = import ./grants.nix { inherit lib; };
+
   seatKinds = [
     "strategist"
     "knight"
@@ -74,6 +76,11 @@ let
       inherit (k) provider model;
       mantra = s.mantra;
       mint = false;
+      reach = k.reach;
+      reportsTo = if adopted then reportsOf reg k else [ ];
+      quota = if adopted then k.quota else null;
+      childPolicy = if adopted then k.childPolicy else { };
+      companionOf = null;
       cacheControl = null;
       forward = [ ];
       forwardUntil = null;
@@ -82,6 +89,22 @@ let
       fields = if adopted then seatFields regName reg s else { };
       mode = reg.mode;
     };
+
+  reportsOf =
+    reg: k:
+    lib.concatMap (
+      to:
+      if builtins.elem to seatKinds then
+        map (x: x.name) (builtins.filter (x: x.form != null) (seatsNamed reg to))
+      else
+        [ to ]
+    ) k.reportsTo;
+
+  seatsNamed =
+    reg: kind:
+    lib.mapAttrsToList (name: s: { inherit name; inherit (s) form; }) (
+      lib.filterAttrs (_: s: s.kind == kind) reg.seats
+    );
 
   seatFields = regName: reg: s: {
     name = s.title;
@@ -131,22 +154,14 @@ let
           succession-policy.outfit = successorOutfits regName reg s.kind;
         }
         // lib.optionalAttrs (reg.kinds.${s.kind}.maxChildren != null) {
-          system.fanout.max_children = reg.kinds.${s.kind}.maxChildren;
+          system.fanout = {
+            max_children = reg.kinds.${s.kind}.maxChildren;
+            quota = grants.quotaOf { inherit (reg.kinds.${s.kind}) maxChildren quota childPolicy; };
+          };
         }
         // seatFields regName reg s
       )
     ) reg.seats;
-
-  inertFields =
-    regName: reg:
-    lib.concatLists (
-      lib.mapAttrsToList (
-        kind: k:
-        lib.optional (k.quota != null) "regiment ${regName}: ${kind}.quota"
-        ++ lib.optional (k.scopes != null) "regiment ${regName}: ${kind}.scopes"
-        ++ lib.optional (k.childPolicy != null) "regiment ${regName}: ${kind}.childPolicy"
-      ) reg.kinds
-    );
 
   render =
     roster: regiments:
@@ -186,7 +201,6 @@ let
         outfits = lib.foldl' (acc: regName: acc // renderOutfits regName regiments.${regName}) { } (
           builtins.attrNames regiments
         );
-        inert = lib.concatLists (lib.mapAttrsToList inertFields regiments);
       };
 in
 {

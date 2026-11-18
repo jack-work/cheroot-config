@@ -2,6 +2,7 @@
 let
   rosterLib = import ../lib/roster.nix { inherit (inputs.nixpkgs) lib; };
   regimentLib = import ../lib/regiment.nix { inherit (inputs.nixpkgs) lib; };
+  grantsLib = import ../lib/grants.nix { inherit (inputs.nixpkgs) lib; };
 
   mkRoleSubmodule =
     lib:
@@ -61,6 +62,52 @@ let
               by the smallest limit across the role forms it holds.
             '';
           };
+          quota = lib.mkOption {
+            type = lib.types.nullOr lib.types.ints.unsigned;
+            default = null;
+            description = ''
+              How many live figaros the seat's subtree may hold, applied to its role form as
+              system.fanout.quota beside max_children. Null derives it: maxChildren times one
+              plus the quota childPolicy gives each child (0 unless set), so a seat whose lanes
+              cannot fork is held to maxChildren lanes.
+            '';
+          };
+          reach = lib.mkOption {
+            type = lib.types.enum grantsLib.reaches;
+            default = "lineage";
+            description = ''
+              How far the holder's demote, promote, retire and kill reach. lineage writes no
+              system.scopes, so the holder keeps every verb but topology stays in its own
+              subtree. fleet writes system.scopes = ["*:*"] on the holder: every verb on every
+              figaro, which is the grant that reaps other seats' figaros.
+            '';
+          };
+          reportsTo = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+            description = ''
+              Roles the seat's lanes may message, besides their parent and this seat's own role.
+              Rendered into the holder's system.child_policy as send:role:<form>, so the grant
+              follows each role through succession.
+            '';
+          };
+          childPolicy = lib.mkOption {
+            type = lib.types.attrsOf lib.types.anything;
+            default = { };
+            description = ''
+              Further key paths for the holder's system.child_policy (a lane's
+              system.fanout.quota, say). The rendered system.scopes is replaced if named here.
+            '';
+          };
+          companionOf = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+            description = ''
+              The seat whose holder also holds this role. A companion carries no fork limit,
+              quota or grants: the holder is capped by the smallest limit across the role forms
+              it holds, and its grants live on the holder, so they come from the primary seat.
+            '';
+          };
           forward = lib.mkOption {
             type = lib.types.listOf lib.types.str;
             default = [ ];
@@ -96,7 +143,12 @@ let
     );
 
   mkKindOption =
-    lib: maxChildren:
+    lib:
+    {
+      maxChildren,
+      reach ? "lineage",
+      reportsTo ? [ ],
+    }:
     lib.mkOption {
       default = { };
       type = lib.types.submodule {
@@ -117,17 +169,26 @@ let
           quota = lib.mkOption {
             type = lib.types.nullOr lib.types.ints.unsigned;
             default = null;
-            description = "system.fanout.quota. Renders nothing until figaro P6 (quota) lands; setting it warns.";
+            description = "system.fanout.quota of the seat's role form; null derives it from maxChildren, as for a roster role.";
           };
-          scopes = lib.mkOption {
-            type = lib.types.nullOr (lib.types.listOf lib.types.str);
-            default = null;
-            description = "system.scopes. Renders nothing until figaro P5 (key-path grants) lands; setting it warns.";
+          reach = lib.mkOption {
+            type = lib.types.enum grantsLib.reaches;
+            default = reach;
+            description = "The seat holder's topology reach, as for a roster role.";
+          };
+          reportsTo = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = reportsTo;
+            description = ''
+              Whom the seat's lanes may message besides their parent and the seat's own role:
+              a seat kind of this regiment (strategist, knight, steward) or a declared role.
+              A kind whose seat has no form yet is skipped.
+            '';
           };
           childPolicy = lib.mkOption {
-            type = lib.types.nullOr (lib.types.attrsOf lib.types.anything);
-            default = null;
-            description = "system.child_policy. Renders nothing until figaro P5 (child_policy) lands; setting it warns.";
+            type = lib.types.attrsOf lib.types.anything;
+            default = { };
+            description = "Further key paths for the holder's system.child_policy.";
           };
         };
       };
@@ -188,10 +249,27 @@ let
           );
         };
         kinds = {
-          strategist = mkKindOption lib 6;
-          knight = mkKindOption lib 1;
-          steward = mkKindOption lib 3;
-          reviewer = mkKindOption lib null;
+          strategist = mkKindOption lib {
+            maxChildren = 6;
+            reportsTo = [
+              "knight"
+              "steward"
+            ];
+          };
+          knight = mkKindOption lib {
+            maxChildren = 1;
+            reach = "fleet";
+            reportsTo = [ "strategist" ];
+          };
+          steward = mkKindOption lib {
+            maxChildren = 3;
+            reach = "fleet";
+            reportsTo = [
+              "strategist"
+              "knight"
+            ];
+          };
+          reviewer = mkKindOption lib { maxChildren = null; };
         };
         reviewer = {
           ttl = lib.mkOption {
@@ -453,36 +531,61 @@ in
         figaroPkg = cfg.package;
         rosterDir = "${rosterDrv}";
       };
-      applied = lib.filterAttrs (_: r: r.charter != null || r.maxChildren != null || r.fields != { }) (
-        rosterLib.validateRoster roster
+      checkedRoster = rosterLib.validateRoster roster;
+      authority = lib.filterAttrs (_: a: a != null) (
+        lib.mapAttrs (rosterLib.authorityOf checkedRoster) checkedRoster
       );
+      applied = lib.filterAttrs (
+        n: r: r.charter != null || r.maxChildren != null || r.fields != { } || authority ? ${n}
+      ) checkedRoster;
       charterOutfit = name: "role-${name}-charter";
       fanoutOutfit = name: "role-${name}-fanout";
       fieldsOutfit = name: "role-${name}-fields";
+      grantsOutfit = name: "role-${name}-grants";
+      fanoutOf =
+        name: role:
+        lib.filterAttrs (_: v: v != null) {
+          max_children = role.maxChildren;
+          quota = authority.${name}.quota or null;
+        };
+      managedRoles = lib.filterAttrs (n: r: r.charter != null || fanoutOf n r != { } || r.fields != { }) applied;
       manifest = toml.generate "figaro-roles.toml" {
         roles = lib.mapAttrs (name: role: {
           id = role.form;
           outfits =
             lib.optional (role.charter != null) (charterOutfit name)
-            ++ lib.optional (role.maxChildren != null) (fanoutOutfit name)
+            ++ lib.optional (fanoutOf name role != { }) (fanoutOutfit name)
             ++ lib.optional (role.fields != { }) (fieldsOutfit name);
           managed =
             lib.optional (role.charter != null) "charter"
             ++ lib.optional (role.maxChildren != null) "system.fanout.max_children"
+            ++ lib.optional ((authority.${name}.quota or null) != null) "system.fanout.quota"
             ++ builtins.attrNames role.fields;
           inherit (role) mode;
-        }) applied;
+        }) managedRoles;
       };
+      seats = pkgs.writeText "figaro-seats.json" (
+        builtins.toJSON (
+          lib.mapAttrs (name: a: {
+            form = applied.${name}.form;
+            inherit (applied.${name}) mode;
+            outfit = if a.scopes == null then null else grantsOutfit name;
+            grants = grantsLib.toFormKeys a;
+          }) authority
+        )
+      );
       applyRoles = pkgs.writeShellApplication {
         name = "figaro-apply-roles";
+        runtimeInputs = [ pkgs.python3 ];
         text = ''
-          unset FIGARO_ARIA FIGARO_TROUPE
           ${lib.optionalString (
             cfg.roleRuntimeDir != null
           ) "export FIGARO_RUNTIME_DIR=${lib.escapeShellArg cfg.roleRuntimeDir}"}
-          exec ${
+          export FIGARO_APPLY_BIN=${
             if cfg.package != null then lib.getExe' cfg.package "figaro" else "figaro"
-          } form apply --manifest ${manifest} "$@"
+          }
+          export FIGARO_APPLY_MANIFEST=${manifest} FIGARO_APPLY_SEATS=${seats}
+          exec python3 ${../lib/apply-roles.py} "$@"
         '';
       };
     in
@@ -544,8 +647,6 @@ in
           message = "my.figaro.roster.${n}: a charter, fork limit or field applies only to an exact form, @ and 8 or 32 hex digits";
         }) (builtins.attrNames applied);
 
-        warnings = map (f: "${f} renders nothing until figaro supports it") regiments.inert;
-
         home.packages =
           lib.optional (cfg.package != null) cfg.package
           ++ lib.optional cfg.managedRolesHook.enable reconcilePkg
@@ -599,10 +700,16 @@ in
             name: role:
             lib.nameValuePair "figaro/outfits/${fanoutOutfit name}.toml" {
               source = toml.generate "outfit-${fanoutOutfit name}.toml" {
-                system.fanout.max_children = role.maxChildren;
+                system.fanout = fanoutOf name role;
               };
             }
-          ) (lib.filterAttrs (_: r: r.maxChildren != null) applied);
+          ) (lib.filterAttrs (n: r: fanoutOf n r != { }) applied)
+          // lib.mapAttrs' (
+            name: a:
+            lib.nameValuePair "figaro/outfits/${grantsOutfit name}.toml" {
+              source = toml.generate "outfit-${grantsOutfit name}.toml" { system.scopes = a.scopes; };
+            }
+          ) (lib.filterAttrs (_: a: a.scopes != null) authority);
 
         home.file.".bashrc.d/65-figaro-prompt.sh".source = ../config/figaro/prompt.bash;
       };
