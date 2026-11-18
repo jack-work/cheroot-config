@@ -115,7 +115,11 @@
                   assert "max_children" in primary and not {"max_children", "quota", "scopes", "child_policy"} & r.keys(), name
                   assert name not in seats_json and f"role-{name}-grants" not in outfits, name
                   continue
-              assert count(r.get("max_children")) and count(r.get("quota")), (name, "budget")
+              assert count(r.get("max_children")), (name, "budget")
+              if r["reach"] == "fleet":
+                  assert "quota" not in r, (name, "a fleet seat's quota is set by Gluck, never derived")
+              else:
+                  assert count(r.get("quota")) and r["quota"] >= r["max_children"], (name, "quota")
               policy = r["child_policy"]
               assert isinstance(policy, dict) and policy["system.scopes"][:4] == lane, (name, policy)
               assert f"send:role:{r['form']}" in policy["system.scopes"], (name, "own role")
@@ -127,9 +131,9 @@
               else:
                   assert "scopes" not in r, name
               m = manifest[name]
-              assert {"system.fanout.max_children", "system.fanout.quota"} <= set(m["managed"]), (name, m)
+              assert ("system.fanout.quota" in m["managed"]) == ("quota" in r) and "system.fanout.max_children" in m["managed"], (name, m)
               fan = tomllib.load(open(outfits[f"role-{name}-fanout"], "rb"))["system"]["fanout"]
-              assert fan == {"max_children": r["max_children"], "quota": r["quota"]}, (name, fan)
+              assert fan == {k: r[k] for k in ("max_children", "quota") if k in r}, (name, fan)
               assert seats_json[name]["form"] == r["form"] and seats_json[name]["grants"]["system.child_policy"] == policy, name
               if r["reach"] == "fleet":
                   assert tomllib.load(open(outfits[f"role-{name}-grants"], "rb")) == {"system": {"scopes": ["*:*"]}}, name

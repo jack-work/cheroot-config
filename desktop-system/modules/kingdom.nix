@@ -33,6 +33,7 @@
           provider = "anthropic";
           model = "claude-opus-5-5";
           maxChildren = 7;
+          quota = 14;
         };
         knight = {
           provider = "anthropic";
@@ -152,6 +153,7 @@
         leader = "king-of-spain";
         form = "@2e0bb68c36211dbd2023bc693b4c682c";
         maxChildren = 1;
+        quota = 2;
         purpose = "tv.kelliher.info";
         charter = "Colonel of TV regiment, reports to King @96447061. Own quality of tv.kelliher.info app, persistent officers R&D/UI/remote/backend/QA, routines and releases. Shared UI centralized in zanni with @flypaper-atlas; useful zanni2 parts at Zanni discretion. Auth/ACL/tokens/devices/Spain routes always through King. Other changes through sole edge executor with normal guards. No paid fallback, fixtures or hash rounds; keep leak/data-loss checks. Succession-standard: current captains-log handoff, durable officer roster and figla move, successor before context exhaustion.";
       };
@@ -176,6 +178,7 @@
         leader = "king-of-spain";
         form = "@2c1645942f894dd40d9dfcfb97619c58";
         maxChildren = 1;
+        quota = 2;
         purpose = "Herald and telefono";
         charter = "Owner of herald and telefono: Gluck's Telegram bridge to figaros, and later other messaging providers.";
       };
