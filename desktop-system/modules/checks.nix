@@ -141,6 +141,11 @@
               else:
                   assert f"role-{name}-grants" not in outfits and seats_json[name]["outfit"] is None, name
               seats[name] = r
+          when_full = "${gluckCfg.my.figaro.fanoutWhenFull}"
+          for name, m in manifest.items():
+              assert "fanout" in m["managed"] and f"role-{name}-fields" in m["outfits"], (name, m)
+              assert tomllib.load(open(outfits[f"role-{name}-fields"], "rb"))["fanout"] == {"when-full": when_full}, name
+          assert set(manifest) == {n for n, r in roles.items() if "form" in r}, "every seat with a form carries fanout.when-full"
           assert fleet == {"king-of-spain", "figaro-engineer", "figaro-knight", "figaro-review-steward"}, fleet
           sends = lambda n: [s for s in seats[n]["child_policy"]["system.scopes"] if s.startswith("send:role:")]
           assert sends("figaro-strategist") == ["send:role:@9bf485c24507fe8484a001c18a1b84cc", "send:role:@d121c4041785b13c6261d6055f113f8d", "send:role:@9e5bdab374ebdf583434860ff1fa9955"], sends("figaro-strategist")

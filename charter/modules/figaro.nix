@@ -523,7 +523,20 @@ in
       cfg = hm.config.my.figaro;
       toml = pkgs.formats.toml { };
       regiments = regimentLib.render cfg.roster cfg.regiments;
-      roster = cfg.roster // regiments.roster;
+      roster = lib.mapAttrs (_: withHouseFields) (cfg.roster // regiments.roster);
+      withHouseFields =
+        r:
+        if cfg.fanoutWhenFull == null || r.form == null then
+          r
+        else
+          r
+          // {
+            fields = r.fields // {
+              fanout = (r.fields.fanout or { }) // {
+                when-full = cfg.fanoutWhenFull;
+              };
+            };
+          };
       rosterDrv = mkRosterDrv {
         inherit pkgs lib roster;
       };
@@ -616,6 +629,11 @@ in
         roster = lib.mkOption {
           type = lib.types.attrsOf (mkRoleSubmodule lib);
           default = { };
+        };
+        fanoutWhenFull = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          description = "What a seat does when fan-out refuses it, applied to every seat with a form as the managed key fanout.when-full.";
         };
         regiments = lib.mkOption {
           type = lib.types.attrsOf (mkRegimentSubmodule lib);
