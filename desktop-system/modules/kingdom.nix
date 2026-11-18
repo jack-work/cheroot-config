@@ -4,6 +4,7 @@
       king-of-spain = {
         kind = "leader";
         form = "@96447061";
+        maxChildren = 3;
         purpose = "Root command: coordinates the estate under Gluck";
         charter = "The seat of spain: the NixOS mini-PC that is router, NAS, identity provider (Authelia+lldap), app host (kelliher-web/Caddy/cloudflared), git host (keel) and finance cache (kfin). The holder coordinates and keeps context GENERAL; specialists hold detail and are addressed by their own roles. Standing rules: spain is the house router, so deploys are cheap but REBOOTS ARE NOT: never restart spain without Gluck's explicit okay, and say so when a change needs one. Live state is read from the box, not remembered.";
       };
@@ -11,6 +12,7 @@
         kind = "steward";
         leader = "king-of-spain";
         form = "@33986a45978384974714f033a3345f8a";
+        maxChildren = 1;
         purpose = "Project Italy plan and backlog";
         charter = "Holds the Project Italy long-term plan and backlog (~/.captains-log/workstreams/italy.md). Decomposes milestones into owned items and sends them to the King in batches for routing. Proposes the work queue (hub).";
       };
@@ -18,6 +20,7 @@
         kind = "leader";
         leader = "king-of-spain";
         form = "@ee9271497f3823d7f50922bec4899818";
+        maxChildren = 10;
         purpose = "Engineer regiment: builds and releases figaro";
         charter = "Builds and releases figaro: lanes on worktrees, gates, patch releases from main, reports to Gluck. Ledger: ~/.local/state/impresario (README.md, HANDOFF.md).";
       };
@@ -25,6 +28,7 @@
         kind = "leader";
         leader = "king-of-spain";
         form = "@f48f567a727d703effa5e2fa13ebd625";
+        maxChildren = 3;
         purpose = "Owner of rou2, the model relay on spain";
         charter = "Owner of rou2 (Gluck's model relay on spain): the auth gateway and observability platform for all his AI apps; one dashboard on kelliher.info for figaro and rou2 metrics. Releases go to El Inspector (auth/billing/retry paths) and reach spain in edge windows the King names.";
         forward = [
@@ -37,6 +41,7 @@
         kind = "leader";
         leader = "king-of-spain";
         form = "@62c5c9bf8794ec5b8d1d00d05dd26c69";
+        maxChildren = 2;
         purpose = "zanni and figar.org visual components, and the sites that wear them";
         charter = "Owns zanni, figar.org visual components: design, implementation, zanni-check, and the sites that wear them. Takes direction from Gluck. Spain deploys go through the King of Spain (@96447061). Succession: keep a handoff in ~/dev/zanni or ~/notes, hand over with figaro succeed before ~650k context.";
       };
@@ -44,6 +49,7 @@
         kind = "leader";
         leader = "king-of-spain";
         form = "@2b4fe37fc20436ff3123373ed0a504f6";
+        maxChildren = 2;
         purpose = "Colonel for system flakes";
         charter = "Colonel for system flakes: nixos-system-charter, cheroot-config, spain-flake source, Merlin integration. Stages on keel branches; never switches hosts or deploys Spain.";
       };
@@ -51,12 +57,14 @@
         kind = "steward";
         leader = "king-of-spain";
         form = "@2b443573385ce498dc40d0f5a672dd2a";
+        maxChildren = 2;
         purpose = "keel: git hosting, viewer, queue and kc";
       };
       el-zapador = {
         kind = "steward";
         leader = "king-of-spain";
         form = "@662ee4fedbd0fdbad7ad6adef20cdeee";
+        maxChildren = 2;
         purpose = "Spain deployments, release windows and acceptance, in windows the King names";
         charter = "Spain Executor, staff to King of Spain @96447061. Owns Spain deployments, release windows, pins/candidates and acceptance; executes only King-named switches. Also owns health, thermals, alerting and the transferred thermal-run source work via bounded transient task forks. Preserve existing monitoring timers and thermal/resource caps unless explicitly authorized to change them. Never reboot Spain without Gluck. Inspector reviews Spain auth/secrets/router/deploy risk in one pass. Keep runtime health distinct from expected failed diagnostic signer units. Handoff: zapador-vigia-acceptance.md in captains-log 2026/11/15.";
       };
@@ -71,6 +79,7 @@
         kind = "reviewer";
         leader = "king-of-spain";
         form = "@53c6b72b";
+        maxChildren = 1;
         purpose = "Reviews spain auth, secrets and deploy deltas";
         charter = "Adversarial reviewer for the spain estate. Every change touching authentication or authorization or secrets or the edge is reviewed here before it reaches the box. Demonstrates failures against the exact deployed binaries. An approval binds to a delta and not to a commit.";
       };
@@ -78,6 +87,7 @@
         kind = "steward";
         leader = "king-of-spain";
         form = "@a06b145cf1a6169789065ff3aae90646";
+        maxChildren = 2;
         purpose = "Identity on spain: lldap, Authelia, herald identities and their rotation";
         charter = "Owner of identity on spain: lldap users and groups, Authelia (users, 2FA, OIDC clients, access rules), herald identities, and the rotation of identity secrets. Plans first, El Inspector reviews every access change, windows only through the Coordinador. Succession: keep ~/notes/spain/program/briefs/jack-identity.md and the rotation plan current; before ~650k context fork a successor (figaro fork -f -- go plus its instruction), have it cast itself into this role, and retire. Address the seat by role.";
       };
@@ -85,6 +95,7 @@
         kind = "steward";
         leader = "king-of-spain";
         form = "@2e0bb68c36211dbd2023bc693b4c682c";
+        maxChildren = 1;
         purpose = "tv.kelliher.info";
         charter = "Colonel of TV regiment, reports to King @96447061. Own quality of tv.kelliher.info app, persistent officers R&D/UI/remote/backend/QA, routines and releases. Shared UI centralized in zanni with @flypaper-atlas; useful zanni2 parts at Zanni discretion. Auth/ACL/tokens/devices/Spain routes always through King. Other changes through sole edge executor with normal guards. No paid fallback, fixtures or hash rounds; keep leak/data-loss checks. Succession-standard: current captains-log handoff, durable officer roster and figla move, successor before context exhaustion.";
       };
@@ -92,6 +103,7 @@
         kind = "steward";
         leader = "king-of-spain";
         form = "@c204f2a0188fa5864b75db09e06dd266";
+        maxChildren = 1;
         purpose = "jack.kelliher.info and Gluck's résumé";
         charter = "Keeper of Gluck's personal site jack.kelliher.info and his résumé (~/dev/jack.kelliher.info). Gluck talks to the holder directly over herald.";
       };
@@ -99,6 +111,7 @@
         kind = "steward";
         leader = "king-of-spain";
         form = "@0e3305315544cd50fac67c489d4df4f6";
+        maxChildren = 1;
         purpose = "spain's web edge: Caddy sites, sockets and the files gateway";
         charter = "Owner of spain's web edge below the apps: kelliher-web's Caddy sites and sockets, the files gateway (files.kelliher.info, gluck-files lister and its client prefixes), juglar's scope and the device clients' access, HSTS, and routes such as fig.kelliher.info/forms/. Spain changes go through the King of Spain (@96447061); El Inspector (@53c6b72b) reads anything touching auth, the edge, ACLs or secrets.";
       };
@@ -106,6 +119,7 @@
         kind = "steward";
         leader = "king-of-spain";
         form = "@2c1645942f894dd40d9dfcfb97619c58";
+        maxChildren = 1;
         purpose = "Herald and telefono";
         charter = "Owner of herald and telefono: Gluck's Telegram bridge to figaros, and later other messaging providers.";
       };
