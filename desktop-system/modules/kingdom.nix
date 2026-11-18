@@ -1,5 +1,56 @@
 {
   flake.modules.homeManager.kingdom = {
+    my.figaro.regiments.figaro = {
+      leader = "figaro-engineer";
+      seats = {
+        figaro-strategist = {
+          kind = "strategist";
+          title = "Figaro Strategist";
+          form = "@9bf485c24507fe8484a001c18a1b84cc";
+          purpose = "Thinker of the figaro regiment: plans the kingdom and fans out its parts";
+          handoff = "/home/gluck/.local/state/impresario/handoff/strategist-permissions.md";
+          charter = "The thinker for the whole kingdom plan (plans/kingdom-charter.md, both tracks: Permissions and Estate). Owns the north-star on keel design/kingdom, fans out opus forks that implement parts, merges parts as they become ready and hands non-conflicting changes to the Knight. May ask the Review Steward for an early review of the whole. Reports to @ee927149.";
+        };
+        figaro-knight = {
+          kind = "knight";
+          title = "Figaro Knight";
+          form = "@d121c4041785b13c6261d6055f113f8d";
+          purpose = "Vanguard of the figaro regiment: ships the Strategist's parts as validated builds";
+          handoff = "/home/gluck/.local/state/impresario/handoff/vanguard-permissions.md";
+          charter = "Ships what the Strategist hands off: carries only mutually non-conflicting changes at any time, integrates them on lane branches, produces the validated build, opens each as a review (PR) and asks the Review Steward for one reviewer. Never merges to main. Reports to @ee927149.";
+        };
+        figaro-review-steward = {
+          kind = "steward";
+          title = "Figaro Review Steward";
+          form = "@9e5bdab374ebdf583434860ff1fa9955";
+          purpose = "Keeps the figaro regiment's reviewer pool";
+          handoff = "/home/gluck/.local/state/impresario/handoff/review-steward.md";
+          charter = "Keeps the kingdom reviewer pool: on request from the Knight or the Strategist, mints one reviewer per change as a turn-1 fork of the Strategist on gemini-4-carbon, points it at a validated build, relays the verdict, retires it. Reports to @ee927149.";
+        };
+      };
+      kinds = {
+        strategist = {
+          provider = "anthropic";
+          model = "claude-opus-5-5";
+          maxChildren = 6;
+        };
+        knight = {
+          provider = "anthropic";
+          model = "claude-opus-5-5";
+          maxChildren = 1;
+        };
+        steward = {
+          provider = "gemini";
+          model = "gemini-4-carbon";
+          maxChildren = 3;
+        };
+        reviewer = {
+          provider = "gemini";
+          model = "gemini-4-carbon";
+        };
+      };
+      successionLayers = [ "succession-cache" ];
+    };
     my.figaro.roster = {
       king-of-spain = {
         kind = "leader";
