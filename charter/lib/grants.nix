@@ -112,11 +112,12 @@ let
 
   quotaOf =
     {
+      reach,
       maxChildren,
       quota,
       childPolicy,
     }:
-    if quota != null || maxChildren == null then
+    if quota != null || maxChildren == null || reach == "fleet" then
       quota
     else
       maxChildren * (1 + (childPolicy.${keys.quota} or 0));
@@ -140,7 +141,14 @@ let
       scopes = if reach == "fleet" then fleetScopes else null;
       childPolicy = policy;
       inherit maxChildren;
-      quota = quotaOf { inherit maxChildren quota childPolicy; };
+      quota = quotaOf {
+        inherit
+          reach
+          maxChildren
+          quota
+          childPolicy
+          ;
+      };
     };
 
   toFormKeys =

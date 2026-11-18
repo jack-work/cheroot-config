@@ -69,7 +69,8 @@ let
               How many live figaros the seat's subtree may hold, applied to its role form as
               system.fanout.quota beside max_children. Null derives it: maxChildren times one
               plus the quota childPolicy gives each child (0 unless set), so a seat whose lanes
-              cannot fork is held to maxChildren lanes.
+              cannot fork is held to maxChildren lanes. A fleet seat derives none: it reaps for
+              the others, so its quota is only ever set by hand.
             '';
           };
           reach = lib.mkOption {

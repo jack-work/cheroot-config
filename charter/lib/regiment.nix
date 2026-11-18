@@ -154,9 +154,16 @@ let
           succession-policy.outfit = successorOutfits regName reg s.kind;
         }
         // lib.optionalAttrs (reg.kinds.${s.kind}.maxChildren != null) {
-          system.fanout = {
+          system.fanout = lib.filterAttrs (_: v: v != null) {
             max_children = reg.kinds.${s.kind}.maxChildren;
-            quota = grants.quotaOf { inherit (reg.kinds.${s.kind}) maxChildren quota childPolicy; };
+            quota = grants.quotaOf {
+              inherit (reg.kinds.${s.kind})
+                reach
+                maxChildren
+                quota
+                childPolicy
+                ;
+            };
           };
         }
         // seatFields regName reg s

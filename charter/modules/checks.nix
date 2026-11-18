@@ -527,19 +527,19 @@
               assert "max_children" not in load(f"{roster}/builder.toml")
               assert load("${
                 files."figaro/outfits/role-lead-fanout.toml".source
-              }") == {"system": {"fanout": {"max_children": 3, "quota": 3}}}
+              }") == {"system": {"fanout": {"max_children": 3}}}
               assert load("${
                 files."figaro/outfits/role-clerk-fanout.toml".source
               }") == {"system": {"fanout": {"max_children": 0, "quota": 0}}}
               script = open("${lib.getExe apply}").read()
               manifest = load(re.search(r"FIGARO_APPLY_MANIFEST=(\S+)", script).group(1))["roles"]
               assert manifest["lead"]["outfits"] == ["role-lead-charter", "role-lead-fanout"], manifest
-              assert manifest["lead"]["managed"] == ["charter", "system.fanout.max_children", "system.fanout.quota"], manifest
+              assert manifest["lead"]["managed"] == ["charter", "system.fanout.max_children"], manifest
               assert manifest["clerk"] == {"id": "@89abcdef", "outfits": ["role-clerk-fanout"], "managed": ["system.fanout.max_children", "system.fanout.quota"], "mode": "check"}, manifest
               assert "builder" not in manifest and "aide" not in manifest, manifest
               lane = ["send:parent", "read:aria:self", "write:aria:self#@self", "delete:aria:self#@self"]
               lead = load(f"{roster}/lead.toml")
-              assert (lead["quota"], lead["reach"], lead["scopes"]) == (3, "fleet", ["*:*"]), lead
+              assert (lead["reach"], lead["scopes"]) == ("fleet", ["*:*"]) and "quota" not in lead, lead
               assert lead["child_policy"] == {"system.scopes": lane + ["send:role:@0123456789abcdef0123456789abcdef", "read:aria:@0123456789abcdef0123456789abcdef", "send:role:@89abcdef", "read:aria:@89abcdef"]}, lead
               clerk = load(f"{roster}/clerk.toml")
               assert clerk["reach"] == "lineage" and "scopes" not in clerk, clerk
@@ -640,7 +640,7 @@
             mint = load("${outfit "role-pool-mint"}")
             assert mint["layers"] == ["succession-standard"], mint
             assert mint["succession-policy"] == {"outfit": "default,succession-standard,regiment-sample-steward"}, mint
-            assert mint["system"] == {"fanout": {"max_children": 3, "quota": 3}}, mint
+            assert mint["system"] == {"fanout": {"max_children": 3}}, mint
             assert mint["charter"] == "Keeps reviewers." and mint["regiment"]["seat"] == "steward", mint
             assert load("${outfit "role-thinker-mint"}")["handoff"] == "/tmp/thinker.md"
             assert "system" not in load("${outfit "role-vanguard-mint"}"), "a null maxChildren renders no fork limit"
