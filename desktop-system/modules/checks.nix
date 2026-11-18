@@ -123,7 +123,7 @@
               policy = r["child_policy"]
               assert isinstance(policy, dict) and policy["system.scopes"][:4] == lane, (name, policy)
               assert f"send:role:{r['form']}" in policy["system.scopes"], (name, "own role")
-              assert all(f"read:aria:{s.removeprefix('send:role:')}" in policy["system.scopes"] for s in policy["system.scopes"] if s.startswith("send:role:")), (name, "a lane reads every role it sends to")
+              assert not any(s.startswith("read:aria:@") for s in policy["system.scopes"]), (name, "the daemon resolves a sent-to role; a lane reads no role holder")
               assert all(verb.match(s) for s in policy["system.scopes"]), (name, policy)
               if r["reach"] == "fleet":
                   assert r["scopes"] == ["*:*"], name

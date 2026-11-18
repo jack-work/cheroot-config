@@ -47,10 +47,7 @@ let
 
   isFormId = s: builtins.isString s && builtins.match "@([0-9a-f]{8}|[0-9a-f]{32})" s != null;
 
-  reachRole = form: [
-    "send:role:${form}"
-    "read:aria:${form}"
-  ];
+  reachRole = form: [ "send:role:${form}" ];
 
   scopeFault =
     s:

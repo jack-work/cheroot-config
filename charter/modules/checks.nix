@@ -540,10 +540,10 @@
               lane = ["send:parent", "read:aria:self", "write:aria:self#@self", "delete:aria:self#@self"]
               lead = load(f"{roster}/lead.toml")
               assert (lead["reach"], lead["scopes"]) == ("fleet", ["*:*"]) and "quota" not in lead, lead
-              assert lead["child_policy"] == {"system.scopes": lane + ["send:role:@0123456789abcdef0123456789abcdef", "read:aria:@0123456789abcdef0123456789abcdef", "send:role:@89abcdef", "read:aria:@89abcdef"]}, lead
+              assert lead["child_policy"] == {"system.scopes": lane + ["send:role:@0123456789abcdef0123456789abcdef", "send:role:@89abcdef"]}, lead
               clerk = load(f"{roster}/clerk.toml")
               assert clerk["reach"] == "lineage" and "scopes" not in clerk, clerk
-              assert clerk["child_policy"] == {"system.scopes": lane + ["send:role:@89abcdef", "read:aria:@89abcdef"]}, clerk
+              assert clerk["child_policy"] == {"system.scopes": lane + ["send:role:@89abcdef"]}, clerk
               aide = load(f"{roster}/aide.toml")
               assert aide["companion_of"] == "lead" and not {"quota", "scopes", "child_policy", "max_children"} & aide.keys(), aide
               assert load("${files."figaro/outfits/role-lead-grants.toml".source}") == {"system": {"scopes": ["*:*"]}}
@@ -609,7 +609,7 @@
             assert (thinker["kind"], thinker["leader"], thinker["leader_form"]) == ("leader", "lead", "@0123456789abcdef0123456789abcdef"), thinker
             assert thinker["max_children"] == 6 and thinker["quota"] == 6 and thinker["model"] == "big", thinker
             assert thinker["reach"] == "lineage" and "scopes" not in thinker, thinker
-            assert thinker["child_policy"]["system.scopes"][4:] == ["send:role:@fedcba9876543210fedcba9876543210", "read:aria:@fedcba9876543210fedcba9876543210", "send:role:@76543210", "read:aria:@76543210"], thinker
+            assert thinker["child_policy"]["system.scopes"][4:] == ["send:role:@fedcba9876543210fedcba9876543210", "send:role:@76543210"], thinker
             vanguard = load(f"{roster}/vanguard.toml")
             assert vanguard["scopes"] == ["*:*"] and vanguard["quota"] == 5 and "max_children" not in vanguard, vanguard
             assert load(f"{roster}/vanguard.toml")["kind"] == "builder"
