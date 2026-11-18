@@ -32,7 +32,7 @@
         strategist = {
           provider = "anthropic";
           model = "claude-opus-5-5";
-          maxChildren = 6;
+          maxChildren = 7;
         };
         knight = {
           provider = "anthropic";
