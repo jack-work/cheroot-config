@@ -56,6 +56,8 @@
         kind = "leader";
         form = "@96447061";
         maxChildren = 3;
+        reach = "fleet";
+        reportsTo = [ "el-zapador" ];
         purpose = "Root command: coordinates the estate under Gluck";
         charter = "The seat of spain: the NixOS mini-PC that is router, NAS, identity provider (Authelia+lldap), app host (kelliher-web/Caddy/cloudflared), git host (keel) and finance cache (kfin). The holder coordinates and keeps context GENERAL; specialists hold detail and are addressed by their own roles. Standing rules: spain is the house router, so deploys are cheap but REBOOTS ARE NOT: never restart spain without Gluck's explicit okay, and say so when a change needs one. Live state is read from the box, not remembered.";
       };
@@ -72,6 +74,8 @@
         leader = "king-of-spain";
         form = "@ee9271497f3823d7f50922bec4899818";
         maxChildren = 10;
+        reach = "fleet";
+        reportsTo = [ "king-of-spain" ];
         purpose = "Engineer regiment: builds and releases figaro";
         charter = "Builds and releases figaro: lanes on worktrees, gates, patch releases from main, reports to Gluck. Ledger: ~/.local/state/impresario (README.md, HANDOFF.md).";
       };
@@ -123,6 +127,7 @@
         kind = "steward";
         leader = "king-of-spain";
         form = "@b906c598b1857b6bfe350e077cf67ff6";
+        companionOf = "el-zapador";
         purpose = "spain's mechanics lane: figaro release windows on spain, held by El Zapador";
         charter = "spain's mechanics lane: figaro release windows on spain (pins, CANDs from fresh detached worktrees, frozen W7-template switch and store-copy scripts, acceptance and the four hashes), switching other seats' windows when the King names edge, and the estate troupe lane. Spain changes go through the King of Spain (@96447061); El Inspector (@53c6b72b) reads security surfaces and pins.";
       };
@@ -178,6 +183,7 @@
         kind = "steward";
         leader = "king-of-spain";
         form = "@edea54025f3f3c6c1d8c2b27439d35f3";
+        companionOf = "figaro-engineer";
         purpose = "The figaro modular-runtime plan, held by the Figaro Engineer";
         charter = "Owns the figaro modular-runtime plan: digests Gluck design and the carve plan into a staged layering plan with interactive design documents on keel branch design/modular-runtime, and follows Gluck comments there. Lieutenant of the Figaro Engineer (@ee927149).";
       };
@@ -185,6 +191,7 @@
         kind = "secretary";
         leader = "king-of-spain";
         form = "@042d641e";
+        companionOf = "king-of-spain";
         purpose = "The spain deploy queue and switch guard, a King companion";
         charter = "Holds the spain deploy queue. Names exactly one aria at a time to switch the box. Enforces the switch guard. Keeps program-ground-truths.md. Order and naming belong to this seat alone.";
       };
@@ -192,6 +199,7 @@
         kind = "secretary";
         leader = "king-of-spain";
         form = "@5d998ccdb6086ee4ad53d73d376d968a";
+        companionOf = "king-of-spain";
         purpose = "The figaro identity plan monitor, a King companion";
       };
     };
