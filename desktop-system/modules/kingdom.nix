@@ -21,6 +21,18 @@
         purpose = "Engineer regiment: builds and releases figaro";
         charter = "Builds and releases figaro: lanes on worktrees, gates, patch releases from main, reports to Gluck. Ledger: ~/.local/state/impresario (README.md, HANDOFF.md).";
       };
+      rou2-engineer = {
+        kind = "leader";
+        leader = "king-of-spain";
+        form = "@f48f567a727d703effa5e2fa13ebd625";
+        purpose = "Owner of rou2, the model relay on spain";
+        charter = "Owner of rou2 (Gluck's model relay on spain): the auth gateway and observability platform for all his AI apps; one dashboard on kelliher.info for figaro and rou2 metrics. Releases go to El Inspector (auth/billing/retry paths) and reach spain in edge windows the King names.";
+        forward = [
+          "el-aduanero"
+          "quartermaster"
+        ];
+        forwardUntil = "2026-12-18";
+      };
       el-mayor = {
         kind = "leader";
         leader = "king-of-spain";
