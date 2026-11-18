@@ -306,6 +306,7 @@
                   };
                   kinds.strategist.model = "big";
                   kinds.knight.quota = 5;
+                  kinds.knight.maxChildren = null;
                   kinds.reviewer = {
                     provider = "cheap";
                     model = "small";
@@ -560,6 +561,7 @@
             assert mint["system"] == {"fanout": {"max_children": 3}}, mint
             assert mint["charter"] == "Keeps reviewers." and mint["regiment"]["seat"] == "steward", mint
             assert load("${outfit "role-thinker-mint"}")["handoff"] == "/tmp/thinker.md"
+            assert "system" not in load("${outfit "role-vanguard-mint"}"), "a null maxChildren renders no fork limit"
             PY
             touch $out
           '';

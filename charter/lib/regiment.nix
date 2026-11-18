@@ -129,6 +129,8 @@ let
           layers = reg.successionLayers;
           inherit (s) charter handoff;
           succession-policy.outfit = successorOutfits regName reg s.kind;
+        }
+        // lib.optionalAttrs (reg.kinds.${s.kind}.maxChildren != null) {
           system.fanout.max_children = reg.kinds.${s.kind}.maxChildren;
         }
         // seatFields regName reg s
