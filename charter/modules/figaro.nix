@@ -415,6 +415,8 @@ in
     }:
     let
       cfg = config.my.figaro;
+      systemMode = if cfg.mode == "system" then "house" else cfg.mode;
+      onHost = systemMode == "house" || systemMode == "estate";
       toml = pkgs.formats.toml { };
       rosterDrv = mkRosterDrv {
         inherit pkgs lib;
@@ -450,10 +452,38 @@ in
         mode = lib.mkOption {
           type = lib.types.enum [
             "none"
+            "house"
+            "estate"
             "system"
             "container"
           ];
           default = "none";
+          description = ''
+            house: a person's NixOS machine; the angelus runs as uid figaro
+            and `owner` owns it. estate: a server with no person's files in
+            play. Both are services.figaro.mode. system is house, kept for
+            one release. container: the angelus in figaro-container.
+          '';
+        };
+        owner = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          description = "House mode: the user who owns the angelus (services.figaro.owner); his uid must be pinned.";
+        };
+        users = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [ ];
+          description = "Other users who reach the CLI door (services.figaro.users).";
+        };
+        localTools = lib.mkOption {
+          type = lib.types.bool;
+          default = false;
+          description = "Let a figaro on local run tools as the angelus's own uid (services.figaro.localTools).";
+        };
+        importFrom = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          description = "A home-mode state directory copied into the house's store once, before its first start (services.figaro.importFrom).";
         };
         package = lib.mkOption {
           type = lib.types.package;
@@ -488,13 +518,23 @@ in
         (lib.mkIf (cfg.mode == "none") {
           services.figaro.enable = lib.mkDefault false;
         })
-        (lib.mkIf (cfg.mode == "system") {
+        (lib.mkIf onHost {
+          warnings =
+            lib.optional (cfg.mode == "system")
+              "my.figaro.mode = \"system\" is house mode; write \"house\", since system goes in the next release.";
           services.figaro = {
             enable = true;
+            mode = systemMode;
             package = cfg.package;
             settings = cfg.settings;
             providers = cfg.providers;
             outfits = withCredoOutfits;
+            inherit (cfg)
+              owner
+              users
+              localTools
+              importFrom
+              ;
           };
           systemd.services.figaro.serviceConfig.OOMPolicy = lib.mkDefault "continue";
         })
@@ -525,7 +565,8 @@ in
             serviceConfig = {
               Type = "oneshot";
               ExecStart = lib.getExe reconcilePkg;
-            };
+            }
+            // lib.optionalAttrs (systemMode == "house" && cfg.owner != null) { User = cfg.owner; };
           };
         })
       ];

@@ -151,8 +151,13 @@
               };
               system.stateVersion = "26.11";
               my.heavy.enable = true;
+              users.users.operator = {
+                isNormalUser = true;
+                uid = 1000;
+              };
               my.figaro = {
-                mode = "system";
+                mode = "house";
+                owner = "operator";
                 credo = "Sample shared credo.";
                 outfits.builder.system = {
                   provider = "gateway";
@@ -211,6 +216,33 @@
       missingSrcFailed = map (a: a.message) (
         builtins.filter (a: !a.assertion) missingSrcNixos.assertions
       );
+
+      figaroModeNixos =
+        mode:
+        (inputs.nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [
+            config.flake.modules.nixos.figaro
+            {
+              boot.loader.grub.enable = false;
+              fileSystems."/" = {
+                device = "none";
+                fsType = "tmpfs";
+              };
+              system.stateVersion = "26.11";
+              users.users.operator = {
+                isNormalUser = true;
+                uid = 1000;
+              };
+              my.figaro = {
+                inherit mode;
+              }
+              // lib.optionalAttrs (mode != "estate") { owner = "operator"; };
+            }
+          ];
+        }).config;
+      aliasNixos = figaroModeNixos "system";
+      estateNixos = figaroModeNixos "estate";
 
       containerNixos =
         (inputs.nixpkgs.lib.nixosSystem {
@@ -650,6 +682,14 @@
 
         charter-eval-aspects =
           assert sampleNixos.services.figaro.enable;
+          assert sampleNixos.services.figaro.mode == "house";
+          assert sampleNixos.services.figaro.settings.authz.owner == "user:1000";
+          assert !sampleNixos.services.figaro.settings.sandbox.local_tools;
+          assert sampleNixos.systemd.services.figaro-roster-reconcile.serviceConfig.User == "operator";
+          assert aliasNixos.services.figaro.mode == "house";
+          assert builtins.any (lib.hasInfix "is house mode") aliasNixos.warnings;
+          assert estateNixos.services.figaro.mode == "estate";
+          assert !((estateNixos.services.figaro.settings.authz or { }) ? owner);
           assert sampleNixos.services.figaro.outfits.builder.system.credo == "Sample shared credo.";
           assert sampleNixos.systemd.services ? figaro-roster-reconcile;
           assert sampleNixos.services.hush-cred.enable;
