@@ -44,6 +44,8 @@
       kinds = {
         strategist = {
           outfits = [
+            "opus5-kic"
+            "sonn5-kic"
             "succession-standard"
             "regiment-figaro-strategist"
             "succession-cache"
@@ -57,6 +59,8 @@
         };
         knight = {
           outfits = [
+            "opus5-kic"
+            "sonn5-kic"
             "succession-standard"
             "regiment-figaro-knight"
             "succession-cache"
@@ -69,6 +73,8 @@
         };
         steward = {
           outfits = [
+            "opus5-kic"
+            "sonn5-kic"
             "succession-standard"
             "regiment-figaro-steward"
             "succession-cache"
@@ -111,6 +117,8 @@
       };
       figaro-engineer = {
         outfits = [
+          "opus5-kic"
+          "sonn5-kic"
           "succession-standard"
           "opus5"
           "opus5-ant"
@@ -134,6 +142,8 @@
       };
       reviewer = {
         outfits = [
+          "opus5-kic"
+          "sonn5-kic"
           "succession-standard"
         ];
         kind = "reviewer";
@@ -148,6 +158,8 @@
       };
       operator = {
         outfits = [
+          "opus5-kic"
+          "sonn5-kic"
           "succession-standard"
         ];
         kind = "steward";
@@ -165,6 +177,8 @@
       };
       backend-engineer = {
         outfits = [
+          "opus5-kic"
+          "sonn5-kic"
           "succession-standard"
           "opus5"
           "short"
@@ -191,6 +205,8 @@
       };
       frontend-engineer = {
         outfits = [
+          "opus5-kic"
+          "sonn5-kic"
           "succession-standard"
           "opus5"
         ];
@@ -206,6 +222,8 @@
       };
       big-tv = {
         outfits = [
+          "opus5-kic"
+          "sonn5-kic"
           "succession-standard"
         ];
         kind = "steward";
@@ -219,6 +237,8 @@
       };
       planner = {
         outfits = [
+          "opus5-kic"
+          "sonn5-kic"
           "succession-standard"
         ];
         kind = "steward";
@@ -233,6 +253,8 @@
       };
       writer = {
         outfits = [
+          "opus5-kic"
+          "sonn5-kic"
           "succession-standard"
         ];
         kind = "steward";
@@ -258,6 +280,8 @@
       };
       merlin-migration = {
         outfits = [
+          "opus5-kic"
+          "sonn5-kic"
           "succession-standard"
         ];
         kind = "steward";
@@ -268,7 +292,11 @@
         purpose = "Merlin's install and cutover from the old gluck; transient";
       };
       coordinador = {
-        outfits = [ "succession-standard" ];
+        outfits = [
+          "opus5-kic"
+          "sonn5-kic"
+          "succession-standard"
+        ];
         kind = "secretary";
         leader = "king-of-spain";
         title = "Coordinador de Spain";

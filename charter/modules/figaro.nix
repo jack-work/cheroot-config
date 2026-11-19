@@ -611,7 +611,7 @@ in
           maxChildren = null;
           quota = null;
           childPolicy = { };
-          outfits = null;
+          inherit (r) outfits;
           forward = [ ];
           forwardUntil = null;
           charter = null;
