@@ -92,6 +92,11 @@ let
               follows each role through succession.
             '';
           };
+          holderScopes = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+            description = "Scopes the seat's holder gets beside fleet reach's *:*, such as a key grant on its children (set:children#system.model). Needs reach = fleet.";
+          };
           childPolicy = lib.mkOption {
             type = lib.types.attrsOf lib.types.anything;
             default = { };
@@ -199,6 +204,11 @@ let
               a seat kind of this regiment (strategist, knight, steward) or a declared role.
               A kind whose seat has no form yet is skipped.
             '';
+          };
+          holderScopes = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+            description = "Scopes the seat's holder gets beside fleet reach's *:*, such as a key grant on its children (set:children#system.model). Needs reach = fleet.";
           };
           childPolicy = lib.mkOption {
             type = lib.types.attrsOf lib.types.anything;
@@ -601,6 +611,7 @@ in
           maxChildren = null;
           quota = null;
           childPolicy = { };
+          holderScopes = [ ];
           forward = [ ];
           forwardUntil = null;
           charter = null;

@@ -41,6 +41,7 @@ let
         maxChildren = role.maxChildren or null;
         quota = role.quota or null;
         childPolicy = role.childPolicy or { };
+        holderScopes = role.holderScopes or [ ];
       };
 
   validateRole =

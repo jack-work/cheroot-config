@@ -37,11 +37,21 @@
           quota = 14;
         };
         knight = {
+          holderScopes = [
+            "set:children#system.model"
+            "set:children#system.provider"
+            "set:children#system.methods"
+          ];
           provider = "anthropic";
           model = "claude-opus-5-5";
           maxChildren = 1;
         };
         steward = {
+          holderScopes = [
+            "set:children#system.model"
+            "set:children#system.provider"
+            "set:children#system.methods"
+          ];
           provider = "gemini";
           model = "gemini-4-carbon";
           maxChildren = 3;
@@ -65,6 +75,11 @@
         charter = "The seat of spain: the NixOS mini-PC that is router, NAS, identity provider (Authelia+lldap), app host (kelliher-web/Caddy/cloudflared), git host (keel) and finance cache (kfin). The holder coordinates and keeps context GENERAL; specialists hold detail and are addressed by their own roles. Standing rules: spain is the house router, so deploys are cheap but REBOOTS ARE NOT: never restart spain without Gluck's explicit okay, and say so when a change needs one. Live state is read from the box, not remembered.";
       };
       figaro-engineer = {
+        holderScopes = [
+          "set:children#system.model"
+          "set:children#system.provider"
+          "set:children#system.methods"
+        ];
         kind = "leader";
         leader = "king-of-spain";
         title = "Figaro Engineer";

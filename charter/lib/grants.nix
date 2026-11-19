@@ -100,6 +100,9 @@ let
     name: seat:
     map (f: "${name}: ${f}") (
       lib.optionals (seat.scopes != null) (scopesFaults seat.scopes)
+      ++ lib.optional (
+        seat.reach != "fleet" && seat.holderScopes != [ ]
+      ) "holderScopes needs reach = fleet: on a lineage seat any system.scopes would replace the lineage authority it holds without one"
       ++ childPolicyFaults seat.childPolicy
       ++ lib.optional (
         seat.maxChildren != null && !(isCount seat.maxChildren)
@@ -127,6 +130,7 @@ let
       maxChildren,
       quota,
       childPolicy,
+      holderScopes ? [ ],
     }:
     let
       policy = {
@@ -135,7 +139,8 @@ let
       // childPolicy;
     in
     {
-      scopes = if reach == "fleet" then fleetScopes else null;
+      scopes = if reach == "fleet" then fleetScopes ++ holderScopes else null;
+      inherit reach holderScopes;
       childPolicy = policy;
       inherit maxChildren;
       quota = quotaOf {

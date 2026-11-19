@@ -29,7 +29,7 @@ for name, r in sorted(roles.items()):
     assert not any(s.startswith("read:aria:@") for s in policy["system.scopes"]), (name, "the daemon resolves a sent-to role; a lane reads no role holder")
     assert all(verb.match(s) for s in policy["system.scopes"]), (name, policy)
     if r["reach"] == "fleet":
-        assert r["scopes"] == ["*:*"], name
+        assert r["scopes"][0] == "*:*", name
         fleet.add(name)
     else:
         assert "scopes" not in r, name
@@ -39,7 +39,7 @@ for name, r in sorted(roles.items()):
     assert fan == {k: r[k] for k in ("max_children", "quota") if k in r}, (name, fan)
     assert seats_json[name]["form"] == r["form"] and seats_json[name]["grants"]["system.child_policy"] == policy, name
     if r["reach"] == "fleet":
-        assert tomllib.load(open(outfits[f"role-{name}-grants"], "rb")) == {"system": {"scopes": ["*:*"]}}, name
+        assert tomllib.load(open(outfits[f"role-{name}-grants"], "rb")) == {"system": {"scopes": r["scopes"]}}, name
         assert seats_json[name]["outfit"] == f"role-{name}-grants", name
     else:
         assert f"role-{name}-grants" not in outfits and seats_json[name]["outfit"] is None, name
