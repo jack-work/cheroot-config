@@ -82,6 +82,10 @@ def main():
         check = opts.check or (role or seat).get("mode", "check") != "apply"
         row = {"role": name, "form": form_id, "mode": "check" if check else "apply", "role_form": {"set": [], "remove": []}}
         try:
+            if not form_of(form_id).get("target-aria"):
+                row["outcome"] = "unseated"
+                print(json.dumps(row, sort_keys=True) if opts.json else f"{name} {form_id}: unseated, no holder cast yet")
+                continue
             if role:
                 applied = apply_role_form(role, check=True)
                 row["role_form"] = {"set": applied.get("set") or [], "remove": applied.get("remove") or []}
