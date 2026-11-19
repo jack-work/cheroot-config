@@ -2,7 +2,12 @@
   pkgs,
   charter,
   houseModule,
+  outfitRoots ? false,
 }:
+let
+  managed = "/etc/figaro/outfits";
+  overlay = "/var/lib/figaro-overlay/outfits";
+in
 pkgs.testers.runNixOSTest {
   name = "merlin-house";
 
@@ -21,12 +26,26 @@ pkgs.testers.runNixOSTest {
       };
       my.figaro = {
         providers.gateway.base_url = "http://127.0.0.1:8099/v1";
-        outfits.bare.system = {
-          provider = "gateway";
-          model = "stub";
-        };
-        outfits.role-probe-charter.charter = "Probe duty.";
+      }
+      // (
+        if outfitRoots then
+          { settings.outfits.roots = [ managed overlay ]; }
+        else
+          {
+            outfits.bare.system = {
+              provider = "gateway";
+              model = "stub";
+            };
+            outfits.role-probe-charter.charter = "Probe duty.";
+          }
+      );
+      environment.etc = pkgs.lib.optionalAttrs outfitRoots {
+        "figaro/outfits/bare.toml".text = "[system]\nprovider = \"gateway\"\nmodel = \"stub\"\n";
+        "figaro/outfits/free.toml".text = "[system]\nmodel = \"managed-free\"\n";
+        "figaro/outfits/role-probe-charter.toml".text = "charter = \"Probe duty.\"\n";
+        "figaro/outfits/.locked".text = "role-probe-charter\n";
       };
+      systemd.tmpfiles.rules = pkgs.lib.optional outfitRoots "d ${overlay} 0775 jack figaro -";
       systemd.services.stub-model = {
         wantedBy = [ "multi-user.target" ];
         serviceConfig.ExecStart = "${pkgs.python3}/bin/python3 ${./stub-model.py} ${./merlin-house-probe.sh}";
@@ -39,6 +58,7 @@ pkgs.testers.runNixOSTest {
 
   testScript = ''
     import json
+    import shlex
 
     def jack(cmd):
         return merlin.succeed(f"su - jack -c {json.dumps(cmd)}")
@@ -90,7 +110,28 @@ pkgs.testers.runNixOSTest {
         assert rows["probe"]["outcome"] == "would-apply" and rows["probe"]["role_form"]["set"] == ["charter"], rows
         assert rows["probe-unseated"]["outcome"] == "unseated", rows
 
-    with subtest("outfits: managed root and user overlay (waits on figaro outfit roots)"):
-        print("skipped until lane/outfit-roots ships")
+  ''
+  + pkgs.lib.optionalString outfitRoots ''
+
+    def tree(name):
+        out = jack(f"figaro state outfit --tree {name}")
+        print(out)
+        return out
+
+    with subtest("outfits: a managed outfit resolves from the read-only root"):
+        assert "managed ${managed}/bare.toml" in tree("bare")
+        merlin.fail("su - jack -c 'touch ${managed}/x.toml'")
+
+    with subtest("outfits: the user overlay wins by name and says what it shadows"):
+        jack("printf %b " + shlex.quote('[system]\nmodel = "user-free"\n') + " > ${overlay}/free.toml && chmod 644 ${overlay}/free.toml")
+        jack("figaro state outfit --refresh")
+        out = tree("free")
+        assert "user ${overlay}/free.toml" in out and "shadows managed ${managed}/free.toml" in out, out
+
+    with subtest("outfits: an overlay of a locked managed outfit is refused"):
+        jack("printf %b " + shlex.quote('charter = "Forged."\n') + " > ${overlay}/role-probe-charter.toml && chmod 644 ${overlay}/role-probe-charter.toml")
+        jack("figaro state outfit --refresh")
+        out = tree("role-probe-charter")
+        assert "managed ${managed}/role-probe-charter.toml" in out and "(locked)" in out, out
   '';
 }

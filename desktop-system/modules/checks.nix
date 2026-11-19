@@ -85,6 +85,12 @@
         charter = inputs.charter;
         houseModule = config.flake.nixosModules.merlin-house;
       };
+      checks.merlin-house-outfits = import ../tests/merlin-house.nix {
+        inherit pkgs;
+        charter = inputs.charter;
+        houseModule = config.flake.nixosModules.merlin-house;
+        outfitRoots = true;
+      };
 
       checks.kingdom-seats =
         let
