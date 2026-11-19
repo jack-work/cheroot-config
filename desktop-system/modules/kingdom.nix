@@ -32,6 +32,8 @@
       kinds = {
         strategist = {
           outfits = [
+            "succession-standard"
+            "regiment-figaro-strategist"
             "succession-cache"
             "opus5"
             "opus5-ant"
@@ -43,6 +45,8 @@
         };
         knight = {
           outfits = [
+            "succession-standard"
+            "regiment-figaro-knight"
             "succession-cache"
             "opus5"
             "opus5-ant"
@@ -53,6 +57,8 @@
         };
         steward = {
           outfits = [
+            "succession-standard"
+            "regiment-figaro-steward"
             "succession-cache"
             "review-sonnet"
             "opus5-ant"
@@ -248,6 +254,7 @@
         purpose = "Merlin's install and cutover from the old gluck; transient";
       };
       coordinador = {
+        outfits = [ "succession-standard" ];
         kind = "secretary";
         leader = "king-of-spain";
         title = "Coordinador de Spain";
