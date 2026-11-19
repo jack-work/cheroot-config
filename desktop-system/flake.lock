@@ -98,18 +98,18 @@
       },
       "locked": {
         "dir": "charter",
-        "lastModified": 1794944078,
-        "narHash": "sha256-mH/b1DtIHcLKINY14O/1bPuuA8iI/I0kRZbgzdH64nQ=",
+        "lastModified": 1795061282,
+        "narHash": "sha256-hhwFSIp1Jb4AL+rojvkAzlsU2i+k6/CuvolMBZdNJTQ=",
         "owner": "jack-work",
         "repo": "cheroot-config",
-        "rev": "ee80137f31971ab18a337ab33703ab5c786de91d",
+        "rev": "0f6b53dcb3ef62075ce4a4a4ce93595e2011f2cd",
         "type": "github"
       },
       "original": {
         "dir": "charter",
         "owner": "jack-work",
         "repo": "cheroot-config",
-        "rev": "ee80137f31971ab18a337ab33703ab5c786de91d",
+        "rev": "0f6b53dcb3ef62075ce4a4a4ce93595e2011f2cd",
         "type": "github"
       }
     },
@@ -120,16 +120,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1794871614,
-        "narHash": "sha256-38z2YIxYnZ4nr4AXASK3gjnLY49n9S/ubbc9AGduPBg=",
+        "lastModified": 1795061246,
+        "narHash": "sha256-zv9nb1HuXiWZVNUgFfrLlH8zSu1bNXO1sYS8ivnmBbQ=",
         "owner": "jack-work",
         "repo": "figaro",
-        "rev": "621839080a59d47072594ecba83d92b5d00b357b",
+        "rev": "50d40a9da7117406f8b1e4997e710ac3e460e9e2",
         "type": "github"
       },
       "original": {
         "owner": "jack-work",
-        "ref": "v0.71.0",
+        "ref": "v0.76.1",
         "repo": "figaro",
         "type": "github"
       }
@@ -142,17 +142,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1794885463,
-        "narHash": "sha256-s11COAqIm+3iDJiOHAcaIwQOGBHd77z1y1pQ9fTmN8A=",
+        "lastModified": 1795035334,
+        "narHash": "sha256-TM8BKEnXQS/CKJAotGaaNn3UopPzv4e+XYDe6r9JD3o=",
         "owner": "jack-work",
         "repo": "figaro-forms",
-        "rev": "c58ce2e6cf0985253f17d1fdabd783c0a61c13d2",
+        "rev": "eb07dd751082aae3068566ed662fe0670b3380fe",
         "type": "github"
       },
       "original": {
         "owner": "jack-work",
+        "ref": "v0.1.4",
         "repo": "figaro-forms",
-        "rev": "c58ce2e6cf0985253f17d1fdabd783c0a61c13d2",
         "type": "github"
       }
     },

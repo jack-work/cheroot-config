@@ -17,7 +17,7 @@
     };
 
     figaro = {
-      url = "github:jack-work/figaro/v0.71.0";
+      url = "github:jack-work/figaro/v0.76.1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -32,7 +32,7 @@
     };
 
     charter = {
-      url = "github:jack-work/cheroot-config/ee80137f31971ab18a337ab33703ab5c786de91d?dir=charter";
+      url = "github:jack-work/cheroot-config/0f6b53dcb3ef62075ce4a4a4ce93595e2011f2cd?dir=charter";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
       inputs.flake-parts.follows = "flake-parts";
