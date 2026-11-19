@@ -80,6 +80,12 @@
             printf '%s\n' "$summary" > $out
           '';
 
+      checks.merlin-house = import ../tests/merlin-house.nix {
+        inherit pkgs;
+        charter = inputs.charter;
+        houseModule = config.flake.nixosModules.merlin-house;
+      };
+
       checks.kingdom-seats =
         let
           files = gluckCfg.xdg.configFile;
