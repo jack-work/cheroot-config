@@ -133,5 +133,21 @@ pkgs.testers.runNixOSTest {
         jack("figaro state outfit --refresh")
         out = tree("role-probe-charter")
         assert "managed ${managed}/role-probe-charter.toml" in out and "(locked)" in out, out
+
+    with subtest("outfits: the valet hides the overlay from tools, granted or not"):
+        def tool(cmd):
+            fig = json.loads(jack("figaro new -j -O bare -S system.cwd=/home/jack/dev/work -- " + shlex.quote(f"STUB-RUN<<{cmd}>>")).strip().splitlines()[-1])["aria_id"]
+            idle(fig)
+            shown = jack(f"figaro show {fig}")
+            print(shown)
+            return shown
+        probe = "ls ${overlay} >/dev/null 2>&1 && echo OVERLAY-SEEN || echo overlay-hidden; echo x > ${overlay}/free.toml 2>/dev/null && echo OVERLAY-WRITTEN || echo overlay-unwritten"
+        shown = tool(probe)
+        assert "│ overlay-hidden" in shown and "│ overlay-unwritten" in shown, shown
+        jack("figaro valet grant '*' ${overlay} rw --for 1h || true")
+        shown = tool(probe)
+        assert "│ overlay-hidden" in shown and "│ overlay-unwritten" in shown, shown
+        assert "│ OVERLAY-SEEN" not in shown and "│ OVERLAY-WRITTEN" not in shown, shown
+        assert "user-free" in merlin.succeed("cat ${overlay}/free.toml")
   '';
 }

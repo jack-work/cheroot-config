@@ -10,6 +10,7 @@
       owner = "jack";
     };
     services.figaro.valet.users = [ "jack" ];
+    services.figaro-valet.hide = [ "/var/lib/figaro-overlay" ];
     my.hush.agent.enable = true;
   };
 }
