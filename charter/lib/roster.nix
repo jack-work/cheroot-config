@@ -16,6 +16,8 @@ let
     "system"
     "target-aria"
     "succession-policy"
+    "name"
+    "role-name"
   ];
 
   isFormId = s: builtins.isString s && builtins.match "@[0-9a-f]{8,32}" s != null;

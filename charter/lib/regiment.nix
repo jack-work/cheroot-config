@@ -87,6 +87,8 @@ let
       charter = if adopted then s.charter else null;
       maxChildren = if adopted then k.maxChildren else null;
       fields = if adopted then seatFields regName reg s else { };
+      title = if adopted then s.title else null;
+      aliases = { };
       mode = reg.mode;
     };
 
@@ -107,8 +109,6 @@ let
     );
 
   seatFields = regName: reg: s: {
-    name = s.title;
-    role-name = s.title;
     orchestration.policy = reg.orchestration;
     regiment = {
       name = regName;

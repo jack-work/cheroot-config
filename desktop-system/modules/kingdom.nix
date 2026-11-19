@@ -56,6 +56,7 @@
     my.figaro.roster = {
       king-of-spain = {
         kind = "leader";
+        title = "King of Spain";
         form = "@96447061";
         maxChildren = 24;
         reach = "fleet";
@@ -66,155 +67,78 @@
       figaro-engineer = {
         kind = "leader";
         leader = "king-of-spain";
+        title = "Figaro Engineer";
         form = "@ee9271497f3823d7f50922bec4899818";
         maxChildren = 10;
         reach = "fleet";
         reportsTo = [ "king-of-spain" ];
         purpose = "Engineer regiment: builds and releases figaro";
         charter = "Builds and releases figaro: lanes on worktrees, gates, patch releases from main, reports to Gluck. Ledger: ~/.local/state/impresario (README.md, HANDOFF.md).";
-      };
-      el-arquitecto = {
-        kind = "steward";
-        leader = "king-of-spain";
-        form = "@edea54025f3f3c6c1d8c2b27439d35f3";
-        companionOf = "figaro-engineer";
-        purpose = "The figaro modular-runtime plan, held by the Figaro Engineer";
-        charter = "Owns the figaro modular-runtime plan: digests Gluck design and the carve plan into a staged layering plan with interactive design documents on keel branch design/modular-runtime, and follows Gluck comments there. Lieutenant of the Figaro Engineer (@ee927149).";
+        aliases = {
+          el-arquitecto = "@edea54025f3f3c6c1d8c2b27439d35f3";
+        };
       };
       reviewer = {
         kind = "reviewer";
         leader = "king-of-spain";
+        title = "Reviewer";
         form = "@53c6b72b";
         maxChildren = 5;
         purpose = "Reviews spain auth, secrets and deploy deltas";
         charter = "Adversarial reviewer for the spain estate. Every change touching authentication or authorization or secrets or the edge is reviewed here before it reaches the box. Demonstrates failures against the exact deployed binaries. An approval binds to a delta and not to a commit.";
-        fields = {
-          name = "Reviewer";
-          role-name = "Reviewer";
-        };
         forward = [ "el-inspector" ];
         forwardUntil = "2026-12-18";
       };
       operator = {
         kind = "steward";
         leader = "king-of-spain";
+        title = "Operator";
         form = "@662ee4fedbd0fdbad7ad6adef20cdeee";
         maxChildren = 2;
         purpose = "Spain deployments, release windows and acceptance, in windows the King names";
         charter = "Spain Executor, staff to King of Spain @96447061. Owns Spain deployments, release windows, pins/candidates and acceptance; executes only King-named switches. Also owns health, thermals, alerting and the transferred thermal-run source work via bounded transient task forks. Preserve existing monitoring timers and thermal/resource caps unless explicitly authorized to change them. Never reboot Spain without Gluck. Inspector reviews Spain auth/secrets/router/deploy risk in one pass. Keep runtime health distinct from expected failed diagnostic signer units. Handoff: zapador-vigia-acceptance.md in captains-log 2026/11/15.";
-        fields = {
-          name = "Operator";
-          role-name = "Operator";
-        };
         forward = [ "el-zapador" ];
         forwardUntil = "2026-12-18";
-      };
-      edge = {
-        kind = "steward";
-        leader = "king-of-spain";
-        form = "@b906c598b1857b6bfe350e077cf67ff6";
-        companionOf = "operator";
-        purpose = "spain's mechanics lane: figaro release windows on spain, held by El Zapador";
-        charter = "spain's mechanics lane: figaro release windows on spain (pins, CANDs from fresh detached worktrees, frozen W7-template switch and store-copy scripts, acceptance and the four hashes), switching other seats' windows when the King names edge, and the estate troupe lane. Spain changes go through the King of Spain (@96447061); El Inspector (@53c6b72b) reads security surfaces and pins.";
+        aliases = {
+          edge = "@b906c598b1857b6bfe350e077cf67ff6";
+        };
       };
       backend-engineer = {
         kind = "leader";
         leader = "king-of-spain";
+        title = "Backend Engineer";
         form = "@4f6f262b6205e70f7e27a38440872c40";
         maxChildren = 6;
         purpose = "System flakes, keel, rou2, identity, edge and messaging; areas run as forks";
-        fields = {
-          name = "Backend Engineer";
-          role-name = "Backend Engineer";
+        aliases = {
+          el-mayor = "@2b4fe37fc20436ff3123373ed0a504f6";
+          el-taller = "@2b443573385ce498dc40d0f5a672dd2a";
+          rou2-engineer = "@f48f567a727d703effa5e2fa13ebd625";
+          el-llavero = "@a06b145cf1a6169789065ff3aae90646";
+          el-zocalo = "@0e3305315544cd50fac67c489d4df4f6";
+          el-pregonero = "@2c1645942f894dd40d9dfcfb97619c58";
         };
-      };
-      el-mayor = {
-        kind = "leader";
-        leader = "king-of-spain";
-        form = "@2b4fe37fc20436ff3123373ed0a504f6";
-        purpose = "Colonel for system flakes";
-        charter = "Colonel for system flakes: nixos-system-charter, cheroot-config, spain-flake source, Merlin integration. Stages on keel branches; never switches hosts or deploys Spain.";
-        companionOf = "backend-engineer";
-        fields = {
-          lifecycle.status = "routing-alias";
-        };
-      };
-      el-taller = {
-        kind = "steward";
-        leader = "king-of-spain";
-        form = "@2b443573385ce498dc40d0f5a672dd2a";
-        purpose = "keel: git hosting, viewer, queue and kc";
-        companionOf = "backend-engineer";
-        fields = {
-          lifecycle.status = "routing-alias";
-        };
-      };
-      rou2-engineer = {
-        kind = "leader";
-        leader = "king-of-spain";
-        form = "@f48f567a727d703effa5e2fa13ebd625";
-        purpose = "Owner of rou2, the model relay on spain";
-        charter = "Owner of rou2 (Gluck's model relay on spain): the auth gateway and observability platform for all his AI apps; one dashboard on kelliher.info for figaro and rou2 metrics. Releases go to El Inspector (auth/billing/retry paths) and reach spain in edge windows the King names.";
         forward = [
           "el-aduanero"
           "quartermaster"
         ];
         forwardUntil = "2026-12-18";
-        companionOf = "backend-engineer";
-        fields = {
-          lifecycle.status = "routing-alias";
-        };
-      };
-      el-llavero = {
-        kind = "steward";
-        leader = "king-of-spain";
-        form = "@a06b145cf1a6169789065ff3aae90646";
-        purpose = "Identity on spain: lldap, Authelia, herald identities and their rotation";
-        charter = "Owner of identity on spain: lldap users and groups, Authelia (users, 2FA, OIDC clients, access rules), herald identities, and the rotation of identity secrets. Plans first, El Inspector reviews every access change, windows only through the Coordinador. Succession: keep ~/notes/spain/program/briefs/jack-identity.md and the rotation plan current; before ~650k context fork a successor (figaro fork -f -- go plus its instruction), have it cast itself into this role, and retire. Address the seat by role.";
-        companionOf = "backend-engineer";
-        fields = {
-          lifecycle.status = "routing-alias";
-        };
-      };
-      el-zocalo = {
-        kind = "steward";
-        leader = "king-of-spain";
-        form = "@0e3305315544cd50fac67c489d4df4f6";
-        purpose = "spain's web edge: Caddy sites, sockets and the files gateway";
-        charter = "Owner of spain's web edge below the apps: kelliher-web's Caddy sites and sockets, the files gateway (files.kelliher.info, gluck-files lister and its client prefixes), juglar's scope and the device clients' access, HSTS, and routes such as fig.kelliher.info/forms/. Spain changes go through the King of Spain (@96447061); El Inspector (@53c6b72b) reads anything touching auth, the edge, ACLs or secrets.";
-        companionOf = "backend-engineer";
-        fields = {
-          lifecycle.status = "routing-alias";
-        };
-      };
-      el-pregonero = {
-        kind = "steward";
-        leader = "king-of-spain";
-        form = "@2c1645942f894dd40d9dfcfb97619c58";
-        purpose = "Herald and telefono";
-        charter = "Owner of herald and telefono: Gluck's Telegram bridge to figaros, and later other messaging providers.";
-        companionOf = "backend-engineer";
-        fields = {
-          lifecycle.status = "routing-alias";
-        };
       };
       frontend-engineer = {
         kind = "leader";
         leader = "king-of-spain";
+        title = "Frontend Engineer";
         form = "@62c5c9bf8794ec5b8d1d00d05dd26c69";
         maxChildren = 3;
         purpose = "zanni and figar.org visual components, and the sites that wear them";
         charter = "Owns zanni, figar.org visual components: design, implementation, zanni-check, and the sites that wear them. Takes direction from Gluck. Spain deploys go through the King of Spain (@96447061). Succession: keep a handoff in ~/dev/zanni or ~/notes, hand over with figaro succeed before ~650k context.";
-        fields = {
-          name = "Frontend Engineer";
-          role-name = "Frontend Engineer";
-        };
         forward = [ "il-zanni" ];
         forwardUntil = "2026-12-18";
       };
       big-tv = {
         kind = "steward";
         leader = "king-of-spain";
+        title = "Big TV";
         form = "@2e0bb68c36211dbd2023bc693b4c682c";
         maxChildren = 1;
         quota = 2;
@@ -224,58 +148,47 @@
       planner = {
         kind = "steward";
         leader = "king-of-spain";
+        title = "Planner";
         form = "@33986a45978384974714f033a3345f8a";
         maxChildren = 2;
         purpose = "Project Italy plan and backlog";
         charter = "Holds the Project Italy long-term plan and backlog (~/.captains-log/workstreams/italy.md). Decomposes milestones into owned items and sends them to the King in batches for routing. Proposes the work queue (hub).";
-        fields = {
-          name = "Planner";
-          role-name = "Planner";
-        };
         forward = [ "jefe-estado-mayor" ];
         forwardUntil = "2026-12-18";
       };
       writer = {
         kind = "steward";
         leader = "king-of-spain";
+        title = "Writer";
         form = "@c204f2a0188fa5864b75db09e06dd266";
         maxChildren = 1;
         purpose = "jack.kelliher.info and Gluck's résumé";
         charter = "Keeper of Gluck's personal site jack.kelliher.info and his résumé (~/dev/jack.kelliher.info). Gluck talks to the holder directly over herald.";
-        fields = {
-          name = "Writer";
-          role-name = "Writer";
-        };
         forward = [ "el-escribano" ];
         forwardUntil = "2026-12-18";
       };
       github-watcher = {
         kind = "steward";
         leader = "king-of-spain";
+        title = "GitHub Watcher";
         form = "@443f4126721e7a980bbc9c68e8aede77";
         maxChildren = 0;
         purpose = "Watches GitHub pushes and forwards them to the seat that owns the repo";
         forward = [ "el-centinela" ];
         forwardUntil = "2026-12-18";
-        fields = {
-          name = "GitHub Watcher";
-          role-name = "GitHub Watcher";
-        };
       };
       merlin-migration = {
         kind = "steward";
         leader = "king-of-spain";
+        title = "Merlin Migration";
         form = "@4a845160c69f98a0412c5dc4f28e8b70";
         maxChildren = 1;
         purpose = "Merlin's install and cutover from the old gluck; transient";
-        fields = {
-          name = "Merlin Migration";
-          role-name = "Merlin Migration";
-        };
       };
       coordinador = {
         kind = "secretary";
         leader = "king-of-spain";
+        title = "Coordinador de Spain";
         form = "@042d641e";
         companionOf = "king-of-spain";
         purpose = "The spain deploy queue and switch guard, a King companion";

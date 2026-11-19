@@ -109,6 +109,20 @@ let
               it holds, and its grants live on the holder, so they come from the primary seat.
             '';
           };
+          title = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+            description = "The seat's display name, applied as the form keys name and role-name, which figaro still reads separately.";
+          };
+          aliases = lib.mkOption {
+            type = lib.types.attrsOf lib.types.str;
+            default = { };
+            description = ''
+              Old role forms that route to this seat, by name and exact form id. Each becomes a
+              companion of this seat marked lifecycle.status = routing-alias, with no fork limit
+              of its own; its id keeps working.
+            '';
+          };
           forward = lib.mkOption {
             type = lib.types.listOf lib.types.str;
             default = [ ];
@@ -325,9 +339,9 @@ let
       pkgs,
       lib,
       roster,
+      checked ? rosterLib.validateRoster roster,
     }:
     let
-      checked = rosterLib.validateRoster roster;
       toml = pkgs.formats.toml { };
       entries = lib.mapAttrsToList (name: role: {
         name = "${name}.toml";
@@ -523,29 +537,65 @@ in
       cfg = hm.config.my.figaro;
       toml = pkgs.formats.toml { };
       regiments = regimentLib.render cfg.roster cfg.regiments;
-      roster = lib.mapAttrs (_: withHouseFields) (cfg.roster // regiments.roster);
-      withHouseFields =
+      declared = cfg.roster // regiments.roster;
+      aliasRoles = lib.concatMapAttrs (
+        primary: r:
+        lib.mapAttrs (alias: form: {
+          name = alias;
+          kind = "steward";
+          inherit (r) leader;
+          inherit form;
+          companionOf = primary;
+          purpose = "Routes to ${if r.title != null then r.title else primary}";
+          title = null;
+          aliases = { };
+          handoff = null;
+          mantra = null;
+          mint = false;
+          provider = null;
+          model = null;
+          cacheControl = null;
+          reach = "lineage";
+          reportsTo = [ ];
+          maxChildren = null;
+          quota = null;
+          childPolicy = { };
+          forward = [ ];
+          forwardUntil = null;
+          charter = null;
+          fields.lifecycle.status = "routing-alias";
+          mode = r.mode;
+        }) r.aliases
+      ) declared;
+      aliasClashes = builtins.filter (a: declared ? ${a}) (builtins.attrNames aliasRoles);
+      roster =
+        assert lib.assertMsg (aliasClashes == [ ])
+          "my.figaro.roster: aliases ${toString aliasClashes} are also declared as roles";
+        lib.mapAttrs (_: rendered) (rosterLib.validateRoster (declared // aliasRoles));
+      rendered =
         r:
-        if cfg.fanoutWhenFull == null || r.form == null then
-          r
-        else
-          r
-          // {
-            fields = r.fields // {
-              fanout = (r.fields.fanout or { }) // {
-                when-full = cfg.fanoutWhenFull;
-              };
+        let
+          titled = lib.optionalAttrs (r.title or null != null) {
+            name = r.title;
+            role-name = r.title;
+          };
+          house = lib.optionalAttrs (cfg.fanoutWhenFull != null && r.form != null) {
+            fanout = (r.fields.fanout or { }) // {
+              when-full = cfg.fanoutWhenFull;
             };
           };
+        in
+        r // { fields = r.fields // titled // house; };
       rosterDrv = mkRosterDrv {
         inherit pkgs lib roster;
+        checked = roster;
       };
       reconcilePkg = mkRosterReconcileScript {
         inherit pkgs lib;
         figaroPkg = cfg.package;
         rosterDir = "${rosterDrv}";
       };
-      checkedRoster = rosterLib.validateRoster roster;
+      checkedRoster = roster;
       authority = lib.filterAttrs (_: a: a != null) (
         lib.mapAttrs (rosterLib.authorityOf checkedRoster) checkedRoster
       );
