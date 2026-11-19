@@ -92,6 +92,11 @@ let
               follows each role through succession.
             '';
           };
+          outfits = lib.mkOption {
+            type = lib.types.nullOr (lib.types.listOf lib.types.str);
+            default = null;
+            description = "Outfits the seat's figaros may dress in beyond default, applied as the protected key system.grants.outfits on the role form. Null leaves the key alone.";
+          };
           childPolicy = lib.mkOption {
             type = lib.types.attrsOf lib.types.anything;
             default = { };
@@ -199,6 +204,11 @@ let
               a seat kind of this regiment (strategist, knight, steward) or a declared role.
               A kind whose seat has no form yet is skipped.
             '';
+          };
+          outfits = lib.mkOption {
+            type = lib.types.nullOr (lib.types.listOf lib.types.str);
+            default = null;
+            description = "Outfits the seat's figaros may dress in beyond default, applied as the protected key system.grants.outfits on the role form. Null leaves the key alone.";
           };
           childPolicy = lib.mkOption {
             type = lib.types.attrsOf lib.types.anything;
@@ -601,6 +611,7 @@ in
           maxChildren = null;
           quota = null;
           childPolicy = { };
+          outfits = null;
           forward = [ ];
           forwardUntil = null;
           charter = null;
@@ -641,26 +652,31 @@ in
         lib.mapAttrs (rosterLib.authorityOf checkedRoster) checkedRoster
       );
       applied = lib.filterAttrs (
-        n: r: r.charter != null || r.maxChildren != null || r.fields != { } || authority ? ${n}
+        n: r:
+        r.charter != null || r.maxChildren != null || r.fields != { } || r.outfits != null || authority ? ${n}
       ) checkedRoster;
       charterOutfit = name: "role-${name}-charter";
       fanoutOutfit = name: "role-${name}-fanout";
       fieldsOutfit = name: "role-${name}-fields";
       grantsOutfit = name: "role-${name}-grants";
+      outfitsOutfit = name: "role-${name}-outfits";
       fanoutOf =
         name: role:
         lib.filterAttrs (_: v: v != null) {
           max_children = role.maxChildren;
           quota = authority.${name}.quota or null;
         };
-      managedRoles = lib.filterAttrs (n: r: r.charter != null || fanoutOf n r != { } || r.fields != { }) applied;
+      managedRoles = lib.filterAttrs (
+        n: r: r.charter != null || fanoutOf n r != { } || r.fields != { } || r.outfits != null
+      ) applied;
       manifest = toml.generate "figaro-roles.toml" {
         roles = lib.mapAttrs (name: role: {
           id = role.form;
           outfits =
             lib.optional (role.charter != null) (charterOutfit name)
             ++ lib.optional (fanoutOf name role != { }) (fanoutOutfit name)
-            ++ lib.optional (role.fields != { }) (fieldsOutfit name);
+            ++ lib.optional (role.fields != { }) (fieldsOutfit name)
+            ++ lib.optional (role.outfits != null) (outfitsOutfit name);
           managed =
             lib.optional (role.charter != null) "charter"
             ++ lib.optional (role.maxChildren != null) "system.fanout.max_children"
@@ -669,6 +685,7 @@ in
               "system.fanout.max_children"
               "system.fanout.quota"
             ]
+            ++ lib.optional (role.outfits != null) "system.grants.outfits"
             ++ builtins.attrNames role.fields;
           inherit (role) mode;
         }) managedRoles;
@@ -818,6 +835,14 @@ in
               };
             }
           ) (lib.filterAttrs (n: r: fanoutOf n r != { }) applied)
+          // lib.mapAttrs' (
+            name: role:
+            lib.nameValuePair "figaro/outfits/${outfitsOutfit name}.toml" {
+              source = toml.generate "outfit-${outfitsOutfit name}.toml" {
+                system.grants.outfits = role.outfits;
+              };
+            }
+          ) (lib.filterAttrs (_: r: r.outfits != null) applied)
           // lib.mapAttrs' (
             name: a:
             lib.nameValuePair "figaro/outfits/${grantsOutfit name}.toml" {

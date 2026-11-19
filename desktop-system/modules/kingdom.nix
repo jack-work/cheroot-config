@@ -31,17 +31,33 @@
       };
       kinds = {
         strategist = {
+          outfits = [
+            "succession-cache"
+            "opus5"
+            "opus5-ant"
+          ];
           provider = "anthropic";
           model = "claude-opus-5-5";
           maxChildren = 7;
           quota = 14;
         };
         knight = {
+          outfits = [
+            "succession-cache"
+            "opus5"
+            "opus5-ant"
+          ];
           provider = "anthropic";
           model = "claude-opus-5-5";
           maxChildren = 1;
         };
         steward = {
+          outfits = [
+            "succession-cache"
+            "review-sonnet"
+            "opus5-ant"
+            "regiment-figaro-reviewer"
+          ];
           provider = "gemini";
           model = "gemini-4-carbon";
           maxChildren = 3;
@@ -55,6 +71,15 @@
     };
     my.figaro.roster = {
       king-of-spain = {
+        outfits = [
+          "succession-standard"
+          "opus5"
+          "opus5-ant"
+          "hk"
+          "short"
+          "sonn5"
+          "review-sonnet"
+        ];
         kind = "leader";
         title = "King of Spain";
         form = "@96447061";
@@ -65,6 +90,15 @@
         charter = "The seat of spain: the NixOS mini-PC that is router, NAS, identity provider (Authelia+lldap), app host (kelliher-web/Caddy/cloudflared), git host (keel) and finance cache (kfin). The holder coordinates and keeps context GENERAL; specialists hold detail and are addressed by their own roles. Standing rules: spain is the house router, so deploys are cheap but REBOOTS ARE NOT: never restart spain without Gluck's explicit okay, and say so when a change needs one. Live state is read from the box, not remembered.";
       };
       figaro-engineer = {
+        outfits = [
+          "succession-standard"
+          "opus5"
+          "opus5-ant"
+          "hk"
+          "short"
+          "sonn5"
+          "review-sonnet"
+        ];
         kind = "leader";
         leader = "king-of-spain";
         title = "Figaro Engineer";
@@ -79,6 +113,9 @@
         };
       };
       reviewer = {
+        outfits = [
+          "succession-standard"
+        ];
         kind = "reviewer";
         leader = "king-of-spain";
         title = "Reviewer";
@@ -90,6 +127,9 @@
         forwardUntil = "2026-12-18";
       };
       operator = {
+        outfits = [
+          "succession-standard"
+        ];
         kind = "steward";
         leader = "king-of-spain";
         title = "Operator";
@@ -104,6 +144,11 @@
         };
       };
       backend-engineer = {
+        outfits = [
+          "succession-standard"
+          "opus5"
+          "short"
+        ];
         kind = "leader";
         leader = "king-of-spain";
         title = "Backend Engineer";
@@ -125,6 +170,10 @@
         forwardUntil = "2026-12-18";
       };
       frontend-engineer = {
+        outfits = [
+          "succession-standard"
+          "opus5"
+        ];
         kind = "leader";
         leader = "king-of-spain";
         title = "Frontend Engineer";
@@ -136,6 +185,9 @@
         forwardUntil = "2026-12-18";
       };
       big-tv = {
+        outfits = [
+          "succession-standard"
+        ];
         kind = "steward";
         leader = "king-of-spain";
         title = "Big TV";
@@ -146,6 +198,9 @@
         charter = "Colonel of TV regiment, reports to King @96447061. Own quality of tv.kelliher.info app, persistent officers R&D/UI/remote/backend/QA, routines and releases. Shared UI centralized in zanni with @flypaper-atlas; useful zanni2 parts at Zanni discretion. Auth/ACL/tokens/devices/Spain routes always through King. Other changes through sole edge executor with normal guards. No paid fallback, fixtures or hash rounds; keep leak/data-loss checks. Succession-standard: current captains-log handoff, durable officer roster and figla move, successor before context exhaustion.";
       };
       planner = {
+        outfits = [
+          "succession-standard"
+        ];
         kind = "steward";
         leader = "king-of-spain";
         title = "Planner";
@@ -157,6 +212,9 @@
         forwardUntil = "2026-12-18";
       };
       writer = {
+        outfits = [
+          "succession-standard"
+        ];
         kind = "steward";
         leader = "king-of-spain";
         title = "Writer";
@@ -168,6 +226,7 @@
         forwardUntil = "2026-12-18";
       };
       github-watcher = {
+        outfits = [ ];
         kind = "steward";
         leader = "king-of-spain";
         title = "GitHub Watcher";
@@ -178,6 +237,9 @@
         forwardUntil = "2026-12-18";
       };
       merlin-migration = {
+        outfits = [
+          "succession-standard"
+        ];
         kind = "steward";
         leader = "king-of-spain";
         title = "Merlin Migration";

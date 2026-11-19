@@ -80,6 +80,7 @@ let
       reportsTo = if adopted then reportsOf reg k else [ ];
       quota = if adopted then k.quota else null;
       childPolicy = if adopted then k.childPolicy else { };
+      outfits = if adopted then k.outfits else null;
       companionOf = null;
       cacheControl = null;
       forward = [ ];
