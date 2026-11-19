@@ -1,5 +1,17 @@
 {
   flake.modules.homeManager.kingdom = {
+    my.figaro.outfits = {
+      "model/opus5-kic".layers = [
+        "house"
+        "via-rou2"
+      ];
+      "model/opus5-kic".system.model = "anthropic-kic/claude-opus-5-5";
+      "model/sonn5-kic".layers = [
+        "house"
+        "via-rou2"
+      ];
+      "model/sonn5-kic".system.model = "anthropic-kic/claude-sonnet-5-5";
+    };
     my.figaro.fanoutWhenFull = "If a fork or new is refused for fan-out quota, or you are over system.fanout.max_children, retire or kill children whose work is done (harvest first) until you are under; a retired or killed child frees its slot at once. Do not ask for a higher limit until you have.";
     my.figaro.regiments.figaro = {
       leader = "figaro-engineer";
@@ -78,6 +90,8 @@
     my.figaro.roster = {
       king-of-spain = {
         outfits = [
+          "opus5-kic"
+          "sonn5-kic"
           "succession-standard"
           "opus5"
           "opus5-ant"
