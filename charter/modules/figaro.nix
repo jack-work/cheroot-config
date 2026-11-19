@@ -574,6 +574,10 @@ in
             lib.optional (role.charter != null) "charter"
             ++ lib.optional (role.maxChildren != null) "system.fanout.max_children"
             ++ lib.optional ((authority.${name}.quota or null) != null) "system.fanout.quota"
+            ++ lib.optionals (role.companionOf != null) [
+              "system.fanout.max_children"
+              "system.fanout.quota"
+            ]
             ++ builtins.attrNames role.fields;
           inherit (role) mode;
         }) managedRoles;

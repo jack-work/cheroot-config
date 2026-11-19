@@ -114,6 +114,7 @@
                   primary = roles[r["companion_of"]]
                   assert "max_children" in primary and not {"max_children", "quota", "scopes", "child_policy"} & r.keys(), name
                   assert name not in seats_json and f"role-{name}-grants" not in outfits, name
+                  assert {"system.fanout.max_children", "system.fanout.quota"} <= set(manifest[name]["managed"]), (name, "a companion's own limit is removed, so only its primary's counts")
                   continue
               assert count(r.get("max_children")), (name, "budget")
               if r["reach"] == "fleet":
