@@ -11,6 +11,16 @@
         "via-rou2"
       ];
       "model/sonn5-kic".system.model = "anthropic-kic/claude-sonnet-5-5";
+      "model/opus5-kic2".layers = [
+        "house"
+        "via-rou2"
+      ];
+      "model/opus5-kic2".system.model = "anthropic-kic-2/claude-opus-5-5";
+      "model/review-sonnet".layers = [
+        "house"
+        "via-rou2"
+      ];
+      "model/review-sonnet".system.model = "anthropic-kic/claude-sonnet-5-5";
     };
     my.figaro.fanoutWhenFull = "If a fork or new is refused for fan-out quota, or you are over system.fanout.max_children, retire or kill children whose work is done (harvest first) until you are under; a retired or killed child frees its slot at once. Do not ask for a higher limit until you have.";
     my.figaro.regiments.figaro = {
@@ -50,10 +60,10 @@
             "regiment-figaro-strategist"
             "succession-cache"
             "opus5"
-            "opus5-ant"
+            "opus5-kic2"
           ];
-          provider = "anthropic";
-          model = "claude-opus-5-5";
+          provider = "rou2";
+          model = "anthropic-kic-2/claude-opus-5-5";
           maxChildren = 7;
           quota = 14;
         };
@@ -65,10 +75,10 @@
             "regiment-figaro-knight"
             "succession-cache"
             "opus5"
-            "opus5-ant"
+            "opus5-kic2"
           ];
-          provider = "anthropic";
-          model = "claude-opus-5-5";
+          provider = "rou2";
+          model = "anthropic-kic-2/claude-opus-5-5";
           maxChildren = 1;
         };
         steward = {
@@ -79,7 +89,7 @@
             "regiment-figaro-steward"
             "succession-cache"
             "review-sonnet"
-            "opus5-ant"
+            "opus5-kic2"
             "regiment-figaro-reviewer"
           ];
           provider = "gemini";
@@ -100,7 +110,7 @@
           "sonn5-kic"
           "succession-standard"
           "opus5"
-          "opus5-ant"
+          "opus5-kic2"
           "hk"
           "short"
           "sonn5"
@@ -121,7 +131,7 @@
           "sonn5-kic"
           "succession-standard"
           "opus5"
-          "opus5-ant"
+          "opus5-kic2"
           "hk"
           "short"
           "sonn5"
