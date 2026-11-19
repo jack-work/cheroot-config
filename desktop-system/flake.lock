@@ -380,17 +380,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1794883249,
-        "narHash": "sha256-WmAizTuX+eji5DlMA+IWyzqRqkjlAGpACG8Rt1Uo5i8=",
-        "ref": "refs/heads/feat/anthropic-max",
-        "rev": "aac52f7d0b71afd164ce434d13ada67004ccfcf0",
-        "revCount": 160,
+        "lastModified": 1795067259,
+        "narHash": "sha256-Z9J0J8VXl6JyfHvhmRDRDF67ihvKKdA6GC/T5C4LI4s=",
+        "ref": "refs/heads/feat/account-kic",
+        "rev": "2498995e52d1e580347e98a1e218d9dc29a42be3",
+        "revCount": 171,
         "type": "git",
         "url": "ssh://git@spain/var/lib/keel/jack/rou2.git"
       },
       "original": {
-        "ref": "refs/heads/feat/anthropic-max",
-        "rev": "aac52f7d0b71afd164ce434d13ada67004ccfcf0",
+        "ref": "refs/heads/feat/account-kic",
+        "rev": "2498995e52d1e580347e98a1e218d9dc29a42be3",
         "type": "git",
         "url": "ssh://git@spain/var/lib/keel/jack/rou2.git"
       }

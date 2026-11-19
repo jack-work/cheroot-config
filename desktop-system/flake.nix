@@ -52,7 +52,7 @@
     };
 
     rou2 = {
-      url = "git+ssh://git@spain/var/lib/keel/jack/rou2.git?ref=refs/heads/feat/anthropic-max&rev=aac52f7d0b71afd164ce434d13ada67004ccfcf0";
+      url = "git+ssh://git@spain/var/lib/keel/jack/rou2.git?ref=refs/heads/feat/account-kic&rev=2498995e52d1e580347e98a1e218d9dc29a42be3";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
