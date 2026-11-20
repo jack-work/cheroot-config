@@ -261,7 +261,6 @@
                   form = "@89abcdef";
                   title = "Clerk";
                   index = "fleet.clerk";
-                  birth = "default,fast";
                 };
               };
             }
@@ -382,13 +381,13 @@
             assert set(roles) == {"lead", "clerk"}, roles
             assert roles["lead"] == {"name": "lead", "form": "@0123456789abcdef0123456789abcdef", "outfits": ["role-lead"],
                 "managed": ["charter", "lanes.gate", "name", "orchestration.policy", "role-name", "standing.patrol", "system.grants.outfits"]}, roles["lead"]
-            assert roles["clerk"]["managed"] == ["index", "name", "orchestration.policy", "role-name", "standing.patrol", "succession-policy.outfit"], roles["clerk"]
+            assert roles["clerk"]["managed"] == ["index", "name", "orchestration.policy", "role-name", "standing.patrol"], roles["clerk"]
             lead = tomllib.load(open("${files."figaro/outfits/role-lead.toml".source}", "rb"))
             assert lead == {"charter": "Holds the order.", "name": "Lead", "role-name": "Lead", "lanes": {"gate": "fleet.lane.lead.gate"},
                 "standing": {"patrol": "Hold the gate."}, "orchestration": {"policy": "Start from the lane index."},
                 "system": {"grants": {"outfits": ["fast"]}}}, lead
             clerk = tomllib.load(open("${files."figaro/outfits/role-clerk.toml".source}", "rb"))
-            assert clerk["standing"] == {"patrol": "Walk the walls."} and clerk["succession-policy"] == {"outfit": "default,fast"}, clerk
+            assert clerk["standing"] == {"patrol": "Walk the walls."} and "succession-policy" not in clerk, clerk
             for r in m["roles"]:
                 assert not any(k.startswith(("system.fanout", "system.model", "system.provider")) for k in r["managed"]), r
             PY

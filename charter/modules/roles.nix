@@ -36,7 +36,6 @@
           standing = if cfg.standing // r.standing == { } then null else cfg.standing // r.standing;
           orchestration = if cfg.orchestration == null then null else { policy = cfg.orchestration; };
           system = if r.outfits == null then null else { grants.outfits = r.outfits; };
-          succession-policy = if r.birth == null then null else { outfit = r.birth; };
         };
 
       managedOf =
@@ -93,11 +92,6 @@
                 standing = lib.mkOption {
                   type = lib.types.attrsOf lib.types.str;
                   default = { };
-                };
-                birth = lib.mkOption {
-                  type = lib.types.nullOr lib.types.str;
-                  default = null;
-                  description = "succession-policy.outfit: what a successor is born in. Read only at birth.";
                 };
               };
             }
