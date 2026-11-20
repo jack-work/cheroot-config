@@ -5,46 +5,35 @@
     let
       inherit (pkgs) lib;
       lockGate = config.flake.lib.lockGate;
-      rosterLib = config.flake.lib.roster;
-      regimentLib = config.flake.lib.regiment;
-
-      kindDefaults = {
-        provider = null;
-        model = null;
-        maxChildren = null;
-        quota = null;
-        reach = "lineage";
-        reportsTo = [ ];
-        childPolicy = { };
-      };
-      mkSeat = kind: form: {
-        inherit kind form;
+      k = config.flake.lib.kingdom;
+      fails = x: !(builtins.tryEval (builtins.deepSeq x x)).success;
+      expandFails = seats: fails (k.expand { inherit seats; });
+      sample = kind: role: {
+        inherit kind role;
         title = "Seat ${kind}";
         purpose = "p";
-        charter = "c";
-        handoff = null;
-        mantra = null;
-      };
-      mkRegiment = leader: seats: {
-        inherit leader seats;
-        mode = "check";
-        kinds = lib.genAttrs regimentLib.kinds (_: kindDefaults);
-        reviewer = {
-          ttl = "1h";
-          retireTtl = "10m";
-        };
-        orchestration = "o";
-        agreement = [ "{strategist} {knight} {steward}" ];
-        successionLayers = [ ];
-        successorBase = [ "default" ];
+        duty = "c";
       };
       fullSeats = {
-        s = mkSeat "strategist" "@01234567";
-        k = mkSeat "knight" "@11234567";
-        w = mkSeat "steward" null;
+        s = sample "strategist" "@01234567";
+        k = sample "knight" "@11234567";
+        w = sample "steward" null;
       };
-      regimentFails =
-        roster: regiments: !(builtins.tryEval (regimentLib.render roster regiments).roster).success;
+      regimentWith =
+        leader: seats:
+        k.regiment {
+          name = "r";
+          inherit leader seats;
+          orchestration = "o";
+          agreement = [ "{strategist} {knight} {steward}" ];
+          successionLayers = [ ];
+          successorBase = [ "default" ];
+          reviewer.ttl = "1h";
+        };
+      top = k.seat {
+        kind = "leader";
+        purpose = "p";
+      };
       realLock = builtins.fromJSON (builtins.readFile ../flake.lock);
 
       fakeSshLock = {
@@ -163,12 +152,6 @@
                   provider = "gateway";
                   model = "sample-model";
                 };
-                roster.sample-steward = {
-                  kind = "steward";
-                  leader = "none";
-                  purpose = "Maintain shared charter modules";
-                };
-                managedRolesHook.enable = true;
               };
               my.hush = {
                 agent.enable = true;
@@ -291,70 +274,71 @@
               my.figaro = {
                 credo = "User credo.";
                 outfits.fast.system.ttl = "1h";
-                roster.lead = {
-                  kind = "leader";
-                  purpose = "Hold the order";
-                  form = "@0123456789abcdef0123456789abcdef";
-                  charter = "Holds the order.";
-                  maxChildren = 3;
-                  reach = "fleet";
-                  reportsTo = [ "clerk" ];
-                };
-                roster.aide = {
-                  kind = "secretary";
-                  leader = "lead";
-                  purpose = "Keep the calendar";
-                  form = "@abcdef01";
-                  companionOf = "lead";
-                };
-                roster.clerk = {
-                  kind = "secretary";
-                  leader = "lead";
-                  purpose = "Keep the ledger";
-                  form = "@89abcdef";
-                  maxChildren = 0;
-                };
-                roster.builder = {
-                  kind = "builder";
-                  leader = "lead";
-                  purpose = "Run isolated tasks";
-                  forward = [ "mason" ];
-                  forwardUntil = "2026-12-01";
-                };
-                regiments.sample = {
+              };
+              my.kingdom = {
+                root = "lead";
+                seats = {
+                  lead = k.seat {
+                    kind = "leader";
+                    purpose = "Hold the order";
+                    role = "@0123456789abcdef0123456789abcdef";
+                    duty = "Holds the order.";
+                    limit.children = 3;
+                    reach = "fleet";
+                    reportsTo = [ "clerk" ];
+                    aliases.aide = k.companion {
+                      role = "@abcdef01";
+                      purpose = "Keep the calendar";
+                    };
+                  };
+                  clerk = k.seat {
+                    kind = "secretary";
+                    purpose = "Keep the ledger";
+                    role = "@89abcdef";
+                    limit.children = 0;
+                  };
+                  builder = k.seat {
+                    kind = "builder";
+                    purpose = "Run isolated tasks";
+                    forward.mason = "2026-12-01";
+                  };
+                }
+                // k.regiment {
+                  name = "sample";
                   leader = "lead";
                   seats = {
                     thinker = {
                       kind = "strategist";
                       title = "Sample Strategist";
                       purpose = "Plan";
-                      form = "@fedcba9876543210fedcba9876543210";
-                      charter = "Plans.";
+                      role = "@fedcba9876543210fedcba9876543210";
+                      duty = "Plans.";
                       handoff = "/tmp/thinker.md";
                     };
                     vanguard = {
                       kind = "knight";
                       title = "Sample Knight";
                       purpose = "Ship";
-                      form = "@76543210";
-                      charter = "Ships.";
+                      role = "@76543210";
+                      duty = "Ships.";
                     };
                     pool = {
                       kind = "steward";
                       title = "Sample Steward";
                       purpose = "Keep reviewers";
-                      charter = "Keeps reviewers.";
+                      duty = "Keeps reviewers.";
                     };
                   };
                   kinds.strategist.model = "big";
-                  kinds.knight.quota = 5;
-                  kinds.knight.maxChildren = null;
+                  kinds.knight.limit = {
+                    children = null;
+                    quota = 5;
+                  };
                   kinds.reviewer = {
                     provider = "cheap";
                     model = "small";
                   };
                 };
-                managedRolesHook.enable = true;
               };
             }
           ];
@@ -368,132 +352,109 @@
           assert !(builtins.tryEval (lockGate.assertGithubOnlyLock fakeSshLock)).success;
           assert !(builtins.tryEval (lockGate.assertGithubOnlyLock fakePathLock)).success;
           assert !(builtins.tryEval (lockGate.assertGithubOnlyLock fakeDualNixpkgsLock)).success;
-          assert builtins.all (r: !(builtins.tryEval (rosterLib.validateRoster r)).success) [
+          pkgs.runCommand "charter-lock-github-only" { } ''
+            echo "verified github-only charter lock (${toString (builtins.length (builtins.attrNames realLock.nodes))} nodes, 1 nixpkgs)" > $out
+          '';
+
+        charter-kingdom-faults =
+          let
+            seat =
+              kind: extra:
+              k.seat (
+                {
+                  inherit kind;
+                  purpose = "p";
+                }
+                // extra
+              );
+          in
+          assert builtins.all expandFails [
+            { bad = seat "unknown" { }; }
+            { bad = seat "steward" { purpose = ""; }; }
+            { bad = seat "steward" { limit.children = -1; }; }
             {
-              bad = {
-                kind = "unknown";
-                purpose = "";
+              bad = seat "steward" {
+                role = "@11234567";
+                limit = {
+                  children = 3;
+                  quota = 2;
+                };
               };
             }
+            { orphan = seat "builder" { leader = "missing"; }; }
+            { self = seat "builder" { leader = "self"; }; }
             {
-              bad = {
-                kind = "steward";
-                purpose = "p";
-                maxChildren = -1;
-              };
+              a = seat "leader" { leader = "b"; };
+              b = seat "leader" { leader = "a"; };
+            }
+            { renamed = seat "steward" { forward.old = "soon"; }; }
+            {
+              a = seat "steward" { };
+              b = seat "steward" { forward.a = "2026-12-01"; };
             }
             {
-              orphan = {
-                kind = "builder";
-                leader = "missing";
-                purpose = "p";
+              a = seat "steward" { forward.old = "2026-12-01"; };
+              b = seat "steward" { forward.old = "2026-12-01"; };
+            }
+            { b = seat "steward" { role = "@1123456"; }; }
+            { a = seat "leader" { aliases.b = k.alias "@11234567"; }; }
+            {
+              a = seat "leader" {
+                role = "@01234567";
+                aliases.b = k.alias "@11234567";
               };
+              b = seat "steward" { };
             }
             {
-              self = {
-                kind = "builder";
-                leader = "self";
-                purpose = "p";
-              };
-            }
-            {
-              a = {
-                kind = "leader";
-                leader = "b";
-                purpose = "p";
-              };
-              b = {
-                kind = "leader";
-                leader = "a";
-                purpose = "p";
-              };
-            }
-            {
-              renamed = {
-                kind = "steward";
-                purpose = "p";
-                forward = [ "old" ];
-              };
-            }
-            {
-              a = {
-                kind = "steward";
-                purpose = "p";
-              };
-              b = {
-                kind = "steward";
-                purpose = "p";
-                forward = [ "a" ];
-                forwardUntil = "2026-12-01";
-              };
-            }
-            {
-              a = {
-                kind = "leader";
-                purpose = "p";
-                form = "@01234567";
-              };
-              b = {
-                kind = "steward";
-                purpose = "p";
-                form = "@11234567";
-                companionOf = "a";
-                maxChildren = 1;
-              };
-            }
-            {
-              b = {
-                kind = "steward";
-                purpose = "p";
-                form = "@11234567";
-                companionOf = "missing";
-              };
-            }
-            {
-              a = {
-                kind = "leader";
-                purpose = "p";
-              };
-              b = {
-                kind = "steward";
-                purpose = "p";
-                form = "@11234567";
+              a = seat "leader" { };
+              b = seat "steward" {
+                role = "@11234567";
                 reportsTo = [ "a" ];
               };
             }
             {
-              b = {
-                kind = "steward";
-                purpose = "p";
-                form = "@11234567";
+              b = seat "steward" {
+                role = "@11234567";
                 childPolicy."system.scopes" = [ "send:role:knight" ];
               };
             }
             {
-              b = {
-                kind = "steward";
-                purpose = "p";
-                form = "@11234567";
+              b = seat "steward" {
+                role = "@11234567";
                 childPolicy."runtime.retired" = true;
               };
             }
-          ];
-          assert
-            (rosterLib.validateRoster {
-              top = {
-                kind = "leader";
-                purpose = "p";
-              };
-              mid = {
+            { x = seat "steward" { fields.charter = "c"; }; }
+            {
+              x = {
                 kind = "steward";
-                leader = "top";
                 purpose = "p";
               };
-            })
-              ? mid;
-          pkgs.runCommand "charter-lock-github-only" { } ''
-            echo "verified github-only charter lock (${toString (builtins.length (builtins.attrNames realLock.nodes))} nodes, 1 nixpkgs)" > $out
-          '';
+            }
+          ];
+          assert fails (
+            k.expand {
+              root = "missing";
+              seats.a = top;
+            }
+          );
+          assert
+            (k.expand {
+              root = "top";
+              seats = {
+                inherit top;
+                mid = seat "steward" { };
+              };
+            }).mid.leader == "top";
+          assert fails (regimentWith "lead" (fullSeats // { s2 = sample "strategist" null; }));
+          assert fails (regimentWith "lead" (removeAttrs fullSeats [ "k" ]));
+          assert fails (regimentWith "s" fullSeats);
+          assert fails (regimentWith "lead" (fullSeats // { k = sample "knight" "@xyz"; }));
+          assert expandFails (regimentWith "missing" fullSeats);
+          assert expandFails ({ lead = top; } // regimentWith "lead" fullSeats // { s = top; });
+          assert !(expandFails ({ lead = top; } // regimentWith "lead" fullSeats));
+          assert !(expandFails (regimentWith "none" fullSeats));
+          pkgs.runCommand "charter-kingdom-faults" { } "touch $out";
 
         charter-zero-host-leaks =
           let
@@ -578,7 +539,9 @@
               assert clerk["child_policy"] == {"system.scopes": lane + ["send:role:@89abcdef"]}, clerk
               aide = load(f"{roster}/aide.toml")
               assert aide["companion_of"] == "lead" and not {"quota", "scopes", "child_policy", "max_children"} & aide.keys(), aide
-              assert load("${files."figaro/outfits/role-lead-grants.toml".source}") == {"system": {"scopes": ["*:*"]}}
+              assert load("${
+                files."figaro/outfits/role-lead-grants.toml".source
+              }") == {"system": {"scopes": ["*:*"]}}
               import json
               seats = json.load(open(re.search(r"FIGARO_APPLY_SEATS=(\S+)", script).group(1)))
               assert seats["lead"] == {"form": "@0123456789abcdef0123456789abcdef", "mode": "check", "outfit": "role-lead-grants",
@@ -595,40 +558,6 @@
             apply = lib.findFirst (p: lib.getName p == "figaro-apply-roles") null sampleHm.home.packages;
             outfit = n: files."figaro/outfits/${n}.toml".source;
           in
-          assert regimentFails { lead = { }; } {
-            r = mkRegiment "lead" (fullSeats // { s2 = mkSeat "strategist" null; });
-          };
-          assert regimentFails { lead = { }; } { r = mkRegiment "lead" (removeAttrs fullSeats [ "k" ]); };
-          assert regimentFails { } { r = mkRegiment "missing" fullSeats; };
-          assert regimentFails { lead = { }; } { r = mkRegiment "s" fullSeats; };
-          assert regimentFails { s = { }; } { r = mkRegiment "none" fullSeats; };
-          assert regimentFails { lead = { }; } {
-            r = mkRegiment "lead" (fullSeats // { k = mkSeat "knight" "@xyz"; });
-          };
-          assert regimentFails { lead = { }; } {
-            r = mkRegiment "lead" fullSeats;
-            r2 = mkRegiment "lead" fullSeats;
-          };
-          assert !(regimentFails { lead = { }; } { r = mkRegiment "lead" fullSeats; });
-          assert
-            !(regimentFails { } {
-              a = mkRegiment "none" fullSeats;
-              b = mkRegiment "s" {
-                s9 = mkSeat "strategist" null;
-                k9 = mkSeat "knight" null;
-                w9 = mkSeat "steward" null;
-              };
-            });
-          assert
-            !(builtins.tryEval (
-              rosterLib.validateRoster {
-                x = {
-                  kind = "steward";
-                  purpose = "p";
-                  fields.charter = "c";
-                };
-              }
-            )).success;
           assert !(sampleHm.xdg.configFile ? "figaro/outfits/role-aide-grants.toml");
           assert !(sampleHm.xdg.configFile ? "figaro/outfits/role-clerk-grants.toml");
           pkgs.runCommand "charter-regiment" { nativeBuildInputs = [ pkgs.python3 ]; } ''
@@ -685,13 +614,11 @@
           assert sampleNixos.services.figaro.mode == "house";
           assert sampleNixos.services.figaro.settings.authz.owner == "user:1000";
           assert !sampleNixos.services.figaro.settings.sandbox.local_tools;
-          assert sampleNixos.systemd.services.figaro-roster-reconcile.serviceConfig.User == "operator";
           assert aliasNixos.services.figaro.mode == "house";
           assert builtins.any (lib.hasInfix "is house mode") aliasNixos.warnings;
           assert estateNixos.services.figaro.mode == "estate";
           assert !((estateNixos.services.figaro.settings.authz or { }) ? owner);
           assert sampleNixos.services.figaro.outfits.builder.system.credo == "Sample shared credo.";
-          assert sampleNixos.systemd.services ? figaro-roster-reconcile;
           assert sampleNixos.services.hush-cred.enable;
           assert sampleNixos.services.hush-agent.enable;
           assert sampleNixos.systemd.services ? captains-log-append;
@@ -719,12 +646,16 @@
           assert !(sampleHm.xdg.configFile ? "figaro/outfits/role-clerk-charter.toml");
           assert !(sampleHm.xdg.configFile ? "figaro/outfits/role-builder-fanout.toml");
           assert
-            (rosterLib.roleToTomlAttrs { lead = { }; } "x" {
-              kind = "builder";
-              purpose = "p";
-              mint = false;
-              maxChildren = 0;
-            }).max_children == 0;
+            (k.rosterEntry { } "x" (
+              k.seat {
+                kind = "builder";
+                purpose = "p";
+                limit.children = 0;
+              }
+              // {
+                leader = "none";
+              }
+            )).max_children == 0;
           assert
             bridgeSpec.args == [
               "--hierarchy-only"
