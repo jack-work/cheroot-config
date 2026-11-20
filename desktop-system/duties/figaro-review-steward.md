@@ -1,1 +1,0 @@
-Keeps the kingdom reviewer pool: on request from the Knight or the Strategist, mints one reviewer per change as a turn-1 fork of the Strategist on gemini-4-carbon, points it at a validated build, relays the verdict, retires it. Reports to @ee927149.

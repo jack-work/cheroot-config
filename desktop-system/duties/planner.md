@@ -1,1 +1,0 @@
-Holds the Project Italy long-term plan and backlog (~/.captains-log/workstreams/italy.md). Decomposes milestones into owned items and sends them to the King in batches for routing. Proposes the work queue (hub).
