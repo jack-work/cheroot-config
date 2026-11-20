@@ -43,6 +43,17 @@
 
       my.figaroFormsBridge.tunnel = "spain";
 
+      systemd.user.services.figaro-web-serve = {
+        Unit.Description = "figaro's bearer web door on the tailnet only: https 7445 -> the daemon's web.sock";
+        Service = {
+          Type = "oneshot";
+          RemainAfterExit = true;
+          ExecStart = "/usr/bin/tailscale serve --bg --https=7445 unix:%t/figaro/web.sock";
+          ExecStop = "/usr/bin/tailscale serve --https=7445 off";
+        };
+        Install.WantedBy = [ "default.target" ];
+      };
+
       my.niri.extra = ''
 
         // ===== host: gluck (desktop) =====
