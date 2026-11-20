@@ -478,6 +478,27 @@
               };
             }
           );
+          assert expandFails {
+            c = seat "leader" {
+              role = "@01234567";
+              lanes.a = "fleet.lane.c.a";
+              aliases.x = k.lane {
+                role = "@11234567";
+                lane = "b";
+              };
+            };
+          };
+          assert
+            (k.expand {
+              seats.c = seat "leader" {
+                role = "@01234567";
+                lanes.a = "fleet.lane.c.a";
+                aliases.x = k.lane {
+                  role = "@11234567";
+                  lane = "a";
+                };
+              };
+            }).x.leader == "c";
           pkgs.runCommand "charter-kingdom-faults" { } "touch $out";
 
         charter-zero-host-leaks =

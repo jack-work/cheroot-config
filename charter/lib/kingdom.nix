@@ -123,7 +123,19 @@ let
       duty = text duty;
       limit = noLimit // limit;
       primary = null;
+      laneOf = null;
       regiment = null;
+    };
+
+  lane =
+    {
+      role,
+      lane,
+      forward ? { },
+    }:
+    {
+      _type = "kingdom-lane";
+      inherit role lane forward;
     };
 
   alias = role: {
@@ -303,6 +315,7 @@ let
       keyGrants = [ ];
       lanes = { };
       primary = null;
+      laneOf = null;
       regiment = reg;
     };
 
@@ -393,7 +406,26 @@ let
       primary: p:
       lib.mapAttrs (
         name: a:
-        if a._type == "kingdom-alias" then
+        if a._type == "kingdom-lane" then
+          aliasDefaults primary
+          // {
+            _type = "kingdom-seat";
+            kind = "steward";
+            leader = primary;
+            inherit (a) role forward;
+            purpose = "Lane ${a.lane} of ${if p.title != null then p.title else primary}";
+            title = null;
+            duty = null;
+            outfits = null;
+            inherit (p) mode;
+            fields.lane.index = p.lanes.${a.lane} or null;
+            primary = null;
+            laneOf = {
+              colonel = primary;
+              inherit (a) lane;
+            };
+          }
+        else if a._type == "kingdom-alias" then
           {
             _type = "kingdom-seat";
             kind = "steward";
@@ -427,6 +459,7 @@ let
 
   aliasDefaults = primary: {
     inherit primary;
+    laneOf = null;
     handoff = null;
     mantra = null;
     provider = null;
@@ -462,7 +495,7 @@ let
       }
     ) seats;
 
-  seated = s: s.role != null && s.primary == null;
+  seated = s: s.role != null && s.primary == null && s.laneOf == null;
 
   authorityOf =
     seats: name: s:
@@ -519,6 +552,9 @@ let
     )
     ++ lib.optional (s.lanes != { } && s.role == null) "${name}: lanes need a role to be written on"
     ++ lib.optionals (s.primary != null) (aliasFaults seats name s)
+    ++ lib.optional (
+      s.laneOf != null && !(seats.${s.laneOf.colonel}.lanes ? ${s.laneOf.lane})
+    ) "${name}: lane '${s.laneOf.lane}' is not one of ${s.laneOf.colonel}'s lanes"
     ++ lib.optionals (seated s) (grants.seatFaults name (authorityOf seats name s));
 
   aliasFaults =
@@ -638,6 +674,7 @@ let
       scopes = if authority == null then null else authority.scopes;
       child_policy = if authority == null then null else authority.childPolicy;
       companion_of = s.primary;
+      lane = if s.laneOf == null then null else s.laneOf.lane;
       forward = builtins.attrNames s.forward;
       forward_until =
         if s.forward == { } then null else lib.last (lib.sort lib.lessThan (lib.attrValues s.forward));
@@ -651,6 +688,7 @@ in
     reservedFields
     seat
     alias
+    lane
     companion
     regiment
     expand
