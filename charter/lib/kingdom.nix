@@ -56,6 +56,7 @@ let
     "succession-policy"
     "name"
     "role-name"
+    "standing"
   ];
 
   isRoleId = s: builtins.isString s && builtins.match "@([0-9a-f]{8}|[0-9a-f]{32})" s != null;
@@ -89,6 +90,7 @@ let
       aliases ? { },
       forward ? { },
       fields ? { },
+      standing ? { },
       mode ? "check",
     }:
     {
@@ -111,6 +113,7 @@ let
         aliases
         forward
         fields
+        standing
         mode
         ;
       duty = text duty;
@@ -288,6 +291,7 @@ let
       title = if adopted then s.title else null;
       aliases = { };
       forward = { };
+      standing = { };
       primary = null;
       regiment = reg;
     };
@@ -424,6 +428,7 @@ let
     childPolicy = { };
     aliases = { };
     forward = { };
+    standing = { };
     regiment = null;
   };
 

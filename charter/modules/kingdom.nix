@@ -19,6 +19,8 @@ in
         lib.attrValues regiments
       );
 
+      standingOf = s: if s.role == null then { } else cfg.standing // s.standing;
+
       seats = lib.mapAttrs (
         _: s:
         let
@@ -31,8 +33,9 @@ in
               when-full = cfg.whenFull;
             };
           };
+          standing = lib.optionalAttrs (standingOf s != { }) { standing = standingOf s; };
         in
-        s // { fields = s.fields // titled // whenFull; }
+        s // { fields = s.fields // titled // whenFull // standing; }
       ) expanded;
 
       roster = pkgs.linkFarm "figaro-roster" (
@@ -84,7 +87,8 @@ in
                   "system.fanout.quota"
                 ]
                 ++ lib.optional (s.outfits != null) "system.grants.outfits"
-                ++ builtins.attrNames s.fields;
+                ++ builtins.filter (k: k != "standing") (builtins.attrNames s.fields)
+                ++ map (k: "standing.${k}") (builtins.attrNames (standingOf s));
               inherit (s) mode;
             })
             (
@@ -138,6 +142,15 @@ in
           description = ''
             The roster: seats made with kingdom.seat and regiments with kingdom.regiment,
             keyed by seat name. A seat name defined twice is an error.
+          '';
+        };
+        standing = lib.mkOption {
+          type = lib.types.attrsOf lib.types.str;
+          default = { };
+          description = ''
+            Standing orders every seat with a role carries, each applied as the managed key
+            standing.<name>; a seat's own standing wins by name. Other standing keys on a form
+            are left alone.
           '';
         };
         whenFull = lib.mkOption {
