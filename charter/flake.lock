@@ -28,17 +28,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1794885463,
-        "narHash": "sha256-s11COAqIm+3iDJiOHAcaIwQOGBHd77z1y1pQ9fTmN8A=",
+        "lastModified": 1795155067,
+        "narHash": "sha256-kq6r7HrGLSK4jRlpjYr+uiwkb8Paj4doNDrS6mdkbis=",
         "owner": "jack-work",
         "repo": "figaro-forms",
-        "rev": "c58ce2e6cf0985253f17d1fdabd783c0a61c13d2",
+        "rev": "d4b624d73e5c0bbcb44650f8ea59728556148da1",
         "type": "github"
       },
       "original": {
         "owner": "jack-work",
         "repo": "figaro-forms",
-        "rev": "c58ce2e6cf0985253f17d1fdabd783c0a61c13d2",
+        "rev": "d4b624d73e5c0bbcb44650f8ea59728556148da1",
         "type": "github"
       }
     },

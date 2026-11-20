@@ -27,7 +27,7 @@
     };
 
     figaro-forms = {
-      url = "github:jack-work/figaro-forms/c58ce2e6cf0985253f17d1fdabd783c0a61c13d2";
+      url = "github:jack-work/figaro-forms/d4b624d73e5c0bbcb44650f8ea59728556148da1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

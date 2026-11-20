@@ -81,10 +81,8 @@
         (inputs.nixpkgs.lib.nixosSystem {
           inherit system;
           modules = [
-            config.flake.modules.nixos.figaro-forms-bridge
             config.flake.modules.nixos.remote-builder-host
             {
-              my.figaroFormsBridge.allowFrom = [ "192.0.2.20" ];
               my.remoteBuilderHost = {
                 enable = true;
                 clientKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIH5ozXOcnYVTNKRnp6bO7ywYhsuimKYDOg+3yOND2qC sample";
@@ -228,8 +226,7 @@
                 clientAddress = "192.0.2.20";
                 clientSigningKey = "sample-1:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
               };
-              my.figaroFormsBridge.host = "192.0.2.10";
-              my.figaroFormsBridge.hushExecutable = "/opt/hush/bin/hush";
+              my.figaroFormsBridge.tunnel = "edge-host";
               home.username = "operator";
               home.homeDirectory = "/home/operator";
               my.keel = {
@@ -266,7 +263,8 @@
             }
           ];
         }).config;
-      bridgeSpec = sampleHm.my.figaroFormsBridge.commandSpec;
+      bridge = sampleHm.systemd.user.services.figaro-forms-bridge.Service;
+      bridgeTunnel = sampleHm.systemd.user.services.figaro-forms-bridge-tunnel;
     in
     {
       checks = {
@@ -408,8 +406,7 @@
           assert sampleNixos.services.hush-agent.enable;
           assert sampleNixos.systemd.services ? captains-log-append;
           assert sampleNixos.systemd.slices ? heavy;
-          assert lib.hasInfix "-s 192.0.2.20 -p tcp --dport 7481 -j nixos-fw-accept"
-            sampleNixos.networking.firewall.extraCommands;
+          assert !(lib.hasInfix "--dport 7481" sampleNixos.networking.firewall.extraCommands);
           assert lib.hasInfix "-s 192.0.2.20 -p tcp --dport 22 -j nixos-fw-accept"
             sampleNixos.networking.firewall.extraCommands;
           assert builtins.elem "sample-1:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
@@ -424,15 +421,15 @@
           assert sampleHm.systemd.user.services ? figaro-forms-bridge;
           assert builtins.any (p: lib.getName p == "remote-builder-host-setup") sampleHm.home.packages;
           assert builtins.any (p: lib.getName p == "figaro-apply") sampleHm.home.packages;
-          assert
-            bridgeSpec.args == [
-              "--hierarchy-only"
-              "--host"
-              "192.0.2.10"
-              "--port"
-              "7481"
-            ];
-          assert bridgeSpec.secrets == { token = "FIGARO_FORMS_BRIDGE_TOKEN"; };
+          assert builtins.match ".*/bin/figaro-forms-bridge --edge --port 7481 --admin admin --drift-command /nix/store/[^ ]+/bin/figaro-apply --peer 127.0.0.1" (
+            lib.concatStringsSep " " (lib.toList bridge.ExecStart)
+          ) != null;
+          assert lib.toList bridge.LoadCredential == [ "edge:%h/.config/figaro-forms-bridge/edge-token" ];
+          assert !(sampleHm.xdg.configFile ? "hush/commands/figaro-forms-bridge/command.toml");
+          assert lib.hasSuffix "-R 127.0.0.1:7481:127.0.0.1:7481 edge-host" (
+            lib.concatStringsSep " " (lib.toList bridgeTunnel.Service.ExecStart)
+          );
+          assert bridgeTunnel.Unit.Requires == [ "figaro-forms-bridge.service" ];
           assert containerNixos.services.figaro-container.enable;
           assert lib.getName containerNixos.services.figaro-container.package == "figaro";
           assert containerNixos.containers.figaro.config.services.figaro.outfits ? shell;
