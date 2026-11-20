@@ -59,6 +59,18 @@ in
         "via-rou2"
       ];
       "model/fable-kic2".system.model = "anthropic-kic-2/claude-fable-5-2";
+      "default/default_kic".layers = [
+        "house"
+        "via-rou2"
+      ];
+      "default/default_kic".system = {
+        model = "anthropic-kic/claude-opus-5-5";
+        eager_tool_streaming = true;
+        ttl = "7d";
+        reap_if_empty = true;
+        methods.enabled = true;
+        methods.reasoning-effort.keep_cache = false;
+      };
     };
 
     my.roles.orchestration = "Classify every dispatched child as one-off tail fork or continuing owner. One-offs need an explicit bounded deliverable, parent, completion criterion and finite TTL. Preserve outcomes/evidence/open obligations in dated captains-log entries, then retire with a short TTL, normally 10m, after accepted handoff. Do not retire active work or current role holders blindly. Parent owns child inventory and integration: keep active forks manageable, avoid duplicate owners and unbounded recursive fan-out, but delegate independent work when it removes a real bottleneck. Include this rule in handoffs, successors and child prompts. No standing role for a one-off. Every lane is a captains-log index, listed under lanes on its lead's role form (fleet.lane.<lead>.<lane>): a child fanned out on a lane gets that index in its brief and resolves it with cl cite and cl show before acting.";
