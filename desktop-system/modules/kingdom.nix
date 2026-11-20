@@ -78,6 +78,7 @@ let
         agreement
         ;
       kinds = regimentKinds name;
+      mode = "apply";
       successionLayers = [ "succession-cache" ];
     };
 in
@@ -116,6 +117,7 @@ in
       my.kingdom.seats = lib.mkMerge [
         {
           king-of-spain = k.seat {
+            mode = "apply";
             role = "@96447061";
             kind = "leader";
             title = "King of Spain";
@@ -144,6 +146,7 @@ in
           };
 
           figaro-engineer = k.seat {
+            mode = "apply";
             role = "@ee9271497f3823d7f50922bec4899818";
             kind = "leader";
             title = "Figaro Engineer";
@@ -164,6 +167,7 @@ in
           };
 
           backend-engineer = k.seat {
+            mode = "apply";
             role = "@4f6f262b6205e70f7e27a38440872c40";
             kind = "leader";
             title = "Backend Engineer";
@@ -240,6 +244,7 @@ in
           };
 
           frontend-engineer = k.seat {
+            mode = "apply";
             role = "@62c5c9bf8794ec5b8d1d00d05dd26c69";
             kind = "leader";
             title = "Frontend Engineer";
@@ -269,6 +274,7 @@ in
           };
 
           herald = k.seat {
+            mode = "apply";
             role = "@2c1645942f894dd40d9dfcfb97619c58";
             kind = "leader";
             title = "Herald";
@@ -281,6 +287,7 @@ in
           };
 
           reviewer-pool = k.seat {
+            mode = "apply";
             role = "@9e5bdab374ebdf583434860ff1fa9955";
             kind = "reviewer";
             title = "Reviewer Pool";
