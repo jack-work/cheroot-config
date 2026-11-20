@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Charter plan</title>
+<style>
+  body { font: 17px/1.5 system-ui, sans-serif; max-width: 40em; margin: 0 auto; padding: 1em; color: #1d1d1d; background: #fbfaf7; }
+  h1 { font-size: 1.5em; margin: .2em 0 .4em; }
+  h2 { font-size: 1.15em; margin: 1.6em 0 .4em; border-bottom: 1px solid #ddd; padding-bottom: .2em; }
+  ul { padding-left: 1.2em; } li { margin: .2em 0; }
+  ul ul { margin: .1em 0; }
+  table { border-collapse: collapse; width: 100%; font-size: .93em; }
+  th, td { text-align: left; padding: .35em .4em; border-bottom: 1px solid #e4e2dc; vertical-align: top; }
+  th { background: #f0eee8; }
+  .n { white-space: nowrap; text-align: right; }
+  .muted { color: #666; font-size: .92em; }
+  ol li { margin: .45em 0; }
+  b { font-weight: 600; }
+</style>
+</head>
+<body>
+
+<h1>The charter plan</h1>
+<p>The charter is the part of your Nix config that declares who works for you: each standing seat, who it answers to, what it may do, and how many helpers it may run at once. A switch writes those facts onto the seats, first as a check that only reports differences, later for real once you say so. This page folds every open charter thread into one plan.</p>
+
+<h2>Who works for you</h2>
+<ul>
+  <li><b>King</b>: coordinates everything and asks you before big fan-outs.
+    <ul>
+      <li><b>Operator</b>: the only one who deploys to Spain, in windows the King names.</li>
+      <li><b>GitHub Watcher</b>: forwards pushes to whoever owns the repo.</li>
+      <li>Two quiet helpers: the deploy queue and the identity check.</li>
+      <li>Temporary seats when needed: a project <b>Planner</b>, the <b>Merlin Migration</b>.</li>
+    </ul>
+  </li>
+  <li><b>Figaro regiment</b>, led by the Figaro Engineer.
+    <ul><li><b>Strategist</b> plans and runs lanes; <b>Builder</b> ships tested builds.</li></ul>
+  </li>
+  <li><b>Backend regiment</b>, led by the Backend Engineer.
+    <ul><li><b>Strategist</b> runs lanes: system flakes, keel, rou2, identity, web edge, messaging.</li></ul>
+  </li>
+  <li><b>Frontend regiment</b>, led by the Frontend Engineer.
+    <ul><li><b>Strategist</b> runs lanes: shared UI, the TV app, your website and résumé.</li></ul>
+  </li>
+  <li><b>Reviewers regiment</b>, led by the Reviewer.
+    <ul><li>A <b>review keeper</b> starts one short-lived reviewer per change and reports the verdict.</li></ul>
+  </li>
+</ul>
+<p class="muted">A lane is a short-lived helper working one repo or the flake in parallel. Lanes are not seats: they come and go under their Strategist.</p>
+
+<h2>Limits: how many helpers each may run</h2>
+<table>
+  <tr><th>Seat</th><th class="n">At once</th><th>Why</th></tr>
+  <tr><td>King</td><td class="n">24</td><td>seat holders started under him count too</td></tr>
+  <tr><td>Figaro Engineer</td><td class="n">10</td><td>a build lane and a reviewer per release, plus overlap</td></tr>
+  <tr><td>Each Strategist</td><td class="n">7</td><td>one lane per repo in flight</td></tr>
+  <tr><td>Backend Engineer</td><td class="n">6</td><td>six former seats now run as its lanes</td></tr>
+  <tr><td>Reviewer</td><td class="n">5</td><td>reviews run in parallel, after the fact by default</td></tr>
+  <tr><td>Frontend Engineer</td><td class="n">3</td><td>UI, TV app, website</td></tr>
+  <tr><td>Operator, Planner</td><td class="n">2</td><td>one task beside its own work</td></tr>
+  <tr><td>Builder, Merlin Migration</td><td class="n">1</td><td>one thing at a time on purpose</td></tr>
+  <tr><td>GitHub Watcher</td><td class="n">0</td><td>only forwards</td></tr>
+</table>
+<p class="muted">Old names that now route to a lead carry no limit of their own, because a seat holding two names is held to the smaller limit. When a seat hits its limit it retires finished helpers before asking for more.</p>
+
+<h2>Adding a temporary seat</h2>
+<ol>
+  <li>A lead asks the King for, say, a Planner for one project.</li>
+  <li>The King asks you on Telegram; nothing starts without your yes.</li>
+  <li>The seat gets a short duty and a limit, does the work, writes its notes, and retires.</li>
+</ol>
+
+<h2>What changes for you</h2>
+<ul>
+  <li><b>One switch</b> after each charter change, the same command as today.</li>
+  <li><b>Outfits come in two layers.</b> Your managed set comes from Nix and cannot be edited by hand. Your own outfits live in <code>~/.config/figaro/outfits</code>, on gluck and on Merlin alike; edit them any time and they win by name. Seat outfits are locked, so an edit there is refused and the managed one stays. On Merlin, the helpers that run tools as you cannot see that folder, so a tool cannot rewrite your outfits.</li>
+  <li><b>Check first, then apply.</b> Every seat change shows up as a report before it touches anything. You flip a seat to apply when you are happy.</li>
+  <li><b>Fewer names.</b> Plain titles everywhere; old names keep working for a month.</li>
+</ul>
+
+<h2>Order of work</h2>
+<ol>
+  <li><b>You read this page.</b> Nothing below starts before that.</li>
+  <li>figaro learns two outfit layers (release 0.77.1). <span class="muted">Figaro Engineer, built and tested.</span></li>
+  <li>Charter cleanup: shared building blocks in one place, each machine's roster in its own config, one vocabulary. Proof: the seats it writes are byte for byte the same. <span class="muted">Backend, flakes lane.</span></li>
+  <li>The roster rewritten as the four regiments above. <span class="muted">Backend, flakes lane; you look before it lands.</span></li>
+  <li>Outfits split into the managed set and your overlay, on gluck first. <span class="muted">Backend, flakes lane, after step 2.</span></li>
+  <li>The King's authority: which seats may start, retire or redirect others. <span class="muted">Figaro Engineer and Backend.</span></li>
+  <li>Merlin moves to its own house setup. The full test already passes in a virtual machine; the real switch is your call. <span class="muted">Merlin Migration and Operator.</span></li>
+  <li>Seats flip from check to apply, one at a time. <span class="muted">You.</span></li>
+</ol>
+
+<h2>Old name to new name</h2>
+<table>
+  <tr><th>Old</th><th>New</th></tr>
+  <tr><td>King of Spain</td><td>King</td></tr>
+  <tr><td>El Zapador, edge</td><td>Operator</td></tr>
+  <tr><td>El Inspector</td><td>Reviewer (lead of Reviewers)</td></tr>
+  <tr><td>Review Steward</td><td>review keeper</td></tr>
+  <tr><td>Figaro Knight</td><td>Builder (Figaro)</td></tr>
+  <tr><td>Figaro Strategist</td><td>Strategist (Figaro)</td></tr>
+  <tr><td>El Arquitecto</td><td>Figaro Engineer</td></tr>
+  <tr><td>El Mayor</td><td>Backend, flakes lane</td></tr>
+  <tr><td>El Taller</td><td>Backend, keel lane</td></tr>
+  <tr><td>El Aduanero, rou2 Engineer</td><td>Backend, rou2 lane</td></tr>
+  <tr><td>El Llavero</td><td>Backend, identity lane</td></tr>
+  <tr><td>El Zócalo</td><td>Backend, web edge lane</td></tr>
+  <tr><td>El Pregonero</td><td>Backend, messaging lane</td></tr>
+  <tr><td>Il Zanni</td><td>Frontend Engineer</td></tr>
+  <tr><td>Big TV</td><td>Frontend, TV app lane</td></tr>
+  <tr><td>El Escribano</td><td>Frontend, website lane</td></tr>
+  <tr><td>El Jefe de Estado Mayor</td><td>Planner (temporary)</td></tr>
+  <tr><td>El Centinela</td><td>GitHub Watcher</td></tr>
+  <tr><td>echoless-iron</td><td>Merlin Migration (temporary)</td></tr>
+  <tr><td>Coordinador</td><td>deploy queue</td></tr>
+</table>
+
+</body>
+</html>
