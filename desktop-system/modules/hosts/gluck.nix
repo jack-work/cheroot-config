@@ -41,11 +41,7 @@
         daemon = "/usr/bin/nix-daemon";
       };
 
-      my.figaroFormsBridge = {
-        host = "127.0.0.1";
-        tunnel = "spain";
-        hushExecutable = "/home/gluck/go/bin/hush";
-      };
+      my.figaroFormsBridge.tunnel = "spain";
 
       my.niri.extra = ''
 

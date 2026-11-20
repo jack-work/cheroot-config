@@ -98,18 +98,18 @@
       },
       "locked": {
         "dir": "charter",
-        "lastModified": 1795154390,
-        "narHash": "sha256-ViUkRNGelimV4QZvA9TayBo4pup4zo1nUALBKx5XWGY=",
+        "lastModified": 1795155867,
+        "narHash": "sha256-HcqMTrOrmf5ujGkzRtyMRWesmEZxhahXOHDS6EXP4ws=",
         "owner": "jack-work",
         "repo": "cheroot-config",
-        "rev": "ae4df902e09b6df674670a304ec5c4cbd462bb93",
+        "rev": "5524cca8bc9f500fe7f9c01d18031933e856eebc",
         "type": "github"
       },
       "original": {
         "dir": "charter",
         "owner": "jack-work",
         "repo": "cheroot-config",
-        "rev": "ae4df902e09b6df674670a304ec5c4cbd462bb93",
+        "rev": "5524cca8bc9f500fe7f9c01d18031933e856eebc",
         "type": "github"
       }
     },
@@ -142,17 +142,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1794885463,
-        "narHash": "sha256-s11COAqIm+3iDJiOHAcaIwQOGBHd77z1y1pQ9fTmN8A=",
+        "lastModified": 1795155067,
+        "narHash": "sha256-kq6r7HrGLSK4jRlpjYr+uiwkb8Paj4doNDrS6mdkbis=",
         "owner": "jack-work",
         "repo": "figaro-forms",
-        "rev": "c58ce2e6cf0985253f17d1fdabd783c0a61c13d2",
+        "rev": "d4b624d73e5c0bbcb44650f8ea59728556148da1",
         "type": "github"
       },
       "original": {
         "owner": "jack-work",
         "repo": "figaro-forms",
-        "rev": "c58ce2e6cf0985253f17d1fdabd783c0a61c13d2",
+        "rev": "d4b624d73e5c0bbcb44650f8ea59728556148da1",
         "type": "github"
       }
     },
