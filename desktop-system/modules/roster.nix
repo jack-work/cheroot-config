@@ -2,12 +2,12 @@
 let
   kic = [
     "opus5-kic"
+    "opus5-kic2"
     "sonn5-kic"
     "succession-standard"
   ];
   command = kic ++ [
     "opus5"
-    "opus5-kic2"
     "hk"
     "short"
     "sonn5"
