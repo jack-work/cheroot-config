@@ -371,7 +371,16 @@
                 lanes.c = "fleet.lane.b.c";
               };
             });
-          pkgs.runCommand "charter-roles" { nativeBuildInputs = [ pkgs.python3 ]; } ''
+          pkgs.runCommand "charter-roles"
+            {
+              nativeBuildInputs = [ pkgs.python3 ];
+              roleOutfits = builtins.toJSON (
+                lib.mapAttrs (_: f: "${f.source}") (
+                  lib.filterAttrs (n: _: lib.hasPrefix "figaro/outfits/role-" n) files
+                )
+              );
+            }
+            ''
             python3 - <<'PY'
             import json, tomllib
             m = json.load(open("${files."figaro/roles.json".source}"))
@@ -387,7 +396,12 @@
             clerk = tomllib.load(open("${files."figaro/outfits/role-clerk.toml".source}", "rb"))
             assert clerk["standing"] == {"patrol": "Walk the walls."} and "succession-policy" not in clerk, clerk
             for r in m["roles"]:
-                assert not any(k.startswith(("system.fanout", "system.model", "system.provider")) for k in r["managed"]), r
+                assert not any(k.startswith(("system.fanout", "system.model", "system.provider", "succession-policy")) for k in r["managed"]), r
+            import os
+            rendered = json.loads(os.environ["roleOutfits"])
+            assert not [n for n in rendered if n.endswith("-grants.toml")], ("the daemon holds holder grants; no role-*-grants outfit", rendered)
+            for n, f in rendered.items():
+                assert "succession-policy" not in tomllib.load(open(f, "rb")), (n, "the daemon holds succession-policy")
             PY
             touch $out
           '';
