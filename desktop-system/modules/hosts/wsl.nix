@@ -5,7 +5,7 @@
     host = "wsl";
 
     aspects = config.flake.lib.coreAspects;
-    roles = [
+    extraAspects = [
       "wsl"
       "muse-code"
     ];

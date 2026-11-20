@@ -3,7 +3,7 @@
   flake.homeConfigurations = config.flake.lib.mkHost {
     user = "marlowe";
     host = "cheroot";
-    roles = [
+    extraAspects = [
       "laptop"
       "muse-code"
       "helium"
