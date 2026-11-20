@@ -16,15 +16,11 @@ for name, r in sorted(roles.items()):
         continue
     if "companion_of" in r:
         primary = roles[r["companion_of"]]
-        assert "max_children" in primary and not {"max_children", "quota", "scopes", "child_policy"} & r.keys(), name
+        assert not {"max_children", "quota", "scopes", "child_policy"} & r.keys(), name
         assert name not in seats_json and f"role-{name}-grants" not in outfits, name
         assert {"system.fanout.max_children", "system.fanout.quota"} <= set(manifest[name]["managed"]), (name, "a companion's own limit is removed, so only its primary's counts")
         continue
-    assert "max_children" in r, (name, "budget")
-    if r["reach"] == "fleet":
-        assert "quota" not in r, (name, "a fleet seat's quota is set by Gluck, never derived")
-    else:
-        assert "quota" in r, (name, "quota")
+    assert not {"max_children", "quota"} & r.keys(), (name, "limits are Gluck's, set on the form, never by the charter")
     policy = r["child_policy"]
     assert isinstance(policy, dict) and policy["system.scopes"][:4] == lane, (name, policy)
     assert f"send:role:{r['form']}" in policy["system.scopes"], (name, "own role")
@@ -35,9 +31,7 @@ for name, r in sorted(roles.items()):
     else:
         assert "scopes" not in r, name
     m = manifest[name]
-    assert ("system.fanout.quota" in m["managed"]) == ("quota" in r) and "system.fanout.max_children" in m["managed"], (name, m)
-    fan = tomllib.load(open(outfits[f"role-{name}-fanout"], "rb"))["system"]["fanout"]
-    assert fan == {k: r[k] for k in ("max_children", "quota") if k in r}, (name, fan)
+    assert not any(k.startswith("system.fanout.") for k in m["managed"]) and f"role-{name}-fanout" not in outfits, (name, m)
     assert seats_json[name]["form"] == r["form"] and seats_json[name]["grants"]["system.child_policy"] == policy, name
     if r["reach"] == "fleet":
         assert tomllib.load(open(outfits[f"role-{name}-grants"], "rb")) == {"system": {"scopes": r["scopes"]}}, name
@@ -45,13 +39,12 @@ for name, r in sorted(roles.items()):
     else:
         assert f"role-{name}-grants" not in outfits and seats_json[name]["outfit"] is None, name
     seats[name] = r
-when_full = os.environ["whenFull"]
 for name, m in manifest.items():
-    assert "fanout" in m["managed"] and f"role-{name}-fields" in m["outfits"], (name, m)
-    assert tomllib.load(open(outfits[f"role-{name}-fields"], "rb"))["fanout"] == {"when-full": when_full}, name
-assert set(manifest) == {n for n, r in roles.items() if "form" in r}, "every seat with a form carries fanout.when-full"
-assert fleet == {"king-of-spain", "figaro-engineer", "figaro-knight"}, fleet
+    assert not any(k == "fanout" or k.startswith("system.fanout") for k in m["managed"]), (name, m)
+assert set(manifest) == {"king-of-spain", "backend-engineer", "frontend-engineer", "figaro-engineer", "herald"}, set(manifest)
+assert not [o for o in outfits if o.startswith("regiment-")], "no regiment outfits"
+assert fleet == {"king-of-spain", "figaro-engineer"}, fleet
 sends = lambda n: [s for s in seats[n]["child_policy"]["system.scopes"] if s.startswith("send:role:")]
 assert sends("figaro-engineer") == ["send:role:@ee9271497f3823d7f50922bec4899818", "send:role:@96447061"], sends("figaro-engineer")
-assert sends("king-of-spain") == ["send:role:@96447061", "send:role:@662ee4fedbd0fdbad7ad6adef20cdeee"], sends("king-of-spain")
+assert sends("king-of-spain") == ["send:role:@96447061", "send:role:@4f6f262b6205e70f7e27a38440872c40"], sends("king-of-spain")
 print(f"{len(seats)} seats, {len(fleet)} fleet, {len(roles) - len(seats)} roles without a seat of their own")

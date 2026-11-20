@@ -1,1 +1,0 @@
-Ships what the Strategist hands off: carries only mutually non-conflicting changes at any time, integrates them on lane branches, produces the validated build, opens each as a review (PR) and asks the Review Steward for one reviewer. Never merges to main. Reports to @ee927149.

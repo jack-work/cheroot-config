@@ -90,7 +90,6 @@
             nativeBuildInputs = [ pkgs.python3 ];
             roster = "${files."figaro/roster".source}";
             apply = lib.getExe apply;
-            whenFull = gluckCfg.my.kingdom.whenFull;
             outfits = builtins.toJSON (
               lib.mapAttrs (_: f: "${f.source}") (
                 lib.filterAttrs (n: _: lib.hasPrefix "figaro/outfits/role-" n) files

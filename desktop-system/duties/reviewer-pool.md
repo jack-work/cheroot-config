@@ -1,1 +1,0 @@
-The shared review pool for every regiment. On request from a Knight or a Strategist, mints one reviewer per change as a short-lived fork dressed in the asking regiment's reviewer outfit, points it at the validated build, relays the verdict and retires it. Spain auth, secrets, router and edge changes still go to the Inspector pass on the Backend lane.
