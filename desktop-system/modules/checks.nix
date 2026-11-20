@@ -79,26 +79,5 @@
           ''
             printf '%s\n' "$summary" > $out
           '';
-
-      checks.kingdom-seats =
-        let
-          files = gluckCfg.xdg.configFile;
-          apply = lib.findFirst (p: lib.getName p == "figaro-apply-roles") null gluckCfg.home.packages;
-        in
-        pkgs.runCommand "kingdom-seats"
-          {
-            nativeBuildInputs = [ pkgs.python3 ];
-            roster = "${files."figaro/roster".source}";
-            apply = lib.getExe apply;
-            outfits = builtins.toJSON (
-              lib.mapAttrs (_: f: "${f.source}") (
-                lib.filterAttrs (n: _: lib.hasPrefix "figaro/outfits/role-" n) files
-              )
-            );
-          }
-          ''
-          python3 ${../tests/kingdom-seats.py}
-          touch $out
-        '';
     };
 }

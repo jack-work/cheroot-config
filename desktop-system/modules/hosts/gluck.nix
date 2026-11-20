@@ -19,7 +19,7 @@
       "figaro-forms-bridge"
       "rou2"
       "remote-builder-host"
-      "kingdom"
+      "roster"
       "keel-tasks"
     ];
 
