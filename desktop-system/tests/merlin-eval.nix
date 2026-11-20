@@ -56,6 +56,7 @@ assert builtins.all (
 ) btrfsMounts;
 assert flake.inputs.merlin-figaro.rev == "fba39fc409d15c4fa504ac5bdcbd1d4c9ceb4abe";
 assert hm.home.username == "jack" && hm.home.homeDirectory == "/home/jack";
+assert integrated.xdg.configFile ? "figaro-merlin/skills/merlin-context.md";
 assert hm.programs.figaro.package.version == "0.72.1";
 assert !hm.programs.figaro.restartOnSwitch && !hm.systemd.user.startServices;
 assert !integrated.programs.figaro.restartOnSwitch && !integrated.systemd.user.startServices;

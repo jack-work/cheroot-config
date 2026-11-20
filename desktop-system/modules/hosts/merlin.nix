@@ -42,7 +42,10 @@ let
           instance = "merlin";
           package = inputs.merlin-figaro.packages.${pkgs.stdenv.hostPlatform.system}.figaro;
           bootstrapDoc = "docs/migration/merlin-bootstrap.md";
-          skills.merlin-setup = ../../config/figaro/merlin-setup.md;
+          skills = {
+            merlin-setup = ../../config/figaro/merlin-setup.md;
+            merlin-context = ../../config/figaro/merlin-context.md;
+          };
         };
         niri.extra = ''
           output "Dell Inc. DELL U2719D DDZQJS2" {
