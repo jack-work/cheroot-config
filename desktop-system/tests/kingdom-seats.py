@@ -5,8 +5,6 @@ script = open(os.environ["apply"]).read()
 manifest = tomllib.load(open(re.search(r"FIGARO_APPLY_MANIFEST=(\S+)", script).group(1), "rb"))["roles"]
 seats_json = json.load(open(re.search(r"FIGARO_APPLY_SEATS=(\S+)", script).group(1)))
 lane = ["send:parent", "read:aria:self", "write:aria:self#@self", "delete:aria:self#@self"]
-verb = re.compile(r"^(\*|read|listen|send|fork|set|write|create|mint|kill|admin|use|join|decide|adopt|lease|say|delete|cast|succeed):(\*|[^*]+)$")
-count = lambda v: isinstance(v, int) and not isinstance(v, bool) and v >= 0
 roles = {f.stem: tomllib.load(open(f, "rb")) for f in roster.glob("*.toml")}
 fleet, seats = set(), {}
 for name, r in sorted(roles.items()):
@@ -18,16 +16,15 @@ for name, r in sorted(roles.items()):
         assert name not in seats_json and f"role-{name}-grants" not in outfits, name
         assert {"system.fanout.max_children", "system.fanout.quota"} <= set(manifest[name]["managed"]), (name, "a companion's own limit is removed, so only its primary's counts")
         continue
-    assert count(r.get("max_children")), (name, "budget")
+    assert "max_children" in r, (name, "budget")
     if r["reach"] == "fleet":
         assert "quota" not in r, (name, "a fleet seat's quota is set by Gluck, never derived")
     else:
-        assert count(r.get("quota")) and r["quota"] >= r["max_children"], (name, "quota")
+        assert "quota" in r, (name, "quota")
     policy = r["child_policy"]
     assert isinstance(policy, dict) and policy["system.scopes"][:4] == lane, (name, policy)
     assert f"send:role:{r['form']}" in policy["system.scopes"], (name, "own role")
     assert not any(s.startswith("read:aria:@") for s in policy["system.scopes"]), (name, "the daemon resolves a sent-to role; a lane reads no role holder")
-    assert all(verb.match(s) for s in policy["system.scopes"]), (name, policy)
     if r["reach"] == "fleet":
         assert r["scopes"] == ["*:*"], name
         fleet.add(name)

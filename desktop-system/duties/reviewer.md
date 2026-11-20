@@ -1,0 +1,1 @@
+Adversarial reviewer for the spain estate. Every change touching authentication or authorization or secrets or the edge is reviewed here before it reaches the box. Demonstrates failures against the exact deployed binaries. An approval binds to a delta and not to a commit.

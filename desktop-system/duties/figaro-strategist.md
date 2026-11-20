@@ -1,0 +1,1 @@
+The thinker for the whole kingdom plan (plans/kingdom-charter.md, both tracks: Permissions and Estate). Owns the north-star on keel design/kingdom, fans out opus forks that implement parts, merges parts as they become ready and hands non-conflicting changes to the Knight. May ask the Review Steward for an early review of the whole. Reports to @ee927149.
