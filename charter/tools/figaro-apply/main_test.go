@@ -254,7 +254,7 @@ func TestCheckPrintsThePlanAndExitsByDrift(t *testing.T) {
 			plan:    map[string]fakeRole{formA: {Set: []string{"charter"}}},
 			args:    []string{"--check", "-j"},
 			code:    1,
-			stdout:  `{"role":"backend-engineer","form":"` + formA + `","outcome":"would-apply","version":7,"set":["charter"]}` + "\n" + `{"role":"figaro-engineer","form":"` + formB + `","outcome":"unchanged","version":7}` + "\n",
+			stdout:  `{"role":"backend-engineer","form":"` + formA + `","outcome":"would-apply","outfits":["role-backend-engineer"],"version":7,"set":["charter"]}` + "\n" + `{"role":"figaro-engineer","form":"` + formB + `","outcome":"unchanged","outfits":["role-figaro-engineer","extra"],"version":7}` + "\n",
 			stderrs: "1 of 2 roles drift",
 		},
 	}

@@ -42,6 +42,7 @@ type result struct {
 	Role     string   `json:"role"`
 	Form     string   `json:"form"`
 	Outcome  string   `json:"outcome"`
+	Outfits  []string `json:"outfits"`
 	Version  uint64   `json:"version,omitempty"`
 	Set      []string `json:"set,omitempty"`
 	Remove   []string `json:"remove,omitempty"`
@@ -192,7 +193,7 @@ func withoutCallerEnv(env []string) []string {
 }
 
 func apply(bin string, r role, check bool) result {
-	res := result{Role: r.Name, Form: r.Form, Outcome: "error"}
+	res := result{Role: r.Name, Form: r.Form, Outcome: "error", Outfits: r.Outfits}
 	cmd := exec.Command(bin, formApplyArgs(r, check)...)
 	cmd.Env = withoutCallerEnv(os.Environ())
 	var stderr bytes.Buffer
