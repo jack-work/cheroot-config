@@ -54,6 +54,20 @@
         Install.WantedBy = [ "default.target" ];
       };
 
+      systemd.user.services.figaro-door-tunnel = {
+        Unit = {
+          Description = "Reverse tunnel: spain 127.0.0.1:7446 -> figaro's bearer web door, for figaro-gateway";
+          After = [ "network-online.target" ];
+          StartLimitIntervalSec = 0;
+        };
+        Service = {
+          ExecStart = "/usr/bin/ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o StreamLocalBindUnlink=yes -R 127.0.0.1:7446:%t/figaro/web.sock spain";
+          Restart = "always";
+          RestartSec = 10;
+        };
+        Install.WantedBy = [ "default.target" ];
+      };
+
       my.niri.extra = ''
 
         // ===== host: gluck (desktop) =====
