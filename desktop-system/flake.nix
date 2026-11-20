@@ -32,7 +32,7 @@
     };
 
     charter = {
-      url = "github:jack-work/cheroot-config/b16c27235557bd6fb68fa4a416b5a48db040c2de?dir=charter";
+      url = "github:jack-work/cheroot-config/c2d096e74735bb4527c65cbf5b882b3e3632e241?dir=charter";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
       inputs.flake-parts.follows = "flake-parts";
