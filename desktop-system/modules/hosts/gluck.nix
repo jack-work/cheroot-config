@@ -42,7 +42,8 @@
       };
 
       my.figaroFormsBridge = {
-        host = "100.92.208.109";
+        host = "127.0.0.1";
+        tunnel = "spain";
         hushExecutable = "/home/gluck/go/bin/hush";
       };
 
