@@ -44,6 +44,7 @@ in
       };
 
       my.kingdom.root = "king-of-spain";
+      my.kingdom.standing.handoff-warm = "Gluck 11-19: (1) at about 50 percent context and idle, succeed NOW on a warm cache (finish any open Spain window or Inspector read first). (2) Keep the handoff warm: a short dated captains-log entry per event, handle spain.seats.<seat>, kind handoff; the handoff doc indexes them; at succession write only the delta. Rule: ~/.captains-log/2026/11/19/warm-handoffs-and-early-succession.md";
       my.kingdom.whenFull = "If a fork or new is refused for fan-out quota, or you are over system.fanout.max_children, retire or kill children whose work is done (harvest first) until you are under; a retired or killed child frees its slot at once. Do not ask for a higher limit until you have.";
 
       my.kingdom.seats = lib.mkMerge [
@@ -58,6 +59,7 @@ in
             reach = "fleet";
             reportsTo = [ "operator" ];
             outfits = command;
+            standing.handoff-warm = "Gluck 11-19 ~11:20: (1) seats near their handover line (about 50 percent context and idle) succeed NOW, not later on a cold cache: the King sweeps the roster and nudges each; (2) every seat keeps its handoff document warm in captains-log (a short dated entry per event) so succession needs only a final delta. Put it in the charter plan and each seat's brief.";
             aliases = {
               coordinador = k.companion {
                 role = "@042d641e";
