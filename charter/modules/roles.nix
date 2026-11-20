@@ -102,6 +102,11 @@
           default = { };
           description = "standing.<name> on every role; a role's own wins by name.";
         };
+        handoffRoot = lib.mkOption {
+          type = lib.types.str;
+          default = "${hm.config.home.homeDirectory}/.captains-log";
+          description = "figaro-roles-handoff-check warns about a role whose live handoff lies outside this tree. It only reads; the charter never writes handoff.";
+        };
         orchestration = lib.mkOption {
           type = lib.types.nullOr lib.types.str;
           default = null;
@@ -115,7 +120,24 @@
           message = "my.roles: ${f}";
         }) faults;
 
-        home.packages = [ (pkgs.callPackage ../tools/figaro-apply { }) ];
+        home.packages = [
+          (pkgs.callPackage ../tools/figaro-apply { })
+          (pkgs.writeShellApplication {
+            name = "figaro-roles-handoff-check";
+            runtimeInputs = [ pkgs.jq ] ++ lib.optional (figaroPkg != null) figaroPkg;
+            text = ''
+              roles=''${1:-''${XDG_CONFIG_HOME:-$HOME/.config}/figaro/roles.json}
+              root=${lib.escapeShellArg cfg.handoffRoot}
+              jq -r '.roles[] | "\(.name) \(.form)"' "$roles" | while read -r name form; do
+                handoff=$(figaro state show --id "$form" -j 2>/dev/null | jq -r '.handoff // empty') || handoff=""
+                case "$handoff" in
+                  "" | "$root"/*) ;;
+                  *) echo "warn: $name ($form) handoff $handoff is not under $root" ;;
+                esac
+              done
+            '';
+          })
+        ];
 
         xdg.configFile = {
           "figaro/roles.json".text = builtins.toJSON manifest;
