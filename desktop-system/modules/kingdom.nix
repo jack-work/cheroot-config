@@ -153,10 +153,6 @@ in
             reach = "fleet";
             reportsTo = [ "king-of-spain" ];
             outfits = command;
-            keyGrants = [
-              "set:children#system.retired"
-              "set:children#system.ttl"
-            ];
             lanes = lanesOf "figaro" [
               "daemon-releases"
               "authz-carve"
@@ -173,7 +169,10 @@ in
             title = "Backend Engineer";
             purpose = "Colonel of the backend regiment: flakes, keel, rou2, identity, edge, Spain deploys and the Inspector pass, run as lanes";
             duty = ../duties/backend-engineer.md;
-            limit.children = 6;
+            limit = {
+              children = 12;
+              quota = 12;
+            };
             outfits = kic ++ [
               "opus5"
               "short"
@@ -181,9 +180,6 @@ in
             forward = {
               el-aduanero = renamed;
               quartermaster = renamed;
-              el-zapador = renamed;
-              el-inspector = renamed;
-              el-centinela = renamed;
             };
             lanes = lanesOf "backend" [
               "rou2"
@@ -197,16 +193,49 @@ in
               "github-watcher"
             ];
             aliases = {
-              el-mayor = k.alias "@2b4fe37fc20436ff3123373ed0a504f6";
-              el-taller = k.alias "@2b443573385ce498dc40d0f5a672dd2a";
-              rou2-engineer = k.alias "@f48f567a727d703effa5e2fa13ebd625";
-              el-llavero = k.alias "@a06b145cf1a6169789065ff3aae90646";
-              el-zocalo = k.alias "@0e3305315544cd50fac67c489d4df4f6";
-              operator = k.alias "@662ee4fedbd0fdbad7ad6adef20cdeee";
-              edge = k.alias "@b906c598b1857b6bfe350e077cf67ff6";
-              inspector = k.alias "@53c6b72b";
-              github-watcher = k.alias "@443f4126721e7a980bbc9c68e8aede77";
-              merlin-migration = k.alias "@4a845160c69f98a0412c5dc4f28e8b70";
+              el-mayor = k.lane {
+                role = "@2b4fe37fc20436ff3123373ed0a504f6";
+                lane = "flakes-charter";
+              };
+              el-taller = k.lane {
+                role = "@2b443573385ce498dc40d0f5a672dd2a";
+                lane = "keel";
+              };
+              rou2-engineer = k.lane {
+                role = "@f48f567a727d703effa5e2fa13ebd625";
+                lane = "rou2";
+              };
+              el-llavero = k.lane {
+                role = "@a06b145cf1a6169789065ff3aae90646";
+                lane = "identity";
+              };
+              el-zocalo = k.lane {
+                role = "@0e3305315544cd50fac67c489d4df4f6";
+                lane = "edge";
+              };
+              operator = k.lane {
+                role = "@662ee4fedbd0fdbad7ad6adef20cdeee";
+                lane = "spain-executor";
+                forward.el-zapador = renamed;
+              };
+              edge = k.lane {
+                role = "@b906c598b1857b6bfe350e077cf67ff6";
+                lane = "spain-executor";
+              };
+              inspector = k.lane {
+                role = "@53c6b72b";
+                lane = "inspector";
+                forward.el-inspector = renamed;
+              };
+              github-watcher = k.lane {
+                role = "@443f4126721e7a980bbc9c68e8aede77";
+                lane = "github-watcher";
+                forward.el-centinela = renamed;
+              };
+              merlin-migration = k.lane {
+                role = "@4a845160c69f98a0412c5dc4f28e8b70";
+                lane = "merlin";
+              };
             };
           };
 
@@ -218,10 +247,7 @@ in
             duty = ../duties/frontend-engineer.md;
             limit.children = 3;
             outfits = kic ++ [ "opus5" ];
-            forward = {
-              il-zanni = renamed;
-              el-escribano = renamed;
-            };
+            forward.il-zanni = renamed;
             lanes = lanesOf "frontend" [
               "scope-ui"
               "order-site"
@@ -230,8 +256,15 @@ in
               "writer-resume"
             ];
             aliases = {
-              writer = k.alias "@c204f2a0188fa5864b75db09e06dd266";
-              big-tv = k.alias "@2e0bb68c36211dbd2023bc693b4c682c";
+              writer = k.lane {
+                role = "@c204f2a0188fa5864b75db09e06dd266";
+                lane = "writer-resume";
+                forward.el-escribano = renamed;
+              };
+              big-tv = k.lane {
+                role = "@2e0bb68c36211dbd2023bc693b4c682c";
+                lane = "big-tv";
+              };
             };
           };
 

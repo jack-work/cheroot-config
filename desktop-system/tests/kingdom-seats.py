@@ -10,6 +10,10 @@ fleet, seats = set(), {}
 for name, r in sorted(roles.items()):
     if "form" not in r:
         continue
+    if "lane" in r:
+        assert not {"max_children", "quota", "scopes", "child_policy", "companion_of"} & r.keys(), (name, "a lane keeps its holder's own limits and grants")
+        assert name not in seats_json and f"role-{name}-fanout" not in outfits, name
+        continue
     if "companion_of" in r:
         primary = roles[r["companion_of"]]
         assert "max_children" in primary and not {"max_children", "quota", "scopes", "child_policy"} & r.keys(), name
