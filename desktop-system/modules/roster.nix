@@ -70,7 +70,6 @@ in
         title = "King of Spain";
         charter = ../duties/king-of-spain.md;
         outfits = command ++ fable;
-        birth = "default,succession-standard,opus5-kic";
         standing.handoff-warm = "Gluck 11-19 ~11:20: (1) seats near their handover line (about 50 percent context and idle) succeed NOW, not later on a cold cache: the King sweeps the roster and nudges each; (2) every seat keeps its handoff document warm in captains-log (a short dated entry per event) so succession needs only a final delta. Put it in the charter plan and each seat's brief.";
       };
       backend-engineer = {
