@@ -456,6 +456,28 @@
           assert expandFails ({ lead = top; } // regimentWith "lead" fullSeats // { s = top; });
           assert !(expandFails ({ lead = top; } // regimentWith "lead" fullSeats));
           assert !(expandFails (regimentWith "none" fullSeats));
+          assert
+            (k.authorityOf { } "x" (
+              seat "leader" {
+                role = "@01234567";
+                reach = "fleet";
+                keyGrants = [ "set:children#system.retired" ];
+              }
+              // {
+                primary = null;
+              }
+            )).scopes == [
+              "*:*"
+              "set:children#system.retired"
+            ];
+          assert fails (
+            k.expand {
+              seats.x = seat "leader" {
+                role = "@01234567";
+                keyGrants = [ "retire:kids*" ];
+              };
+            }
+          );
           pkgs.runCommand "charter-kingdom-faults" { } "touch $out";
 
         charter-zero-host-leaks =
@@ -531,8 +553,12 @@
               assert manifest["lead"]["outfits"] == ["role-lead-charter", "role-lead-fanout", "role-lead-fields"], manifest
               assert manifest["lead"]["managed"] == ["charter", "system.fanout.max_children", "standing.patrol"], manifest
               assert manifest["clerk"] == {"id": "@89abcdef", "outfits": ["role-clerk-fanout", "role-clerk-fields"], "managed": ["system.fanout.max_children", "system.fanout.quota", "standing.patrol"], "mode": "check"}, manifest
-              assert load("${files."figaro/outfits/role-lead-fields.toml".source}") == {"standing": {"patrol": "Hold the gate."}}
-              assert load("${files."figaro/outfits/role-clerk-fields.toml".source}") == {"standing": {"patrol": "Walk the walls."}}
+              assert load("${
+                files."figaro/outfits/role-lead-fields.toml".source
+              }") == {"standing": {"patrol": "Hold the gate."}}
+              assert load("${
+                files."figaro/outfits/role-clerk-fields.toml".source
+              }") == {"standing": {"patrol": "Walk the walls."}}
               assert "builder" not in manifest, manifest
               assert manifest["aide"]["managed"] == ["system.fanout.max_children", "system.fanout.quota", "standing.patrol"], manifest
               lane = ["send:parent", "read:aria:self", "write:aria:self#@self", "delete:aria:self#@self"]
@@ -586,7 +612,7 @@
             assert manifest["thinker"] == {
                 "id": "@fedcba9876543210fedcba9876543210",
                 "outfits": ["role-thinker-charter", "role-thinker-fanout", "role-thinker-fields"],
-                "managed": ["charter", "system.fanout.max_children", "system.fanout.quota", "name", "orchestration", "regiment", "role-name", "standing.patrol"],
+                "managed": ["charter", "system.fanout.max_children", "system.fanout.quota", "name", "regiment", "role-name", "standing.patrol", "orchestration.policy"],
                 "mode": "check",
             }, manifest["thinker"]
             assert manifest["vanguard"]["outfits"][-1] == "role-vanguard-fields"

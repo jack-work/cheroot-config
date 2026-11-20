@@ -20,6 +20,17 @@ in
       );
 
       standingOf = s: if s.role == null then { } else cfg.standing // s.standing;
+      partialKeys = [
+        "standing"
+        "orchestration"
+        "lanes"
+      ];
+      managedFields =
+        fields:
+        builtins.filter (k: !(builtins.elem k partialKeys)) (builtins.attrNames fields)
+        ++ lib.concatMap (
+          k: map (sub: "${k}.${sub}") (builtins.attrNames (fields.${k} or { }))
+        ) partialKeys;
 
       seats = lib.mapAttrs (
         _: s:
@@ -34,8 +45,17 @@ in
             };
           };
           standing = lib.optionalAttrs (standingOf s != { }) { standing = standingOf s; };
+          orchestration = lib.optionalAttrs (cfg.orchestration != null && s.role != null) {
+            orchestration = (s.fields.orchestration or { }) // {
+              policy = cfg.orchestration;
+            };
+          };
+          lanes = lib.optionalAttrs (s.lanes != { }) { inherit (s) lanes; };
         in
-        s // { fields = s.fields // titled // whenFull // standing; }
+        s
+        // {
+          fields = s.fields // titled // whenFull // standing // orchestration // lanes;
+        }
       ) expanded;
 
       roster = pkgs.linkFarm "figaro-roster" (
@@ -87,8 +107,7 @@ in
                   "system.fanout.quota"
                 ]
                 ++ lib.optional (s.outfits != null) "system.grants.outfits"
-                ++ builtins.filter (k: k != "standing") (builtins.attrNames s.fields)
-                ++ map (k: "standing.${k}") (builtins.attrNames (standingOf s));
+                ++ managedFields s.fields;
               inherit (s) mode;
             })
             (
@@ -152,6 +171,11 @@ in
             standing.<name>; a seat's own standing wins by name. Other standing keys on a form
             are left alone.
           '';
+        };
+        orchestration = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          description = "orchestration.policy of every seat with a role, a regiment's own included.";
         };
         whenFull = lib.mkOption {
           type = lib.types.nullOr lib.types.str;

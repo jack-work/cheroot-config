@@ -91,6 +91,8 @@ let
       forward ? { },
       fields ? { },
       standing ? { },
+      keyGrants ? [ ],
+      lanes ? { },
       mode ? "check",
     }:
     {
@@ -114,6 +116,8 @@ let
         forward
         fields
         standing
+        keyGrants
+        lanes
         mode
         ;
       duty = text duty;
@@ -233,8 +237,12 @@ let
       count = kind: builtins.length (builtins.attrNames (seatsOfKind reg kind));
     in
     map (k: "needs exactly one ${k}, has ${toString (count k)}") (
-      builtins.filter (k: count k != 1) seatKinds
+      builtins.filter (k: count k != 1) [
+        "strategist"
+        "knight"
+      ]
     )
+    ++ lib.optional (count "steward" > 1) "has ${toString (count "steward")} stewards, at most one"
     ++ lib.optional (
       reg.seats ? ${reg.leader}
     ) "its leader '${reg.leader}' cannot be one of its own seats"
@@ -292,6 +300,8 @@ let
       aliases = { };
       forward = { };
       standing = { };
+      keyGrants = [ ];
+      lanes = { };
       primary = null;
       regiment = reg;
     };
@@ -429,6 +439,8 @@ let
     aliases = { };
     forward = { };
     standing = { };
+    keyGrants = [ ];
+    lanes = { };
     regiment = null;
   };
 
@@ -459,7 +471,7 @@ let
     else
       grants.render {
         form = s.role;
-        inherit (s) reach childPolicy;
+        inherit (s) reach childPolicy keyGrants;
         reportsTo = builtins.filter isRoleId (map (n: seats.${n}.role or null) s.reportsTo);
         maxChildren = s.limit.children;
         quota = s.limit.quota;
@@ -500,6 +512,12 @@ let
     ++ map (n: "${name}: reportsTo '${n}' must be a declared seat with a role") (
       builtins.filter (n: !(seats ? ${n}) || !(isRoleId seats.${n}.role)) s.reportsTo
     )
+    ++ map (l: "${name}: lane ${l}: index '${s.lanes.${l}}' must be a fleet.lane.* handle") (
+      builtins.filter (
+        l: builtins.match "fleet\\.lane(\\.[a-z0-9-]+)+" s.lanes.${l} == null
+      ) (builtins.attrNames s.lanes)
+    )
+    ++ lib.optional (s.lanes != { } && s.role == null) "${name}: lanes need a role to be written on"
     ++ lib.optionals (s.primary != null) (aliasFaults seats name s)
     ++ lib.optionals (seated s) (grants.seatFaults name (authorityOf seats name s));
 

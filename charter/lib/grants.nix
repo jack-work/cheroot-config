@@ -123,6 +123,7 @@ let
     {
       form,
       reach,
+      keyGrants ? [ ],
       reportsTo,
       maxChildren,
       quota,
@@ -135,7 +136,13 @@ let
       // childPolicy;
     in
     {
-      scopes = if reach == "fleet" then fleetScopes else null;
+      scopes =
+        if reach == "fleet" then
+          fleetScopes ++ keyGrants
+        else if keyGrants != [ ] then
+          keyGrants
+        else
+          null;
       childPolicy = policy;
       inherit maxChildren;
       quota = quotaOf {
