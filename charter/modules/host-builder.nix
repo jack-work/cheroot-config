@@ -45,14 +45,14 @@
         user,
         host,
         aspects ? config.flake.lib.defaultAspects,
-        roles ? [ ],
+        extraAspects ? [ ],
         system ? "x86_64-linux",
         settings ? { },
       }:
       {
         "${user}@${host}" = homeManagerLib.homeManagerConfiguration {
           pkgs = nixpkgsInput.legacyPackages.${system};
-          modules = map (name: homeModules.${name}) (aspects ++ roles) ++ [
+          modules = map (name: homeModules.${name}) (aspects ++ extraAspects) ++ [
             {
               home.username = user;
               home.homeDirectory = "/home/${user}";
