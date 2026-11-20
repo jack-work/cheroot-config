@@ -58,6 +58,12 @@ top@{ inputs, ... }:
           type = lib.types.port;
           default = 7481;
         };
+        tunnel = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          example = "spain";
+          description = "ssh destination that gets the bridge on its own 127.0.0.1:<port> by a reverse tunnel; host must then be 127.0.0.1.";
+        };
         hushExecutable = lib.mkOption {
           type = lib.types.nullOr lib.types.str;
           default = if hushPackage == null then null else lib.getExe' hushPackage "hush";
@@ -94,7 +100,26 @@ top@{ inputs, ... }:
             ]);
             message = "my.figaroFormsBridge.host: bind one address the edge reaches, not every interface";
           }
+          {
+            assertion = cfg.tunnel == null || cfg.host == "127.0.0.1";
+            message = "my.figaroFormsBridge.tunnel: the bridge binds 127.0.0.1 when the edge reaches it through the tunnel";
+          }
         ];
+
+        systemd.user.services.figaro-forms-bridge-tunnel = lib.mkIf (cfg.tunnel != null) {
+          Unit = {
+            Description = "Reverse tunnel: ${cfg.tunnel} 127.0.0.1:${toString cfg.port} -> the figaro-forms bridge";
+            After = [ "figaro-forms-bridge.service" ];
+            Requires = [ "figaro-forms-bridge.service" ];
+            StartLimitIntervalSec = 0;
+          };
+          Service = {
+            ExecStart = "${lib.getExe pkgs.openssh} -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -R 127.0.0.1:${toString cfg.port}:127.0.0.1:${toString cfg.port} ${cfg.tunnel}";
+            Restart = "always";
+            RestartSec = 10;
+          };
+          Install.WantedBy = [ "default.target" ];
+        };
 
         xdg.configFile."hush/commands/${cfg.command}/command.toml".source =
           (pkgs.formats.toml { }).generate "figaro-forms-bridge-command.toml" spec;
