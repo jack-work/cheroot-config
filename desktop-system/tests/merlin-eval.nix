@@ -64,8 +64,19 @@ assert !(system.systemd.services ? figaro);
 assert system.networking.hostName == "merlin";
 assert system.users.users.jack.uid == 1000 && system.users.groups.jack.gid == 1000;
 assert system.programs.niri.enable && system.services.greetd.enable;
+assert !system.networking.networkmanager.enable;
+assert system.networking.wireless.iwd.settings.General.EnableNetworkConfiguration;
+assert system.services.resolved.enable;
+assert system.systemd.network.networks."20-wired".matchConfig.Driver == "r8169";
+assert builtins.all (m: builtins.elem m system.boot.blacklistedKernelModules) [
+  "iwlwifi"
+  "iwlmvm"
+];
+assert lib.hasPrefix "615." system.hardware.nvidia.package.version;
 assert
-  system.networking.networkmanager.enable && system.networking.networkmanager.wifi.backend == "iwd";
+  system.environment.etc
+    ? "nvidia/nvidia-application-profiles-rc.d/50-limit-free-buffer-pool-in-wayland-compositors.json";
+assert builtins.any (p: lib.getName p == "merlin-diag") system.environment.systemPackages;
 assert !system.systemd.services.systemd-hibernate.enable;
 assert integrated.home.sessionVariables.FIGARO_STATE_DIR == "/home/jack/.local/state/figaro-merlin";
 assert integrated.home.sessionVariables.FIGARO_CONFIG_DIR == "/home/jack/.config/figaro-merlin";

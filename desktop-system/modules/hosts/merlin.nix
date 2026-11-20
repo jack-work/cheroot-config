@@ -102,12 +102,34 @@ in
       ];
       networking = {
         hostName = "merlin";
-        networkmanager = {
+        useDHCP = false;
+        useNetworkd = true;
+        wireless.iwd = {
           enable = true;
-          wifi.backend = "iwd";
+          settings = {
+            General = {
+              EnableNetworkConfiguration = true;
+              "Disable2.4GHz" = true;
+            };
+            Network.NameResolvingService = "systemd";
+          };
         };
         firewall.enable = true;
       };
+      systemd.network = {
+        enable = true;
+        networks."20-wired" = {
+          matchConfig.Driver = "r8169";
+          networkConfig.DHCP = "yes";
+        };
+        wait-online.enable = false;
+      };
+      services.resolved.enable = true;
+      boot.blacklistedKernelModules = [
+        "iwlwifi"
+        "iwlmvm"
+      ];
+      boot.extraModprobeConfig = "options mt7921e disable_aspm=1";
       time.timeZone = "America/New_York";
       nix.settings.experimental-features = [
         "nix-command"
@@ -119,10 +141,7 @@ in
         uid = 1000;
         home = "/home/jack";
         group = "jack";
-        extraGroups = [
-          "wheel"
-          "networkmanager"
-        ];
+        extraGroups = [ "wheel" ];
         shell = pkgs.fish;
       };
       users.groups.jack.gid = 1000;
@@ -138,13 +157,40 @@ in
       };
       services.xserver.videoDrivers = [ "nvidia" ];
       hardware = {
-        graphics.enable = true;
+        graphics = {
+          enable = true;
+          enable32Bit = true;
+        };
         nvidia = {
           modesetting.enable = true;
           open = true;
-          package = config.boot.kernelPackages.nvidiaPackages.stable;
+          powerManagement.enable = true;
+          package = config.boot.kernelPackages.nvidiaPackages.latest;
         };
       };
+      environment.etc."nvidia/nvidia-application-profiles-rc.d/50-limit-free-buffer-pool-in-wayland-compositors.json".text =
+        builtins.toJSON {
+          rules = [
+            {
+              pattern = {
+                feature = "procname";
+                matches = "niri";
+              };
+              profile = "Limit Free Buffer Pool On Wayland Compositors";
+            }
+          ];
+          profiles = [
+            {
+              name = "Limit Free Buffer Pool On Wayland Compositors";
+              settings = [
+                {
+                  key = "GLVidHeapReuseRatio";
+                  value = 0;
+                }
+              ];
+            }
+          ];
+        };
       security.polkit.enable = true;
       security.rtkit.enable = true;
       services.pipewire = {
@@ -158,6 +204,44 @@ in
         iwd
         alsa-utils
         pulseaudio
+        (writeShellApplication {
+          name = "merlin-diag";
+          runtimeInputs = [
+            coreutils
+            gnugrep
+            iproute2
+            kmod
+            util-linux
+            systemd
+            iwd
+          ];
+          text = ''
+            set +e
+            out=/boot/merlin-diag-$(date +%s).txt
+            section() {
+              printf '\n===== %s\n' "$1"
+              shift
+              "$@" 2>&1
+            }
+            {
+              section "uname -a" uname -a
+              section "nvidia-smi" ${lib.getExe' config.hardware.nvidia.package.bin "nvidia-smi"}
+              section "lsmod" sh -c "lsmod | grep -E 'nvidia|nouveau|mt79|iwl|r8169'"
+              section "ip -br addr" ip -br addr
+              section "ip route" ip route
+              section "resolvectl status" resolvectl status
+              section "iwctl station list" iwctl station list
+              section "networkctl list" networkctl list
+              section "rfkill" rfkill
+              section "journal warnings" sh -c "journalctl -b -p warning --no-pager | tail -400"
+              section "greetd" sh -c "journalctl -b -u greetd --no-pager | tail -100"
+              section "uid 1000 graphics" sh -c "journalctl -b _UID=1000 --no-pager | grep -iE 'niri|egl|gbm|drm|nvidia' | tail -200"
+              section "/dev/dri" ls -l /dev/dri
+              section "/proc/cmdline" cat /proc/cmdline
+            } > "$out"
+            echo "$out"
+          '';
+        })
       ];
       services.figaro.enable = lib.mkForce false;
       systemd.services.systemd-hibernate.enable = false;
