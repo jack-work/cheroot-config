@@ -5,35 +5,6 @@
     let
       inherit (pkgs) lib;
       lockGate = config.flake.lib.lockGate;
-      k = config.flake.lib.kingdom;
-      fails = x: !(builtins.tryEval (builtins.deepSeq x x)).success;
-      expandFails = seats: fails (k.expand { inherit seats; });
-      sample = kind: role: {
-        inherit kind role;
-        title = "Seat ${kind}";
-        purpose = "p";
-        duty = "c";
-      };
-      fullSeats = {
-        s = sample "strategist" "@01234567";
-        k = sample "knight" "@11234567";
-        w = sample "steward" null;
-      };
-      regimentWith =
-        leader: seats:
-        k.regiment {
-          name = "r";
-          inherit leader seats;
-          orchestration = "o";
-          agreement = [ "{strategist} {knight} {steward}" ];
-          successionLayers = [ ];
-          successorBase = [ "default" ];
-          reviewer.ttl = "1h";
-        };
-      top = k.seat {
-        kind = "leader";
-        purpose = "p";
-      };
       realLock = builtins.fromJSON (builtins.readFile ../flake.lock);
 
       fakeSshLock = {
@@ -275,71 +246,22 @@
                 credo = "User credo.";
                 outfits.fast.system.ttl = "1h";
               };
-              my.kingdom = {
-                root = "lead";
+              my.roles = {
                 standing.patrol = "Walk the walls.";
-                seats = {
-                  lead = k.seat {
-                    kind = "leader";
-                    purpose = "Hold the order";
-                    role = "@0123456789abcdef0123456789abcdef";
-                    duty = "Holds the order.";
-                    limit.children = 3;
-                    reach = "fleet";
-                    reportsTo = [ "clerk" ];
-                    standing.patrol = "Hold the gate.";
-                    aliases.aide = k.companion {
-                      role = "@abcdef01";
-                      purpose = "Keep the calendar";
-                    };
-                  };
-                  clerk = k.seat {
-                    kind = "secretary";
-                    purpose = "Keep the ledger";
-                    role = "@89abcdef";
-                    limit.children = 0;
-                  };
-                  builder = k.seat {
-                    kind = "builder";
-                    purpose = "Run isolated tasks";
-                    forward.mason = "2026-12-01";
-                  };
-                }
-                // k.regiment {
-                  name = "sample";
-                  leader = "lead";
-                  seats = {
-                    thinker = {
-                      kind = "strategist";
-                      title = "Sample Strategist";
-                      purpose = "Plan";
-                      role = "@fedcba9876543210fedcba9876543210";
-                      duty = "Plans.";
-                      handoff = "/tmp/thinker.md";
-                    };
-                    vanguard = {
-                      kind = "knight";
-                      title = "Sample Knight";
-                      purpose = "Ship";
-                      role = "@76543210";
-                      duty = "Ships.";
-                    };
-                    pool = {
-                      kind = "steward";
-                      title = "Sample Steward";
-                      purpose = "Keep reviewers";
-                      duty = "Keeps reviewers.";
-                    };
-                  };
-                  kinds.strategist.model = "big";
-                  kinds.knight.limit = {
-                    children = null;
-                    quota = 5;
-                  };
-                  kinds.reviewer = {
-                    provider = "cheap";
-                    model = "small";
-                  };
+                orchestration = "Start from the lane index.";
+                roles.lead = {
+                  form = "@0123456789abcdef0123456789abcdef";
+                  title = "Lead";
+                  charter = "Holds the order.";
+                  outfits = [ "fast" ];
+                  lanes.gate = "fleet.lane.lead.gate";
+                  standing.patrol = "Hold the gate.";
+                };
+                roles.clerk = {
+                  form = "@89abcdef";
+                  title = "Clerk";
+                  index = "fleet.clerk";
+                  birth = "default,fast";
                 };
               };
             }
@@ -357,149 +279,6 @@
           pkgs.runCommand "charter-lock-github-only" { } ''
             echo "verified github-only charter lock (${toString (builtins.length (builtins.attrNames realLock.nodes))} nodes, 1 nixpkgs)" > $out
           '';
-
-        charter-kingdom-faults =
-          let
-            seat =
-              kind: extra:
-              k.seat (
-                {
-                  inherit kind;
-                  purpose = "p";
-                }
-                // extra
-              );
-          in
-          assert builtins.all expandFails [
-            { bad = seat "unknown" { }; }
-            { bad = seat "steward" { purpose = ""; }; }
-            { bad = seat "steward" { limit.children = -1; }; }
-            {
-              bad = seat "steward" {
-                role = "@11234567";
-                limit = {
-                  children = 3;
-                  quota = 2;
-                };
-              };
-            }
-            { orphan = seat "builder" { leader = "missing"; }; }
-            { self = seat "builder" { leader = "self"; }; }
-            {
-              a = seat "leader" { leader = "b"; };
-              b = seat "leader" { leader = "a"; };
-            }
-            { renamed = seat "steward" { forward.old = "soon"; }; }
-            {
-              a = seat "steward" { };
-              b = seat "steward" { forward.a = "2026-12-01"; };
-            }
-            {
-              a = seat "steward" { forward.old = "2026-12-01"; };
-              b = seat "steward" { forward.old = "2026-12-01"; };
-            }
-            { b = seat "steward" { role = "@1123456"; }; }
-            { a = seat "leader" { aliases.b = k.alias "@11234567"; }; }
-            {
-              a = seat "leader" {
-                role = "@01234567";
-                aliases.b = k.alias "@11234567";
-              };
-              b = seat "steward" { };
-            }
-            {
-              a = seat "leader" { };
-              b = seat "steward" {
-                role = "@11234567";
-                reportsTo = [ "a" ];
-              };
-            }
-            {
-              b = seat "steward" {
-                role = "@11234567";
-                childPolicy."system.scopes" = [ "send:role:knight" ];
-              };
-            }
-            {
-              b = seat "steward" {
-                role = "@11234567";
-                childPolicy."runtime.retired" = true;
-              };
-            }
-            { x = seat "steward" { fields.charter = "c"; }; }
-            {
-              x = {
-                kind = "steward";
-                purpose = "p";
-              };
-            }
-          ];
-          assert fails (
-            k.expand {
-              root = "missing";
-              seats.a = top;
-            }
-          );
-          assert
-            (k.expand {
-              root = "top";
-              seats = {
-                inherit top;
-                mid = seat "steward" { };
-              };
-            }).mid.leader == "top";
-          assert fails (regimentWith "lead" (fullSeats // { s2 = sample "strategist" null; }));
-          assert fails (regimentWith "lead" (removeAttrs fullSeats [ "k" ]));
-          assert fails (regimentWith "s" fullSeats);
-          assert fails (regimentWith "lead" (fullSeats // { k = sample "knight" "@xyz"; }));
-          assert expandFails (regimentWith "missing" fullSeats);
-          assert expandFails ({ lead = top; } // regimentWith "lead" fullSeats // { s = top; });
-          assert !(expandFails ({ lead = top; } // regimentWith "lead" fullSeats));
-          assert !(expandFails (regimentWith "none" fullSeats));
-          assert
-            (k.authorityOf { } "x" (
-              seat "leader" {
-                role = "@01234567";
-                reach = "fleet";
-                keyGrants = [ "set:children#system.retired" ];
-              }
-              // {
-                primary = null;
-              }
-            )).scopes == [
-              "*:*"
-              "set:children#system.retired"
-            ];
-          assert fails (
-            k.expand {
-              seats.x = seat "leader" {
-                role = "@01234567";
-                keyGrants = [ "retire:kids*" ];
-              };
-            }
-          );
-          assert expandFails {
-            c = seat "leader" {
-              role = "@01234567";
-              lanes.a = "fleet.lane.c.a";
-              aliases.x = k.lane {
-                role = "@11234567";
-                lane = "b";
-              };
-            };
-          };
-          assert
-            (k.expand {
-              seats.c = seat "leader" {
-                role = "@01234567";
-                lanes.a = "fleet.lane.c.a";
-                aliases.x = k.lane {
-                  role = "@11234567";
-                  lane = "a";
-                };
-              };
-            }).x.leader == "c";
-          pkgs.runCommand "charter-kingdom-faults" { } "touch $out";
 
         charter-zero-host-leaks =
           let
@@ -542,121 +321,76 @@
               echo "zero host/IP/port/sops leaks in charter nix modules" > $out
             '';
 
-        charter-roster-fanout =
+        charter-roles =
           let
             files = sampleHm.xdg.configFile;
-            apply = lib.findFirst (p: lib.getName p == "figaro-apply-roles") null sampleHm.home.packages;
+            refused =
+              roles:
+              !(builtins.tryEval (
+                (inputs.home-manager.lib.homeManagerConfiguration {
+                  inherit pkgs;
+                  modules = [
+                    config.flake.modules.homeManager.figaro
+                    {
+                      home.username = "operator";
+                      home.homeDirectory = "/home/operator";
+                      home.stateVersion = "26.05";
+                      my.figaro.package = null;
+                      my.roles.roles = roles;
+                    }
+                  ];
+                }).activationPackage.drvPath
+              )).success;
           in
-          pkgs.runCommand "charter-roster-fanout"
-            {
-              nativeBuildInputs = [
-                pkgs.python3
-                pkgs.gnugrep
-              ];
-            }
-            ''
-              python3 - <<'PY'
-              import re, tomllib
-              def load(p):
-                  return tomllib.load(open(p, "rb"))
-              roster = "${files."figaro/roster".source}"
-              assert load(f"{roster}/lead.toml")["max_children"] == 3
-              assert load(f"{roster}/clerk.toml")["max_children"] == 0
-              assert "max_children" not in load(f"{roster}/builder.toml")
-              assert load("${
-                files."figaro/outfits/role-lead-fanout.toml".source
-              }") == {"system": {"fanout": {"max_children": 3}}}
-              assert load("${
-                files."figaro/outfits/role-clerk-fanout.toml".source
-              }") == {"system": {"fanout": {"max_children": 0, "quota": 0}}}
-              script = open("${lib.getExe apply}").read()
-              manifest = load(re.search(r"FIGARO_APPLY_MANIFEST=(\S+)", script).group(1))["roles"]
-              assert manifest["lead"]["outfits"] == ["role-lead-charter", "role-lead-fanout", "role-lead-fields"], manifest
-              assert manifest["lead"]["managed"] == ["charter", "system.fanout.max_children", "standing.patrol"], manifest
-              assert manifest["clerk"] == {"id": "@89abcdef", "outfits": ["role-clerk-fanout", "role-clerk-fields"], "managed": ["system.fanout.max_children", "system.fanout.quota", "standing.patrol"], "mode": "check"}, manifest
-              assert load("${
-                files."figaro/outfits/role-lead-fields.toml".source
-              }") == {"standing": {"patrol": "Hold the gate."}}
-              assert load("${
-                files."figaro/outfits/role-clerk-fields.toml".source
-              }") == {"standing": {"patrol": "Walk the walls."}}
-              assert "builder" not in manifest, manifest
-              assert manifest["aide"]["managed"] == ["system.fanout.max_children", "system.fanout.quota", "standing.patrol"], manifest
-              lane = ["send:parent", "read:aria:self", "write:aria:self#@self", "delete:aria:self#@self"]
-              lead = load(f"{roster}/lead.toml")
-              assert (lead["reach"], lead["scopes"]) == ("fleet", ["*:*"]) and "quota" not in lead, lead
-              assert lead["child_policy"] == {"system.scopes": lane + ["send:role:@0123456789abcdef0123456789abcdef", "send:role:@89abcdef"]}, lead
-              clerk = load(f"{roster}/clerk.toml")
-              assert clerk["reach"] == "lineage" and "scopes" not in clerk, clerk
-              assert clerk["child_policy"] == {"system.scopes": lane + ["send:role:@89abcdef"]}, clerk
-              aide = load(f"{roster}/aide.toml")
-              assert aide["companion_of"] == "lead" and not {"quota", "scopes", "child_policy", "max_children"} & aide.keys(), aide
-              assert load("${
-                files."figaro/outfits/role-lead-grants.toml".source
-              }") == {"system": {"scopes": ["*:*"]}}
-              import json
-              seats = json.load(open(re.search(r"FIGARO_APPLY_SEATS=(\S+)", script).group(1)))
-              assert seats["lead"] == {"form": "@0123456789abcdef0123456789abcdef", "mode": "check", "outfit": "role-lead-grants",
-                                       "grants": {"system.scopes": ["*:*"], "system.child_policy": lead["child_policy"]}}, seats["lead"]
-              assert seats["clerk"]["outfit"] is None and "system.scopes" not in seats["clerk"]["grants"], seats["clerk"]
-              assert "aide" not in seats and "builder" not in seats, seats
-              PY
-              touch $out
-            '';
-
-        charter-regiment =
-          let
-            files = sampleHm.xdg.configFile;
-            apply = lib.findFirst (p: lib.getName p == "figaro-apply-roles") null sampleHm.home.packages;
-            outfit = n: files."figaro/outfits/${n}.toml".source;
-          in
-          assert !(sampleHm.xdg.configFile ? "figaro/outfits/role-aide-grants.toml");
-          assert !(sampleHm.xdg.configFile ? "figaro/outfits/role-clerk-grants.toml");
-          pkgs.runCommand "charter-regiment" { nativeBuildInputs = [ pkgs.python3 ]; } ''
+          assert refused {
+            a = {
+              form = "@xyz";
+              title = "A";
+            };
+          };
+          assert refused {
+            a = {
+              form = "@01234567";
+              title = "A";
+              lanes.b = "fleet.lane.a.b";
+            };
+            b = {
+              form = "@11234567";
+              title = "B";
+            };
+          };
+          assert refused {
+            b = {
+              form = "@01234567";
+              title = "B";
+              lanes.c = "fleet.lane.b.d";
+            };
+          };
+          assert
+            !(refused {
+              b = {
+                form = "@01234567";
+                title = "B";
+                lanes.c = "fleet.lane.b.c";
+              };
+            });
+          pkgs.runCommand "charter-roles" { nativeBuildInputs = [ pkgs.python3 ]; } ''
             python3 - <<'PY'
-            import re, tomllib
-            def load(p):
-                return tomllib.load(open(p, "rb"))
-            roster = "${files."figaro/roster".source}"
-            thinker = load(f"{roster}/thinker.toml")
-            assert (thinker["kind"], thinker["leader"], thinker["leader_form"]) == ("leader", "lead", "@0123456789abcdef0123456789abcdef"), thinker
-            assert thinker["max_children"] == 6 and thinker["quota"] == 6 and thinker["model"] == "big", thinker
-            assert thinker["reach"] == "lineage" and "scopes" not in thinker, thinker
-            assert thinker["child_policy"]["system.scopes"][4:] == ["send:role:@fedcba9876543210fedcba9876543210", "send:role:@76543210"], thinker
-            vanguard = load(f"{roster}/vanguard.toml")
-            assert vanguard["scopes"] == ["*:*"] and vanguard["quota"] == 5 and "max_children" not in vanguard, vanguard
-            assert load(f"{roster}/vanguard.toml")["kind"] == "builder"
-            pool = load(f"{roster}/pool.toml")
-            assert pool["kind"] == "steward" and "form" not in pool and "max_children" not in pool, pool
-            script = open("${lib.getExe apply}").read()
-            manifest = load(re.search(r"FIGARO_APPLY_MANIFEST=(\S+)", script).group(1))["roles"]
-            assert manifest["thinker"] == {
-                "id": "@fedcba9876543210fedcba9876543210",
-                "outfits": ["role-thinker-charter", "role-thinker-fanout", "role-thinker-fields"],
-                "managed": ["charter", "system.fanout.max_children", "system.fanout.quota", "name", "regiment", "role-name", "standing.patrol", "orchestration.policy"],
-                "mode": "check",
-            }, manifest["thinker"]
-            assert manifest["vanguard"]["outfits"][-1] == "role-vanguard-fields"
-            assert manifest["vanguard"]["managed"][:1] == ["system.fanout.quota"] or "system.fanout.quota" in manifest["vanguard"]["managed"], manifest["vanguard"]
-            assert "pool" not in manifest, manifest
-            fields = load("${outfit "role-thinker-fields"}")
-            assert fields["name"] == fields["role-name"] == "Sample Strategist", fields
-            assert fields["regiment"]["name"] == "sample" and fields["regiment"]["seat"] == "strategist", fields
-            agreement = fields["regiment"]["agreement"]
-            assert "Sample Knight" in agreement and "regiment-sample-reviewer" in agreement and "{" not in agreement, agreement
-            assert fields["orchestration"]["policy"].startswith("Classify every dispatched child"), fields
-            assert load("${outfit "regiment-sample-strategist"}") == {"system": {"model": "big"}}
-            assert load("${outfit "regiment-sample-knight"}") == {}
-            reviewer = load("${outfit "regiment-sample-reviewer"}")
-            assert reviewer["system"] == {"provider": "cheap", "model": "small", "ttl": "4h"}, reviewer
-            assert reviewer["regiment"]["seat"] == "reviewer" and reviewer["regiment"]["agreement"] == agreement, reviewer
-            mint = load("${outfit "role-pool-mint"}")
-            assert mint["layers"] == ["succession-standard"], mint
-            assert mint["succession-policy"] == {"outfit": "default,succession-standard,regiment-sample-steward"}, mint
-            assert mint["system"] == {"fanout": {"max_children": 3}}, mint
-            assert mint["charter"] == "Keeps reviewers." and mint["regiment"]["seat"] == "steward", mint
-            assert load("${outfit "role-thinker-mint"}")["handoff"] == "/tmp/thinker.md"
-            assert "system" not in load("${outfit "role-vanguard-mint"}"), "a null maxChildren renders no fork limit"
+            import json, tomllib
+            m = json.load(open("${files."figaro/roles.json".source}"))
+            roles = {r["name"]: r for r in m["roles"]}
+            assert set(roles) == {"lead", "clerk"}, roles
+            assert roles["lead"] == {"name": "lead", "form": "@0123456789abcdef0123456789abcdef", "outfits": ["role-lead"],
+                "managed": ["charter", "lanes.gate", "name", "orchestration.policy", "role-name", "standing.patrol", "system.grants.outfits"]}, roles["lead"]
+            assert roles["clerk"]["managed"] == ["index", "name", "orchestration.policy", "role-name", "standing.patrol", "succession-policy.outfit"], roles["clerk"]
+            lead = tomllib.load(open("${files."figaro/outfits/role-lead.toml".source}", "rb"))
+            assert lead == {"charter": "Holds the order.", "name": "Lead", "role-name": "Lead", "lanes": {"gate": "fleet.lane.lead.gate"},
+                "standing": {"patrol": "Hold the gate."}, "orchestration": {"policy": "Start from the lane index."},
+                "system": {"grants": {"outfits": ["fast"]}}}, lead
+            clerk = tomllib.load(open("${files."figaro/outfits/role-clerk.toml".source}", "rb"))
+            assert clerk["standing"] == {"patrol": "Walk the walls."} and clerk["succession-policy"] == {"outfit": "default,fast"}, clerk
+            for r in m["roles"]:
+                assert not any(k.startswith(("system.fanout", "system.model", "system.provider")) for k in r["managed"]), r
             PY
             touch $out
           '';
@@ -687,27 +421,10 @@
           assert sampleHm.systemd.user.slices ? heavy;
           assert sampleHm.systemd.user.timers ? captains-log-snapshot;
           assert sampleHm.xdg.configFile ? "figaro/outfits/fast.toml";
-          assert sampleHm.xdg.configFile ? "figaro/roster";
+          assert sampleHm.xdg.configFile ? "figaro/roles.json";
           assert sampleHm.systemd.user.services ? figaro-forms-bridge;
           assert builtins.any (p: lib.getName p == "remote-builder-host-setup") sampleHm.home.packages;
-          assert builtins.any (p: lib.getName p == "figaro-apply-roles") sampleHm.home.packages;
-          assert sampleHm.xdg.configFile ? "figaro/outfits/role-lead-charter.toml";
-          assert !(sampleHm.xdg.configFile ? "figaro/outfits/role-builder-charter.toml");
-          assert sampleHm.xdg.configFile ? "figaro/outfits/role-lead-fanout.toml";
-          assert sampleHm.xdg.configFile ? "figaro/outfits/role-clerk-fanout.toml";
-          assert !(sampleHm.xdg.configFile ? "figaro/outfits/role-clerk-charter.toml");
-          assert !(sampleHm.xdg.configFile ? "figaro/outfits/role-builder-fanout.toml");
-          assert
-            (k.rosterEntry { } "x" (
-              k.seat {
-                kind = "builder";
-                purpose = "p";
-                limit.children = 0;
-              }
-              // {
-                leader = "none";
-              }
-            )).max_children == 0;
+          assert builtins.any (p: lib.getName p == "figaro-apply") sampleHm.home.packages;
           assert
             bridgeSpec.args == [
               "--hierarchy-only"

@@ -61,7 +61,7 @@ top@{ inputs, ... }:
         tunnel = lib.mkOption {
           type = lib.types.nullOr lib.types.str;
           default = null;
-          example = "spain";
+          example = "edge-host";
           description = "ssh destination that gets the bridge on its own 127.0.0.1:<port> by a reverse tunnel; host must then be 127.0.0.1.";
         };
         hushExecutable = lib.mkOption {
