@@ -33,6 +33,24 @@ in
 {
   flake.modules.homeManager.roster = {
     my.figaro.outfits = {
+      "model/sonncop" = {
+        layers = [
+          "house"
+          "via-copilot"
+        ];
+        model = "claude-sonnet-5.5";
+      };
+      "default/default-copilot" = {
+        layers = [
+          "house"
+          "via-copilot"
+        ];
+        system = {
+          eager_tool_streaming = true;
+          ttl = "7d";
+          model = "claude-opus-5.5";
+        };
+      };
       "model/opus5-kic".layers = [
         "house"
         "via-rou2"
