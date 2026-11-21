@@ -38,7 +38,7 @@ in
           "house"
           "via-copilot"
         ];
-        model = "claude-sonnet-5.5";
+        system.model = "claude-sonnet-5.5";
       };
       "default/default-copilot" = {
         layers = [
