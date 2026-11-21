@@ -148,7 +148,7 @@ in
         form = "@460d7227d652f5af0603f96290376b01";
         title = "Release Engineer";
         charter = ../duties/release-engineer.md;
-        outfits = kic;
+        outfits = kic ++ copilot;
         index = "fleet.release";
       };
     };
