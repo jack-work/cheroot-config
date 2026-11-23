@@ -17,6 +17,7 @@
       "heavy"
       "aria2"
       "figaro-forms-bridge"
+      "figaro-daemon"
       "rou2"
       "remote-builder-host"
       "roster"
@@ -31,6 +32,28 @@
       my.preflight.pacman = [ "polkit-kde-agent" ];
 
       my.figaro.package = null;
+
+      programs.figaro.daemon = {
+        sshAuthSock = "%t/fleet-ssh-agent.sock";
+        wants = [ "fleet-ssh-agent.service" ];
+        environmentFile = "%h/.config/figaro/daemon.env";
+        pathExtra = [
+          "%h/.local/state/hush/bin"
+          "%h/.cargo/bin"
+          "%h/.bun/bin"
+          "%h/go/bin"
+          "/opt/brew/bin"
+          "/opt/brew/sbin"
+          "/usr/local/sbin"
+          "/usr/local/bin"
+          "/usr/bin"
+          "/usr/bin/site_perl"
+          "/usr/bin/vendor_perl"
+          "/usr/bin/core_perl"
+          "/usr/lib/rustup/bin"
+        ];
+      };
+
       my.hush.package = null;
 
       my.remoteBuilderHost = {
@@ -44,7 +67,11 @@
       my.figaroFormsBridge.tunnel = "spain";
 
       systemd.user.services.figaro-web-serve = {
-        Unit.Description = "figaro's bearer web door on the tailnet only: https 7445 -> the daemon's web.sock";
+        Unit = {
+          Description = "figaro's bearer web door on the tailnet only: https 7445 -> the daemon's web.sock";
+          After = [ "figaro.service" ];
+          BindsTo = [ "figaro.service" ];
+        };
         Service = {
           Type = "oneshot";
           RemainAfterExit = true;
@@ -57,7 +84,11 @@
       systemd.user.services.figaro-door-tunnel = {
         Unit = {
           Description = "Reverse tunnel: spain 127.0.0.1:7446 -> figaro's bearer web door, for figaro-gateway";
-          After = [ "network-online.target" ];
+          After = [
+            "network-online.target"
+            "figaro.service"
+          ];
+          BindsTo = [ "figaro.service" ];
           StartLimitIntervalSec = 0;
         };
         Service = {
@@ -67,6 +98,22 @@
         };
         Install.WantedBy = [ "default.target" ];
       };
+
+      systemd.user.services.figaro-forms-bridge.Unit = {
+        After = [ "figaro.service" ];
+        BindsTo = [ "figaro.service" ];
+      };
+      systemd.user.services.figaro-forms-bridge-tunnel.Unit.After = [ "figaro.service" ];
+
+      xdg.configFile."systemd/user/figaro-approvals.service.d/10-daemon.conf".text = ''
+        [Unit]
+        After=figaro.service
+        BindsTo=figaro.service
+      '';
+      xdg.configFile."systemd/user/figaro-approvals-tunnel.service.d/10-daemon.conf".text = ''
+        [Unit]
+        After=figaro.service
+      '';
 
       my.niri.extra = ''
 
