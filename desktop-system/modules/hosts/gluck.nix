@@ -14,6 +14,7 @@
       "keel-sync"
       "fleet-ssh-agent"
       "hush-agent"
+      "gluck-backup"
       "keel"
       "captains-log"
       "heavy"
