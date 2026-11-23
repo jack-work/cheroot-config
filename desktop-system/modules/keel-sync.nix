@@ -57,12 +57,16 @@
     in
     {
       systemd.user.services.keel-sync = {
-        Unit.Description = "keel-sync: pull GitHub-only pushes into keel, report spain's inputs against it";
+        Unit = {
+          Description = "keel-sync: pull GitHub-only pushes into keel, report spain's inputs against it";
+          Wants = [ "fleet-ssh-agent.service" ];
+          After = [ "fleet-ssh-agent.service" ];
+        };
         Service = {
           Type = "oneshot";
           ExecStart = "${notify}/bin/keel-sync-run";
           Environment = [
-            "SSH_AUTH_SOCK=%t/gcr/ssh"
+            "SSH_AUTH_SOCK=%t/fleet-ssh-agent.sock"
             "PATH=${home}/.nix-profile/bin:${home}/.local/state/hush/bin:/usr/bin:/bin"
           ];
         };
