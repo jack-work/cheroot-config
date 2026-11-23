@@ -12,6 +12,8 @@
       "greeter"
       "splash"
       "keel-sync"
+      "fleet-ssh-agent"
+      "hush-agent"
       "keel"
       "captains-log"
       "heavy"
@@ -54,13 +56,23 @@
         Install.WantedBy = [ "default.target" ];
       };
 
+      systemd.user.services.figaro-forms-bridge-tunnel = {
+        Unit = {
+          Wants = [ "fleet-ssh-agent.service" ];
+          After = [ "fleet-ssh-agent.service" ];
+        };
+        Service.Environment = [ "SSH_AUTH_SOCK=%t/fleet-ssh-agent.sock" ];
+      };
+
       systemd.user.services.figaro-door-tunnel = {
         Unit = {
           Description = "Reverse tunnel: spain 127.0.0.1:7446 -> figaro's bearer web door, for figaro-gateway";
-          After = [ "network-online.target" ];
+          After = [ "network-online.target" "fleet-ssh-agent.service" ];
+          Wants = [ "fleet-ssh-agent.service" ];
           StartLimitIntervalSec = 0;
         };
         Service = {
+          Environment = [ "SSH_AUTH_SOCK=%t/fleet-ssh-agent.sock" ];
           ExecStart = "/usr/bin/ssh -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o StreamLocalBindUnlink=yes -R 127.0.0.1:7446:%t/figaro/web.sock spain";
           Restart = "always";
           RestartSec = 10;
