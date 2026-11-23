@@ -245,16 +245,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1794864314,
-        "narHash": "sha256-6Fg4apMXFV8Vjd/cXwvGkBSFDw8uDVgYREPOm2zia2Y=",
+        "lastModified": 1795166015,
+        "narHash": "sha256-eGYScfdcVnXwB9YNj2qZqwjtWxLj9r3ApkYDDhoqp/c=",
         "owner": "jack-work",
         "repo": "hush",
-        "rev": "7349674603d34b9af6e63a040a2916886d678ff8",
+        "rev": "b5fb71cc03ee682c0a8d32a2ade9b5fb762837f5",
         "type": "github"
       },
       "original": {
         "owner": "jack-work",
-        "ref": "v0.15.0",
+        "ref": "v0.18.4",
         "repo": "hush",
         "type": "github"
       }

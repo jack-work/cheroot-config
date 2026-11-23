@@ -27,7 +27,7 @@
     };
 
     hush = {
-      url = "github:jack-work/hush/v0.15.0";
+      url = "github:jack-work/hush/v0.18.4";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
