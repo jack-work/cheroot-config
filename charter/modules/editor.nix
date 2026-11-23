@@ -69,6 +69,8 @@
         );
 
         home.sessionVariables.NIX_PATH = "nixpkgs=${inputs.nixpkgs}";
+
+        systemd.user.sessionVariables.NIX_PATH = "nixpkgs=${inputs.nixpkgs}";
       };
     };
 }

@@ -20,28 +20,44 @@ in
     environment.shellAliases = shellAliases;
   };
 
-  flake.modules.homeManager.shell = {
-    home = { inherit sessionVariables; };
+  flake.modules.homeManager.shell =
+    { lib, ... }:
+    {
+      home = { inherit sessionVariables; };
 
-    programs.fish = {
-      inherit shellAliases;
-      enable = true;
-    };
+      systemd.user.sessionVariables = sessionVariables // {
+        PATH = lib.concatStringsSep ":" [
+          "\${HOME}/.local/state/hush/bin"
+          "\${HOME}/.nix-profile/bin"
+          "\${HOME}/.local/bin"
+          "\${HOME}/.cargo/bin"
+          "\${HOME}/.bun/bin"
+          "\${HOME}/go/bin"
+          "/opt/brew/bin"
+          "/opt/brew/sbin"
+          "\${PATH}"
+        ];
+      };
 
-    programs.bash = {
-      inherit shellAliases;
-      enable = true;
-      historyControl = [
-        "ignoredups"
-        "ignorespace"
-      ];
-      historySize = 100000;
-      historyFileSize = 200000;
-      shellOptions = [
-        "histappend"
-        "checkwinsize"
-        "globstar"
-      ];
+      programs.fish = {
+        inherit shellAliases;
+        enable = true;
+      };
+
+      programs.bash = {
+        inherit shellAliases;
+        enable = true;
+        historyControl = [
+          "ignoredups"
+          "ignorespace"
+        ];
+        historySize = 100000;
+        historyFileSize = 200000;
+        shellOptions = [
+          "histappend"
+          "checkwinsize"
+          "globstar"
+        ];
+      };
     };
-  };
 }
