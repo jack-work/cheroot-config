@@ -25,6 +25,7 @@
       "remote-builder-host"
       "roster"
       "keel-tasks"
+      "kic-copilot-failover"
     ];
 
     settings = {
