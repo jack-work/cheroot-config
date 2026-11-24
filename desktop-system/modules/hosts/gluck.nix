@@ -26,6 +26,7 @@
       "roster"
       "keel-tasks"
       "kic-copilot-failover"
+      "deploy-span"
     ];
 
     settings = {
