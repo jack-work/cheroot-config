@@ -66,6 +66,10 @@
         assert builtins.elem "figaro" cherootPkgNames;
         assert builtins.elem "hush" cherootPkgNames;
         assert !(builtins.elem "kc" cherootPkgNames);
+        assert builtins.elem "cache-client-setup" gluckPkgNames;
+        assert builtins.elem "cache-client-setup" cherootPkgNames;
+        assert builtins.elem "fleet-cache-push" gluckPkgNames;
+        assert !(builtins.elem "fleet-cache-push" cherootPkgNames);
         assert !(builtins.elem "captains-log" cherootPkgNames);
         assert merlinSystem.networking.hostName == "merlin";
         assert !merlinSystem.services.figaro.enable;

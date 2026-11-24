@@ -28,6 +28,7 @@
       "kic-copilot-failover"
       "deploy-span"
       "figscope"
+      "cache-client"
     ];
 
     settings = {
@@ -36,6 +37,8 @@
 
       my.preflight.binaries = [ "/usr/lib/polkit-kde-authentication-agent-1" ];
       my.preflight.pacman = [ "polkit-kde-agent" ];
+
+      my.cache.push.enable = true;
 
       my.figaro.package = null;
 
