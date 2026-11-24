@@ -42,4 +42,9 @@
         package = lib.mkDefault inputs.captains-log.packages.${pkgs.stdenv.hostPlatform.system}.default;
       };
     };
+
+  flake.modules.homeManager.cache-client.my.cache = {
+    url = lib.mkDefault "@ATTIC_URL@";
+    publicKey = lib.mkDefault "@FLEET_PUBKEY@";
+  };
 }
