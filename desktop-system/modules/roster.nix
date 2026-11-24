@@ -1,5 +1,9 @@
 { ... }:
 let
+  max = [
+    "opus5-max"
+    "sonn5-max"
+  ];
   kic = [
     "opus5-kic"
     "opus5-kic2"
@@ -51,6 +55,16 @@ in
           model = "claude-opus-5.5";
         };
       };
+      "model/opus5-max".layers = [
+        "house"
+        "via-rou2"
+      ];
+      "model/opus5-max".system.model = "anthropic-max/claude-opus-5-5";
+      "model/sonn5-max".layers = [
+        "house"
+        "via-rou2"
+      ];
+      "model/sonn5-max".system.model = "anthropic-max/claude-sonnet-5-5";
       "model/opus5-kic".layers = [
         "house"
         "via-rou2"
@@ -103,7 +117,7 @@ in
         form = "@96447061";
         title = "King of Spain";
         charter = ../duties/king-of-spain.md;
-        outfits = command ++ fable ++ copilot;
+        outfits = max ++ command ++ fable ++ copilot;
         standing.handoff-warm = "Gluck 11-19 ~11:20: (1) seats near their handover line (about 50 percent context and idle) succeed NOW, not later on a cold cache: the King sweeps the roster and nudges each; (2) every seat keeps its handoff document warm in captains-log (a short dated entry per event) so succession needs only a final delta. Put it in the charter plan and each seat's brief.";
       };
       backend-engineer = {
@@ -111,7 +125,8 @@ in
         title = "Backend Engineer";
         charter = ../duties/backend-engineer.md;
         outfits =
-          kic
+          max
+          ++ kic
           ++ [
             "opus5"
             "short"
@@ -132,7 +147,7 @@ in
         form = "@62c5c9bf8794ec5b8d1d00d05dd26c69";
         title = "Frontend Engineer";
         charter = ../duties/frontend-engineer.md;
-        outfits = kic ++ [ "opus5" ] ++ fable ++ copilot;
+        outfits = max ++ kic ++ [ "opus5" ] ++ fable ++ copilot;
         lanes = lanesOf "frontend" [
           "scope-ui"
           "order-site"
@@ -145,7 +160,7 @@ in
         form = "@ee9271497f3823d7f50922bec4899818";
         title = "Figaro Engineer";
         charter = ../duties/figaro-engineer.md;
-        outfits = command ++ copilot;
+        outfits = max ++ command ++ copilot;
         lanes = lanesOf "figaro" [
           "daemon-releases"
           "authz-carve"
@@ -159,14 +174,14 @@ in
         form = "@2c1645942f894dd40d9dfcfb97619c58";
         title = "Herald";
         charter = ../duties/herald.md;
-        outfits = kic ++ copilot;
+        outfits = max ++ kic ++ copilot;
         lanes.threads = "fleet.lane.herald.threads";
       };
       release-engineer = {
         form = "@460d7227d652f5af0603f96290376b01";
         title = "Release Engineer";
         charter = ../duties/release-engineer.md;
-        outfits = kic ++ copilot;
+        outfits = max ++ kic ++ copilot;
         index = "fleet.release";
       };
     };
