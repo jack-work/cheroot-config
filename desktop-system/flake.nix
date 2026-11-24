@@ -51,6 +51,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    figscope = {
+      url = "git+ssh://git@spain/var/lib/keel/jack/figscope.git?ref=refs/tags/v0.5.0&rev=5f46f2d3f98a107e1a4ea244ebb9d9a49887661e";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     rou2 = {
       url = "git+ssh://git@spain/var/lib/keel/jack/rou2.git?ref=refs/heads/feat/account-kic&rev=2498995e52d1e580347e98a1e218d9dc29a42be3";
       inputs.nixpkgs.follows = "nixpkgs";

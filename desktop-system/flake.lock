@@ -156,6 +156,29 @@
         "type": "github"
       }
     },
+    "figscope": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "zanni": "zanni"
+      },
+      "locked": {
+        "lastModified": 1795499993,
+        "narHash": "sha256-2H8BKCW0/3IAN07tRgpDvYO/rhDZcBu37ha33FUc4rw=",
+        "ref": "refs/tags/v0.5.0",
+        "rev": "5f46f2d3f98a107e1a4ea244ebb9d9a49887661e",
+        "revCount": 96,
+        "type": "git",
+        "url": "ssh://git@spain/var/lib/keel/jack/figscope.git"
+      },
+      "original": {
+        "ref": "refs/tags/v0.5.0",
+        "rev": "5f46f2d3f98a107e1a4ea244ebb9d9a49887661e",
+        "type": "git",
+        "url": "ssh://git@spain/var/lib/keel/jack/figscope.git"
+      }
+    },
     "flake-parts": {
       "inputs": {
         "nixpkgs-lib": [
@@ -194,6 +217,24 @@
       "original": {
         "owner": "hercules-ci",
         "repo": "flake-parts",
+        "type": "github"
+      }
+    },
+    "flake-utils": {
+      "inputs": {
+        "systems": "systems"
+      },
+      "locked": {
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
         "type": "github"
       }
     },
@@ -301,7 +342,7 @@
         "nixpkgs": [
           "nixpkgs"
         ],
-        "systems": "systems",
+        "systems": "systems_2",
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
@@ -361,6 +402,7 @@
         "cerrojo": "cerrojo",
         "charter": "charter",
         "figaro": "figaro",
+        "figscope": "figscope",
         "flake-parts": "flake-parts",
         "home-manager": "home-manager",
         "hush": "hush",
@@ -397,6 +439,21 @@
     },
     "systems": {
       "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    },
+    "systems_2": {
+      "locked": {
         "lastModified": 1791244623,
         "narHash": "sha256-uuanbkFk8a313Zfrxdcz8Us/yQtaxNnKJtX8v0ZPpd8=",
         "owner": "nix-systems",
@@ -429,6 +486,29 @@
         "owner": "numtide",
         "repo": "treefmt-nix",
         "type": "github"
+      }
+    },
+    "zanni": {
+      "inputs": {
+        "flake-utils": "flake-utils",
+        "nixpkgs": [
+          "figscope",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795112627,
+        "narHash": "sha256-aK4Txu6QKEV2FO1F2peg0XSWAS3f0kDVBLUFSwEEtBU=",
+        "ref": "refs/tags/usage-v2",
+        "rev": "ad04b321aec245f2f802286dda9447d1e84ec7c7",
+        "revCount": 96,
+        "type": "git",
+        "url": "ssh://git@spain/jack/zanni.git"
+      },
+      "original": {
+        "ref": "refs/tags/usage-v2",
+        "type": "git",
+        "url": "ssh://git@spain/jack/zanni.git"
       }
     }
   },

@@ -27,6 +27,7 @@
       "keel-tasks"
       "kic-copilot-failover"
       "deploy-span"
+      "figscope"
     ];
 
     settings = {
