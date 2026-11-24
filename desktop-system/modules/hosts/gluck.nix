@@ -21,6 +21,7 @@
       "remote-builder-host"
       "roster"
       "keel-tasks"
+      "cache-client"
     ];
 
     settings = {
@@ -29,6 +30,8 @@
 
       my.preflight.binaries = [ "/usr/lib/polkit-kde-authentication-agent-1" ];
       my.preflight.pacman = [ "polkit-kde-agent" ];
+
+      my.cache.push.enable = true;
 
       my.figaro.package = null;
       my.hush.package = null;

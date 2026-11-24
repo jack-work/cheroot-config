@@ -8,6 +8,7 @@
       "muse-code"
       "helium"
       "greeter"
+      "cache-client"
     ];
 
     settings = {

@@ -42,4 +42,9 @@
         package = lib.mkDefault inputs.captains-log.packages.${pkgs.stdenv.hostPlatform.system}.default;
       };
     };
+
+  flake.modules.homeManager.cache-client.my.cache = {
+    url = lib.mkDefault "http://100.103.40.20:8089";
+    publicKey = lib.mkDefault "fleet:GLWkfFqdwPy6kEG+nk50G7dKS0ByuSpQGWT2trsSF/g=";
+  };
 }
