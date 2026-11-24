@@ -49,7 +49,7 @@
         ];
         text = ''
           if [ "$#" -eq 0 ]; then
-            echo "usage: hush fleet-cache-push <out-link or store path>..." >&2
+            echo "usage: hush fleet-cache-push <release-check output path>..." >&2
             exit 2
           fi
           if [ -z "''${FLEET_CACHE_TOKEN:-}" ]; then
@@ -67,7 +67,19 @@
             > "$work/attic/config.toml"
           paths=()
           for p in "$@"; do
-            paths+=("$(readlink -f "$p")")
+            real=$(readlink -f "$p")
+            case "$real" in
+            /nix/store/*-home-manager-*|/nix/store/*-activation-*|/nix/store/*-user-environment*)
+              echo "refusing $real: home-manager generations do not go to the public cache" >&2
+              exit 1
+              ;;
+            /nix/store/*) ;;
+            *)
+              echo "refusing $p: not a store path" >&2
+              exit 1
+              ;;
+            esac
+            paths+=("$real")
           done
           XDG_CONFIG_HOME=$work attic push ${lib.escapeShellArg cfg.name} "''${paths[@]}"
         '';
