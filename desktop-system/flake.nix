@@ -17,7 +17,7 @@
     };
 
     figaro = {
-      url = "github:jack-work/figaro/v0.84.0";
+      url = "github:jack-work/figaro/v0.85.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
