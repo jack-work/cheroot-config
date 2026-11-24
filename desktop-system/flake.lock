@@ -120,16 +120,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1795480204,
-        "narHash": "sha256-eQ8Vg/iVFtW0vCuoAEy5liGV3b5ueQsa8c0/7cQx8PM=",
+        "lastModified": 1795505101,
+        "narHash": "sha256-QsKrzvTtKquxg+5c9E3zmtVz7fiJ6FilneVu3DiIm+o=",
         "owner": "jack-work",
         "repo": "figaro",
-        "rev": "f5c9b629784bec126e8ba20e28b4e6f4af6a5c2c",
+        "rev": "ab84ebc8d4aa990d70008086b16ca4388089ce54",
         "type": "github"
       },
       "original": {
         "owner": "jack-work",
-        "ref": "v0.85.0",
+        "ref": "v0.85.1",
         "repo": "figaro",
         "type": "github"
       }
