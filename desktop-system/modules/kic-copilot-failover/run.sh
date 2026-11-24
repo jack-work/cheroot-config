@@ -17,11 +17,13 @@ for role in "${ROLES[@]}"; do
 done
 for t in "${TARGETS[@]}"; do
   role=${t%% *}; aria=${t#* }
-  read -r provider model at reason < <(figaro state "$aria" -j 2>/dev/null |
-    jq -r '[.system.provider, .system.model, (.runtime.failure.at // 0), ((.runtime.failure.reason // "-") | gsub("\\s+"; "_") | .[0:120])] | @tsv')
+  read -r provider model at failed_turn reason < <(figaro state "$aria" -j 2>/dev/null |
+    jq -r '[.system.provider, .system.model, (.runtime.failure.at // 0), (.runtime.failure.turn // 0), ((.runtime.failure.reason // "-") | gsub("\\s+"; "_") | .[0:120])] | @tsv')
   [ "$provider" = rou2 ] || continue
   case "$model" in anthropic-kic*|anthropic-max*) ;; *) continue ;; esac
   [ $((now - at)) -lt $WINDOW_MS ] || continue
+  turns=$(echo "$LIST" | jq -r --arg a "$aria" '.[] | select(.id == $a) | .turn_count // 0')
+  [ "$turns" -le $((failed_turn + 1)) ] || continue
   echo "$reason" | grep -qiE '429|rate.?limit|quota|exhaust|usage.?limit' || continue
   case "$model" in *sonnet*) new=claude-sonnet-5.5 ;; *) new=claude-opus-5.5 ;; esac
   figaro set --id "$aria" system.provider copilot >/dev/null &&
