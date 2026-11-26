@@ -110,7 +110,7 @@ in
       };
       backend-engineer = {
         form = "@4f6f262b6205e70f7e27a38440872c40";
-        title = "Backend Engineer";
+        title = "Backend Knight";
         charter = ../duties/backend-engineer.md;
         fanout.max_children = 1;
         queue.kinds = [
@@ -137,7 +137,7 @@ in
       };
       frontend-engineer = {
         form = "@62c5c9bf8794ec5b8d1d00d05dd26c69";
-        title = "Frontend Engineer";
+        title = "Frontend Knight";
         charter = ../duties/frontend-engineer.md;
         fanout.max_children = 1;
         queue.kinds = [
@@ -196,7 +196,7 @@ in
       };
       release-engineer = {
         form = "@460d7227d652f5af0603f96290376b01";
-        title = "Release Engineer";
+        title = "Deployment Engineer";
         charter = ../duties/release-engineer.md;
         fanout.max_children = 1;
         queue.kinds = [ "deploy" ];
