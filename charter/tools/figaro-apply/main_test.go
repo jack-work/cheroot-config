@@ -154,7 +154,8 @@ func TestManifestParsesTheCharterContract(t *testing.T) {
 }
 
 func TestManifestCarriesTheSeatsNotYetMinted(t *testing.T) {
-	m, err := loadManifest(writeManifest(t, `{"figaro": "/nix/store/x/bin/figaro", "roles": [], "unminted": ["inspector", "form-deploy"]}`))
+	m, err := loadManifest(writeManifest(t, `{"figaro": "/nix/store/x/bin/figaro", "roles": [
+	  {"name": "edge", "form": "`+formA+`", "outfits": ["role-edge"], "managed": ["name"]}], "unminted": ["inspector", "form-deploy"]}`))
 	if err != nil {
 		t.Fatal(err)
 	}
