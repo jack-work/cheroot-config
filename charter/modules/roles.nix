@@ -8,8 +8,10 @@
       toml = pkgs.formats.toml { };
       text = d: if builtins.isPath d then lib.removeSuffix "\n" (builtins.readFile d) else d;
 
-      queueRoles = lib.filterAttrs (_: r: r.queue != null) cfg.roles;
+      formsOf = name: lib.filterAttrs (_: f: lib.elem name f.studiedBy) cfg.forms;
+      formIds = fs: builtins.filter (v: v != null) (lib.mapAttrsToList (_: f: f.form) fs);
       minted = lib.filterAttrs (_: r: r.form != null) cfg.roles;
+      mintedForms = lib.filterAttrs (_: f: f.form != null) cfg.forms;
       limited = [
         "strategist"
         "knight"
@@ -21,7 +23,7 @@
           kings = ofSeat "king";
         in
         if kings == [ ] then null else cfg.roles.${builtins.head kings}.form;
-      takes = kind: lib.attrNames (lib.filterAttrs (_: r: lib.elem kind r.queue.kinds) queueRoles);
+      takes = kind: lib.attrNames (lib.filterAttrs (_: f: lib.elem kind f.kinds) cfg.forms);
 
       faults =
         lib.concatLists (
@@ -37,12 +39,6 @@
               builtins.filter (l: builtins.match "fleet\\.lane\\.[a-z0-9-]+\\.${l}" r.lanes.${l} == null) (
                 builtins.attrNames r.lanes
               )
-            )
-            ++ lib.optionals (r.queue != null) (
-              lib.optional (r.queue.kinds == [ ]) "${name}: a queue takes at least one kind"
-              ++ lib.optional (
-                r.queue.priority && !lib.elem "review" r.queue.kinds
-              ) "${name}: only the review queue is a priority map"
             )
             ++ lib.optional (
               r.fanout.min_children != null
@@ -67,7 +63,6 @@
             ++ lib.optional (
               r.reportsTo != null && !(cfg.roles ? ${r.reportsTo})
             ) "${name}: reports to ${r.reportsTo}, which the charter does not declare"
-            ++ lib.optional (r.form == null && r.queue != null) "${name}: a queue needs a minted role form"
           ) cfg.roles
         )
         ++
@@ -83,37 +78,55 @@
               "inspector"
               "edge"
             ]
+        ++ lib.concatLists (
+          lib.mapAttrsToList (
+            name: f:
+            lib.optional (
+              f.form != null && builtins.match "@([0-9a-f]{8}|[0-9a-f]{32})" f.form == null
+            ) "form ${name}: '${f.form}' must be @ and 8 or 32 hex digits"
+            ++ lib.optional (f.kinds == [ ]) "form ${name}: a queue takes at least one kind"
+            ++ lib.optional (f.priority && !lib.elem "review" f.kinds) "form ${name}: only the review queue is a priority map"
+            ++ lib.optional (!(cfg.roles ? ${f.under})) "form ${name}: drawn under ${f.under}, which the charter does not declare"
+            ++ map (r: "form ${name}: studied by ${r}, which the charter does not declare") (
+              builtins.filter (r: !(cfg.roles ? ${r})) f.studiedBy
+            )
+            ++ lib.optional (f.studiedBy == [ ]) "form ${name}: nobody studies it, so nobody claims from it"
+          ) cfg.forms
+        )
         ++
           lib.optional (builtins.length (takes "review") > 1)
             "review requests have one home, the Inspector; taken by ${lib.concatStringsSep ", " (takes "review")}";
 
       claimSection =
-        q:
+        priority:
         "## Work orders\n\n"
         + text cfg.claimRules
-        + lib.optionalString q.priority ("\n\n" + text cfg.reviewRules);
+        + lib.optionalString priority ("\n\n" + text cfg.reviewRules);
 
       charterOf =
-        r:
+        name: r:
         let
           own = if r.charter == null then null else text r.charter;
+          studied = formsOf name;
         in
-        if r.queue == null then
+        if studied == { } then
           own
         else
-          lib.concatStringsSep "\n\n" (lib.optional (own != null) own ++ [ (claimSection r.queue) ]);
+          lib.concatStringsSep "\n\n" (
+            lib.optional (own != null) own
+            ++ [ (claimSection (lib.any (f: f.priority) (lib.attrValues studied))) ]
+          );
 
       contractOf =
-        r:
+        f:
         lib.filterAttrs (_: v: v != null) {
           version = "v0";
           contract = cfg.queueContract;
-          inherit (r.queue) kinds priority;
+          inherit (f) kinds priority;
           entries = "queue.<id>";
           id = "two hyphenated lowercase words, unique on the form";
           order = "priority, then state_at";
           posters-write = "queue.**";
-          grant = "write:role:${r.form}#queue.**";
           states = [
             "posted"
             "claimed"
@@ -124,11 +137,20 @@
           ];
         };
 
+      formKeysOf = f: {
+        name = f.title;
+        queue-contract = contractOf f;
+        chartered = lib.filterAttrs (_: v: v != null) {
+          kind = "queue-form";
+          root = rootForm;
+          under = cfg.roles.${f.under}.form or null;
+        };
+      };
+
       keysOf =
-        r:
+        name: r:
         lib.filterAttrs (_: v: v != null) {
-          charter = charterOf r;
-          queue-contract = if r.queue == null then null else contractOf r;
+          charter = charterOf name r;
           name = r.title;
           role-name = r.title;
           lanes = if r.lanes == { } then null else r.lanes;
@@ -143,6 +165,7 @@
             succession-abdication = cfg.succession.abdication;
             succession-ttl = cfg.succession.ttl;
             reviewer-max-children = r.reviewers.max_children;
+            studies = if formIds (formsOf name) == [ ] then null else formIds (formsOf name);
           };
           system =
             let
@@ -173,13 +196,22 @@
 
       manifest = {
         figaro = if figaroPkg == null then "" else lib.getExe' figaroPkg "figaro";
-        roles = lib.mapAttrsToList (name: r: {
-          inherit name;
-          inherit (r) form;
-          outfits = [ "role-${name}" ];
-          managed = managedOf (keysOf r);
-        }) minted;
-        unminted = lib.attrNames (lib.filterAttrs (_: r: r.form == null) cfg.roles);
+        roles =
+          lib.mapAttrsToList (name: r: {
+            inherit name;
+            inherit (r) form;
+            outfits = [ "role-${name}" ];
+            managed = managedOf (keysOf name r);
+          }) minted
+          ++ lib.mapAttrsToList (name: f: {
+            name = "form-${name}";
+            inherit (f) form;
+            outfits = [ "role-form-${name}" ];
+            managed = managedOf (formKeysOf f);
+          }) mintedForms;
+        unminted =
+          lib.attrNames (lib.filterAttrs (_: r: r.form == null) cfg.roles)
+          ++ map (n: "form-${n}") (lib.attrNames (lib.filterAttrs (_: f: f.form == null) cfg.forms));
       };
     in
     {
@@ -203,18 +235,11 @@
                     "lead"
                     "inspector"
                     "edge"
-                    "herald"
                   ];
                   description = "What kind of seat this is; fan-out limits are allowed only on strategist, knight and edge seats.";
                 };
                 regiment = lib.mkOption {
-                  type = lib.types.nullOr (
-                    lib.types.enum [
-                      "frontend"
-                      "backend"
-                      "figaro"
-                    ]
-                  );
+                  type = lib.types.nullOr (lib.types.strMatching "[a-z][a-z0-9-]*");
                   default = null;
                 };
                 reportsTo = lib.mkOption {
@@ -268,30 +293,44 @@
                     description = "system.fanout.quota on the role: a ceiling on its holder's whole subtree.";
                   };
                 };
-                queue = lib.mkOption {
+              };
+            }
+          );
+        };
+        forms = lib.mkOption {
+          default = { };
+          description = "Queue forms: work orders live on these, not on role forms. Each is drawn under a role and studied by the roles that claim from it.";
+          type = lib.types.attrsOf (
+            lib.types.submodule {
+              options = {
+                form = lib.mkOption {
+                  type = lib.types.nullOr lib.types.str;
                   default = null;
-                  description = "Work orders this role's form holds under queue.<id>; its charter gains the claim rules and queue-contract describes the entries.";
-                  type = lib.types.nullOr (
-                    lib.types.submodule {
-                      options = {
-                        kinds = lib.mkOption {
-                          type = lib.types.listOf (
-                            lib.types.enum [
-                              "work"
-                              "handoff"
-                              "review"
-                              "deploy"
-                            ]
-                          );
-                        };
-                        priority = lib.mkOption {
-                          type = lib.types.bool;
-                          default = false;
-                          description = "Entries are a priority map (the Inspector's review requests).";
-                        };
-                      };
-                    }
+                  description = "The form; none until it is minted, and then figaro-apply skips it.";
+                };
+                title = lib.mkOption { type = lib.types.str; };
+                under = lib.mkOption {
+                  type = lib.types.str;
+                  description = "The declared role this form is drawn under.";
+                };
+                studiedBy = lib.mkOption {
+                  type = lib.types.listOf lib.types.str;
+                  description = "Declared roles that study this form and claim from it.";
+                };
+                kinds = lib.mkOption {
+                  type = lib.types.listOf (
+                    lib.types.enum [
+                      "work"
+                      "handoff"
+                      "review"
+                      "deploy"
+                    ]
                   );
+                };
+                priority = lib.mkOption {
+                  type = lib.types.bool;
+                  default = false;
+                  description = "Entries are a priority map (the Inspector's review requests).";
                 };
               };
             }
@@ -332,13 +371,13 @@
         claimRules = lib.mkOption {
           type = lib.types.either lib.types.str lib.types.path;
           default = ''
-            Work orders live on this form under queue.<id>, about 1 KB each; queue-contract names the fields.
+            Work orders live under queue.<id> on the queue forms this role studies (chartered.studies), about 1 KB each; each form's queue-contract names the fields.
             - An id is a handcrafted codename: two hyphenated lowercase words, unique on this form (queue.amber-falcon). Order is by priority, then state_at.
             - Anyone may post: one new queue.<id> with state posted, source, requested_by and owner. A poster writes nothing outside queue.**.
             - Only a holder of the owner role claims: one write of claimed_by {role, aria, at, lease_until} and state claimed, conditional on the version it read. If the version moved, read again and never overwrite another claim:
-                v=$(figaro state show --id @<role> --version)
-                figaro state show --id @<role> -j   (queue.<id>.claimed_by must be empty)
-                figaro set --id @<role> --if-version "$v" queue.<id>.claimed_by '{"role": ..., "aria": ..., "at": ..., "lease_until": ...}'
+                v=$(figaro state show --id @<form> --version)
+                figaro state show --id @<form> -j   (queue.<id>.claimed_by must be empty)
+                figaro set --id @<form> --if-version "$v" queue.<id>.claimed_by '{"role": ..., "aria": ..., "at": ..., "lease_until": ...}'
               A refused write means someone else wrote first.
             - Renew the lease before lease_until. An expired lease may be claimed again.
             - The claimant alone moves the state on (blocked, review, done, cancelled) and stamps state_at.
@@ -391,9 +430,15 @@
         // lib.mapAttrs' (
           name: r:
           lib.nameValuePair "figaro/outfits/role-${name}.toml" {
-            source = toml.generate "outfit-role-${name}.toml" (keysOf r);
+            source = toml.generate "outfit-role-${name}.toml" (keysOf name r);
           }
-        ) minted;
+        ) minted
+        // lib.mapAttrs' (
+          name: f:
+          lib.nameValuePair "figaro/outfits/role-form-${name}.toml" {
+            source = toml.generate "outfit-role-form-${name}.toml" (formKeysOf f);
+          }
+        ) mintedForms;
       };
     };
 }

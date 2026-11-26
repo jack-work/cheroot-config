@@ -267,11 +267,17 @@
                   outfits = [ "fast" ];
                   lanes.gate = "fleet.lane.lead.gate";
                   standing.patrol = "Hold the gate.";
+                  fanout = {
+                    min_children = 1;
+                    max_children = 2;
+                    quota = 4;
+                  };
                 };
                 roles.clerk = {
                   form = "@89abcdef";
                   title = "Clerk";
-                  seat = "herald";
+                  seat = "lead";
+                  regiment = "figaro";
                   index = "fleet.clerk";
                 };
                 roles.inspector = {
@@ -279,20 +285,34 @@
                   title = "Inspector";
                   seat = "inspector";
                   reviewers.max_children = 1;
-                  queue = {
-                    kinds = [ "review" ];
-                    priority = true;
-                  };
                 };
-                roles.lead.fanout = {
-                  min_children = 1;
-                  max_children = 2;
-                  quota = 4;
+                forms.handoff = {
+                  form = "@cccccccc";
+                  title = "Handoff";
+                  under = "lead";
+                  studiedBy = [ "lead" ];
+                  kinds = [
+                    "work"
+                    "handoff"
+                  ];
                 };
-                roles.lead.queue.kinds = [
-                  "work"
-                  "handoff"
-                ];
+                forms.reviews = {
+                  form = "@dddddddd";
+                  title = "Reviews";
+                  under = "inspector";
+                  studiedBy = [
+                    "inspector"
+                    "crown"
+                  ];
+                  kinds = [ "review" ];
+                  priority = true;
+                };
+                forms.later = {
+                  title = "Later";
+                  under = "crown";
+                  studiedBy = [ "crown" ];
+                  kinds = [ "deploy" ];
+                };
                 queueContract = "https://contract.example.invalid/work-orders";
               };
             }
@@ -356,8 +376,8 @@
         charter-roles =
           let
             files = sampleHm.xdg.configFile;
-            refused =
-              roles:
+            refusedWith =
+              decl:
               !(builtins.tryEval (
                 (inputs.home-manager.lib.homeManagerConfiguration {
                   inherit pkgs;
@@ -368,143 +388,142 @@
                       home.homeDirectory = "/home/operator";
                       home.stateVersion = "26.05";
                       my.figaro.package = null;
-                      my.roles.roles = roles;
                     }
+                    decl
                   ];
                 }).activationPackage.drvPath
               )).success;
-          in
-          assert refused {
-            a = {
-              form = "@xyz";
-              title = "A";
-              seat = "herald";
-            };
-          };
-          assert refused {
-            a = {
-              form = "@01234567";
-              title = "A";
-              seat = "herald";
-              lanes.b = "fleet.lane.a.b";
-            };
-            b = {
-              form = "@11234567";
-              title = "B";
-              seat = "herald";
-            };
-          };
-          assert refused {
-            b = {
-              form = "@01234567";
-              title = "B";
-              seat = "herald";
-              lanes.c = "fleet.lane.b.d";
-            };
-          };
-          assert
-            !(refused {
-              b = {
+            refused = roles: refusedWith { my.roles.roles = roles; };
+            one = extra: {
+              a = {
                 form = "@01234567";
-                title = "B";
-                seat = "herald";
-                lanes.c = "fleet.lane.b.c";
-              };
-            });
-          assert refused {
-            a = {
-              form = "@01234567";
-              title = "A";
-              seat = "herald";
-              queue.kinds = [ ];
+                title = "A";
+                seat = "lead";
+                regiment = "figaro";
+              }
+              // extra;
             };
-          };
-          assert refused {
-            a = {
-              form = "@01234567";
-              title = "A";
-              seat = "herald";
-              queue = {
+            withForm = f: {
+              my.roles.roles = one { };
+              my.roles.forms.q = {
+                title = "Q";
+                under = "a";
+                studiedBy = [ "a" ];
                 kinds = [ "work" ];
-                priority = true;
+              }
+              // f;
+            };
+            regiment = {
+              lead.title = "Lead";
+              strategist = {
+                title = "Strategist";
+                fanout.max_children = 1;
+              };
+              knight = {
+                title = "Knight";
+                fanout.max_children = 1;
               };
             };
-          };
-          assert refused {
-            a = {
-              form = "@01234567";
-              title = "A";
-              seat = "herald";
-              queue.kinds = [ "review" ];
-            };
-            b = {
-              form = "@11234567";
-              title = "B";
-              seat = "herald";
-              queue.kinds = [ "review" ];
-            };
-          };
-          assert refused {
-            a = {
-              form = "@01234567";
-              title = "A";
+            templated =
+              (inputs.home-manager.lib.homeManagerConfiguration {
+                inherit pkgs;
+                modules = [
+                  config.flake.modules.homeManager.figaro
+                  {
+                    home.username = "operator";
+                    home.homeDirectory = "/home/operator";
+                    home.stateVersion = "26.05";
+                    my.figaro.package = null;
+                    my.charter = {
+                      centralCommand = {
+                        form = "@aaaaaaaa";
+                        title = "Crown";
+                      };
+                      regiments.north = regiment // {
+                        knight = regiment.knight // {
+                          form = "@bbbbbbbb";
+                        };
+                        handoff.form = "@cccccccc";
+                      };
+                      regiments.south = regiment;
+                      inspector = {
+                        seat.title = "Inspector";
+                        reviewers.max_children = 1;
+                      };
+                      edge = {
+                        seat = {
+                          form = "@eeeeeeee";
+                          title = "Edge";
+                          fanout.max_children = 1;
+                        };
+                        deploy.form = "@dddddddd";
+                      };
+                    };
+                  }
+                ];
+              }).config;
+          in
+          assert refused (one { form = "@xyz"; });
+          assert refused (
+            one { lanes.b = "fleet.lane.a.b"; }
+            // {
+              b = {
+                form = "@11234567";
+                title = "B";
+                seat = "lead";
+                regiment = "figaro";
+              };
+            }
+          );
+          assert refused (one { lanes.c = "fleet.lane.b.d"; });
+          assert !(refused (one { lanes.c = "fleet.lane.b.c"; }));
+          assert refused (one { seat = "lead"; fanout.max_children = 1; });
+          assert refused (one { reviewers.max_children = 1; });
+          assert refused (one { seat = "knight"; regiment = null; });
+          assert refused (one { reportsTo = "nobody"; });
+          assert refused (
+            one {
               seat = "edge";
               fanout = {
                 min_children = 3;
                 max_children = 2;
               };
-            };
-          };
+            }
+          );
           assert refused {
             reviewer-a = {
               form = "@01234567";
               title = "Reviewer";
-              seat = "herald";
+              seat = "lead";
+              regiment = "figaro";
             };
           };
-          assert refused {
-            a = {
-              form = "@01234567";
-              title = "A";
-              seat = "herald";
-              fanout.max_children = 1;
-            };
-          };
-          assert refused {
-            a = {
-              form = "@01234567";
-              title = "A";
-              seat = "edge";
-              reviewers.max_children = 1;
-            };
-          };
-          assert refused {
-            a = {
-              form = "@01234567";
-              title = "A";
-              seat = "king";
-            };
-            b = {
-              form = "@11234567";
-              title = "B";
-              seat = "king";
-            };
-          };
-          assert refused {
-            a = {
-              form = "@01234567";
-              title = "A";
-              seat = "knight";
-            };
-          };
-          assert refused {
-            a = {
-              form = "@01234567";
-              title = "A";
-              seat = "herald";
-              reportsTo = "nobody";
-            };
-          };
+          assert refused (
+            one { seat = "king"; regiment = null; }
+            // {
+              b = {
+                form = "@11234567";
+                title = "B";
+                seat = "king";
+              };
+            }
+          );
+          assert !(refusedWith (withForm { }));
+          assert refusedWith (withForm { kinds = [ ]; });
+          assert refusedWith (withForm { priority = true; });
+          assert refusedWith (withForm { under = "nobody"; });
+          assert refusedWith (withForm { studiedBy = [ "nobody" ]; });
+          assert refusedWith (withForm { studiedBy = [ ]; });
+          assert refusedWith (
+            lib.recursiveUpdate (withForm { kinds = [ "review" ]; }) {
+              my.roles.forms.r = {
+                title = "R";
+                under = "a";
+                studiedBy = [ "a" ];
+                kinds = [ "review" ];
+              };
+            }
+          );
           pkgs.runCommand "charter-roles"
             {
               nativeBuildInputs = [ pkgs.python3 ];
@@ -513,49 +532,78 @@
                   lib.filterAttrs (n: _: lib.hasPrefix "figaro/outfits/role-" n) files
                 )
               );
+              templatedRoles = builtins.toJSON (
+                lib.mapAttrs (_: r: {
+                  inherit (r) form seat regiment reportsTo;
+                  max = r.fanout.max_children;
+                }) templated.my.roles.roles
+              );
+              templatedForms = builtins.toJSON (
+                lib.mapAttrs (_: f: { inherit (f) form under studiedBy kinds priority; }) templated.my.roles.forms
+              );
             }
             ''
             python3 - <<'PY'
-            import json, tomllib
+            import json, os, tomllib
             m = json.load(open("${files."figaro/roles.json".source}"))
             roles = {r["name"]: r for r in m["roles"]}
-            assert set(roles) == {"lead", "clerk", "inspector", "crown"}, roles
-            assert m["unminted"] == ["planner"], m["unminted"]
-            chartered = ["chartered." + k for k in ["regiment", "reports-to", "root", "seat", "succession-abdication", "succession-ttl"]]
-            contract = ["queue-contract." + k for k in ["contract", "entries", "grant", "id", "kinds", "order", "posters-write", "priority", "states", "version"]]
+            assert set(roles) == {"lead", "clerk", "inspector", "crown", "form-handoff", "form-reviews"}, roles
+            assert m["unminted"] == ["planner", "form-later"], m["unminted"]
+            chartered = ["chartered." + k for k in ["regiment", "reports-to", "root", "seat", "studies", "succession-abdication", "succession-ttl"]]
             assert roles["lead"] == {"name": "lead", "form": "@0123456789abcdef0123456789abcdef", "outfits": ["role-lead"],
-                "managed": ["charter"] + chartered + ["lanes.gate", "name", "orchestration.policy"] + contract + ["role-name", "standing.patrol", "system.fanout.max_children", "system.fanout.min_children", "system.fanout.quota", "system.grants.outfits"]}, roles["lead"]
-            assert roles["clerk"]["managed"] == ["chartered.root", "chartered.seat", "chartered.succession-abdication", "chartered.succession-ttl", "index", "name", "orchestration.policy", "role-name", "standing.patrol"], roles["clerk"]
+                "managed": ["charter"] + chartered + ["lanes.gate", "name", "orchestration.policy", "role-name", "standing.patrol",
+                "system.fanout.max_children", "system.fanout.min_children", "system.fanout.quota", "system.grants.outfits"]}, roles["lead"]
+            assert roles["clerk"]["managed"] == ["chartered.regiment", "chartered.root", "chartered.seat", "chartered.succession-abdication", "chartered.succession-ttl",
+                "index", "name", "orchestration.policy", "role-name", "standing.patrol"], roles["clerk"]
             assert not any(k == "queue" or k.startswith("queue.") for r in m["roles"] for k in r["managed"]), "the charter never manages queue entries"
-            lead = tomllib.load(open("${files."figaro/outfits/role-lead.toml".source}", "rb"))
+            assert not any(k.startswith("queue-contract") for n, r in roles.items() if not n.startswith("form-") for k in r["managed"]), "queues live on queue forms, not role forms"
+            out = lambda n: tomllib.load(open(json.loads(os.environ["roleOutfits"])["figaro/outfits/role-" + n + ".toml"], "rb"))
+            lead = out("lead")
             charter = lead.pop("charter")
             assert charter.startswith("Holds the order.\n\n## Work orders\n\n"), charter
-            assert "conditional on the version it read" in charter and "priority map" not in charter, charter
-            assert "handcrafted codename" in charter, charter
-            q = lead.pop("queue-contract")
-            assert q == {"version": "v0", "contract": "https://contract.example.invalid/work-orders", "kinds": ["work", "handoff"], "priority": False,
-                "entries": "queue.<id>", "id": "two hyphenated lowercase words, unique on the form", "order": "priority, then state_at", "posters-write": "queue.**", "grant": "write:role:@0123456789abcdef0123456789abcdef#queue.**",
-                "states": ["posted", "claimed", "blocked", "review", "done", "cancelled"]}, q
+            assert "conditional on the version it read" in charter and "handcrafted codename" in charter and "priority map" not in charter, charter
             assert lead.pop("chartered") == {"seat": "knight", "regiment": "backend", "root": "@aaaaaaaa", "reports-to": "@aaaaaaaa",
-                "succession-abdication": "retire", "succession-ttl": "5m"}
-            crown = tomllib.load(open("${files."figaro/outfits/role-crown.toml".source}", "rb"))
-            assert crown["chartered"] == {"seat": "king", "root": "@aaaaaaaa", "central-command": True, "succession-abdication": "retire", "succession-ttl": "5m"}, crown
+                "studies": ["@cccccccc"], "succession-abdication": "retire", "succession-ttl": "5m"}
             assert lead == {"name": "Lead", "role-name": "Lead", "lanes": {"gate": "fleet.lane.lead.gate"},
                 "standing": {"patrol": "Hold the gate."}, "orchestration": {"policy": "Start from the lane index."},
                 "system": {"grants": {"outfits": ["fast"]}, "fanout": {"min_children": 1, "max_children": 2, "quota": 4}}}, lead
-            inspector = tomllib.load(open("${files."figaro/outfits/role-inspector.toml".source}", "rb"))
+            crown = out("crown")
+            assert crown["chartered"] == {"seat": "king", "root": "@aaaaaaaa", "central-command": True, "studies": ["@dddddddd"],
+                "succession-abdication": "retire", "succession-ttl": "5m"}, crown
+            assert "priority map" in crown["charter"], crown["charter"]
+            inspector = out("inspector")
             assert inspector["charter"].startswith("## Work orders\n\n") and "minted here at runtime" in inspector["charter"], inspector["charter"]
-            assert inspector["chartered"]["reviewer-max-children"] == 1, inspector
-            assert inspector["queue-contract"]["priority"] is True and inspector["queue-contract"]["kinds"] == ["review"], inspector
-            clerk = tomllib.load(open("${files."figaro/outfits/role-clerk.toml".source}", "rb"))
+            assert inspector["chartered"]["reviewer-max-children"] == 1 and "queue-contract" not in inspector, inspector
+            handoff = out("form-handoff")
+            assert handoff == {"name": "Handoff", "chartered": {"kind": "queue-form", "root": "@aaaaaaaa", "under": "@0123456789abcdef0123456789abcdef"},
+                "queue-contract": {"version": "v0", "contract": "https://contract.example.invalid/work-orders", "kinds": ["work", "handoff"], "priority": False,
+                "entries": "queue.<id>", "id": "two hyphenated lowercase words, unique on the form", "order": "priority, then state_at", "posters-write": "queue.**",
+                "states": ["posted", "claimed", "blocked", "review", "done", "cancelled"]}}, handoff
+            reviews = out("form-reviews")
+            assert reviews["queue-contract"]["priority"] is True and reviews["queue-contract"]["kinds"] == ["review"] and reviews["chartered"]["under"] == "@fedcba98", reviews
+            clerk = out("clerk")
             assert clerk["standing"] == {"patrol": "Walk the walls."} and "succession-policy" not in clerk, clerk
             for r in m["roles"]:
                 assert not any(k.startswith(("system.model", "system.provider", "succession-policy")) for k in r["managed"]), r
-            import os
             rendered = json.loads(os.environ["roleOutfits"])
             assert not [n for n in rendered if n.endswith("-grants.toml")], ("the daemon holds holder grants; no role-*-grants outfit", rendered)
             for n, f in rendered.items():
                 assert "succession-policy" not in tomllib.load(open(f, "rb")), (n, "the daemon holds succession-policy")
+            t = json.loads(os.environ["templatedRoles"])
+            assert set(t) == {"central-command", "north-lead", "north-strategist", "north-knight", "south-lead", "south-strategist", "south-knight", "inspector", "edge"}, t
+            assert t["central-command"]["seat"] == "king" and t["central-command"]["reportsTo"] is None, t
+            for r in ("north", "south"):
+                assert t[r + "-lead"] == {"form": None, "seat": "lead", "regiment": r, "reportsTo": "central-command", "max": None}, t
+                assert t[r + "-strategist"]["reportsTo"] == r + "-lead" and t[r + "-strategist"]["max"] == 1, t
+                assert t[r + "-knight"]["reportsTo"] == r + "-lead" and t[r + "-knight"]["max"] == 1, t
+            assert t["north-knight"]["form"] == "@bbbbbbbb", t
+            assert t["inspector"]["reportsTo"] == "central-command" and t["inspector"]["max"] is None, t
+            assert t["edge"] == {"form": "@eeeeeeee", "seat": "edge", "regiment": None, "reportsTo": "central-command", "max": 1}, t
+            f = json.loads(os.environ["templatedForms"])
+            assert set(f) == {"north-handoff", "south-handoff", "inspector", "deploy"}, f
+            assert f["north-handoff"] == {"form": "@cccccccc", "under": "north-lead", "studiedBy": ["north-knight"], "kinds": ["work", "handoff"], "priority": False}, f
+            assert f["inspector"]["studiedBy"] == ["inspector", "central-command"] and f["inspector"]["priority"] is True, f
+            assert f["deploy"] == {"form": "@dddddddd", "under": "edge", "studiedBy": ["edge"], "kinds": ["deploy"], "priority": False}, f
             PY
             touch $out
           '';
