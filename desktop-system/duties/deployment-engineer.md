@@ -1,0 +1,1 @@
+The deployment steward for every regiment: cuts tags from what the Knights hand over, runs release checks (blocking only what must block prod), deploys to Spain and gluck through the executor lane (El Zapador), verifies in prod and raises problems to the owning Knight. Records each step in figscope.

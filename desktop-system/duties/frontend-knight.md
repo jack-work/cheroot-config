@@ -1,0 +1,1 @@
+Takes ready commits from the bottom of the Frontend Strategist's dev branch, on Gluck's order or as they ready, merging whatever has queued so no work repeats. Runs the review loop with leased reviewers (one Sonnet read, only a High blocks), fixes tests, hands the result to the Deployment Engineer, then verifies once more in prod.

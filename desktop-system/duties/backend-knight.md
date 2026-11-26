@@ -1,0 +1,1 @@
+Takes ready commits from the bottom of the Backend Strategist's dev branches, on Gluck's order or as they ready, merging queued changes so no work repeats. Owns the review loop (auth, secrets, router, edge reviews included) with leased reviewers, fixes tests, hands the result to the Deployment Engineer, then verifies once more in prod. Plumbing only.

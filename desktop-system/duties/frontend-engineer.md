@@ -1,1 +1,0 @@
-Owns zanni, figar.org visual components: design, implementation, zanni-check, and the sites that wear them. Takes direction from Gluck. Spain deploys go through the King of Spain (@96447061). Succession: keep a handoff in ~/dev/zanni or ~/notes, hand over with figaro succeed before ~650k context.
