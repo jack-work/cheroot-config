@@ -99,132 +99,106 @@ in
     my.roles.standing.handoff-warm = "Gluck 11-19: (1) at about 50 percent context and idle, succeed NOW on a warm cache (finish any open Spain window or Inspector read first). (2) Keep the handoff warm: a short dated captains-log entry per event, handle spain.seats.<seat>, kind handoff; the handoff doc indexes them; at succession write only the delta. Rule: ~/.captains-log/2026/11/19/warm-handoffs-and-early-succession.md";
 
     my.roles.queueContract = "https://keel.kelliher.info/_keel/jack-captains-log-entries/blob/3201b21b3bc6f65758d653e45544d11969136ecd/2026/11/25/work-orders-contract.md";
-    my.roles.roles = {
-      king-of-spain = {
+    my.charter = {
+      centralCommand = {
         form = "@96447061";
         title = "King of Spain";
         charter = ../duties/king-of-spain.md;
-        seat = "king";
         outfits = command ++ fable ++ copilot;
         standing.handoff-warm = "Gluck 11-19 ~11:20: (1) seats near their handover line (about 50 percent context and idle) succeed NOW, not later on a cold cache: the King sweeps the roster and nudges each; (2) every seat keeps its handoff document warm in captains-log (a short dated entry per event) so succession needs only a final delta. Put it in the charter plan and each seat's brief.";
       };
-      backend-engineer = {
-        form = "@4f6f262b6205e70f7e27a38440872c40";
-        title = "Backend Knight";
-        charter = ../duties/backend-knight.md;
-        seat = "knight";
-        regiment = "backend";
-        reportsTo = "king-of-spain";
-        fanout.max_children = 1;
-        queue.kinds = [
-          "work"
-          "handoff"
-        ];
-        outfits =
-          kic
-          ++ [
-            "opus5"
-            "short"
-          ]
-          ++ copilot;
-        lanes = lanesOf "backend" [
-          "rou2"
-          "keel"
-          "spain-executor"
-          "identity"
-          "edge"
-          "flakes-charter"
-          "merlin"
-          "github-watcher"
-        ];
+      regiments.backend = {
+        lead.title = "Backend Lead";
+        strategist = {
+          form = "@db5727fe69feb38e67959086ecabcad3";
+          title = "Backend Strategist";
+          fanout.max_children = 1;
+          lanes = lanesOf "backend" [
+            "rou2"
+            "keel"
+            "spain-executor"
+            "identity"
+            "edge"
+            "flakes-charter"
+            "merlin"
+            "github-watcher"
+            "herald"
+            "telefono"
+          ];
+        };
+        knight = {
+          form = "@4f6f262b6205e70f7e27a38440872c40";
+          title = "Backend Knight";
+          charter = ../duties/backend-knight.md;
+          fanout.max_children = 1;
+          outfits =
+            kic
+            ++ [
+              "opus5"
+              "short"
+            ]
+            ++ copilot;
+        };
       };
-      frontend-engineer = {
-        form = "@62c5c9bf8794ec5b8d1d00d05dd26c69";
-        title = "Frontend Knight";
-        charter = ../duties/frontend-knight.md;
-        seat = "knight";
-        regiment = "frontend";
-        reportsTo = "king-of-spain";
-        fanout.max_children = 1;
-        queue.kinds = [
-          "work"
-          "handoff"
-        ];
-        outfits = kic ++ [ "opus5" ] ++ fable ++ copilot;
-        lanes = lanesOf "frontend" [
-          "scope-ui"
-          "order-site"
-          "approvals-app"
-          "big-tv"
-          "writer-resume"
-        ];
+      regiments.frontend = {
+        lead.title = "Frontend Lead";
+        strategist = {
+          form = "@581b64cf";
+          title = "Frontend Strategist";
+          fanout.max_children = 1;
+          lanes = lanesOf "frontend" [
+            "scope-ui"
+            "order-site"
+            "approvals-app"
+            "big-tv"
+            "writer-resume"
+          ];
+        };
+        knight = {
+          form = "@62c5c9bf8794ec5b8d1d00d05dd26c69";
+          title = "Frontend Knight";
+          charter = ../duties/frontend-knight.md;
+          fanout.max_children = 1;
+          outfits = kic ++ [ "opus5" ] ++ fable ++ copilot;
+        };
       };
-      figaro-engineer = {
-        form = "@ee9271497f3823d7f50922bec4899818";
-        title = "Figaro Engineer";
-        charter = ../duties/figaro-engineer.md;
-        seat = "lead";
-        regiment = "figaro";
-        reportsTo = "king-of-spain";
-        queue.kinds = [
-          "work"
-          "handoff"
-        ];
-        outfits = command ++ copilot;
-        lanes = lanesOf "figaro" [
-          "daemon-releases"
-          "authz-carve"
-          "aria-log"
-          "approvals-server"
-          "king-authority"
-          "review-pool"
-        ];
-      };
-      herald = {
-        form = "@2c1645942f894dd40d9dfcfb97619c58";
-        title = "Herald";
-        charter = ../duties/herald.md;
-        seat = "herald";
-        reportsTo = "king-of-spain";
-        queue.kinds = [
-          "work"
-          "handoff"
-        ];
-        outfits = kic ++ copilot;
-        lanes.threads = "fleet.lane.herald.threads";
-      };
-      backend-strategist = {
-        form = "@db5727fe69feb38e67959086ecabcad3";
-        title = "Backend Strategist";
-        seat = "strategist";
-        regiment = "backend";
-        reportsTo = "backend-engineer";
-        fanout.max_children = 1;
-      };
-      frontend-strategist = {
-        form = "@581b64cf";
-        title = "Frontend Strategist";
-        seat = "strategist";
-        regiment = "frontend";
-        reportsTo = "frontend-engineer";
-        fanout.max_children = 1;
+      regiments.figaro = {
+        lead = {
+          form = "@ee9271497f3823d7f50922bec4899818";
+          title = "Figaro Engineer";
+          charter = ../duties/figaro-engineer.md;
+          outfits = command ++ copilot;
+          lanes = lanesOf "figaro" [
+            "daemon-releases"
+            "authz-carve"
+            "aria-log"
+            "approvals-server"
+            "king-authority"
+            "review-pool"
+          ];
+        };
+        strategist = {
+          title = "Figaro Strategist";
+          fanout.max_children = 1;
+        };
+        knight = {
+          title = "Figaro Knight";
+          fanout.max_children = 1;
+        };
       };
       inspector = {
-        title = "Inspector";
-        seat = "inspector";
-        reportsTo = "king-of-spain";
+        seat.title = "Inspector";
         reviewers.max_children = 1;
       };
-      release-engineer = {
-        form = "@460d7227d652f5af0603f96290376b01";
-        title = "Deployment Engineer";
-        charter = ../duties/deployment-engineer.md;
-        seat = "edge";
-        reportsTo = "king-of-spain";
-        fanout.max_children = 1;
-        queue.kinds = [ "deploy" ];
-        outfits = kic ++ copilot;
-        index = "fleet.release";
+      edge = {
+        seat = {
+          form = "@460d7227d652f5af0603f96290376b01";
+          title = "Edge Engineer";
+          charter = ../duties/edge-engineer.md;
+          fanout.max_children = 1;
+          outfits = kic ++ copilot;
+          index = "fleet.release";
+        };
       };
     };
   };
