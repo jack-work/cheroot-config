@@ -267,6 +267,11 @@
                     priority = true;
                   };
                 };
+                roles.lead.fanout = {
+                  min_children = 1;
+                  max_children = 2;
+                  quota = 4;
+                };
                 roles.lead.queue.kinds = [
                   "work"
                   "handoff"
@@ -414,6 +419,16 @@
             };
           };
           assert refused {
+            a = {
+              form = "@01234567";
+              title = "A";
+              fanout = {
+                min_children = 3;
+                max_children = 2;
+              };
+            };
+          };
+          assert refused {
             reviewer-a = {
               form = "@01234567";
               title = "Reviewer";
@@ -436,7 +451,7 @@
             assert set(roles) == {"lead", "clerk", "inspector"}, roles
             contract = ["queue-contract." + k for k in ["contract", "entries", "grant", "id", "kinds", "order", "posters-write", "priority", "states", "version"]]
             assert roles["lead"] == {"name": "lead", "form": "@0123456789abcdef0123456789abcdef", "outfits": ["role-lead"],
-                "managed": ["charter", "lanes.gate", "name", "orchestration.policy"] + contract + ["role-name", "standing.patrol", "system.grants.outfits"]}, roles["lead"]
+                "managed": ["charter", "lanes.gate", "name", "orchestration.policy"] + contract + ["role-name", "standing.patrol", "system.fanout.max_children", "system.fanout.quota", "system.grants.outfits"]}, roles["lead"]
             assert roles["clerk"]["managed"] == ["index", "name", "orchestration.policy", "role-name", "standing.patrol"], roles["clerk"]
             assert not any(k == "queue" or k.startswith("queue.") for r in m["roles"] for k in r["managed"]), "the charter never manages queue entries"
             lead = tomllib.load(open("${files."figaro/outfits/role-lead.toml".source}", "rb"))
@@ -450,14 +465,15 @@
                 "states": ["posted", "claimed", "blocked", "review", "done", "cancelled"]}, q
             assert lead == {"name": "Lead", "role-name": "Lead", "lanes": {"gate": "fleet.lane.lead.gate"},
                 "standing": {"patrol": "Hold the gate."}, "orchestration": {"policy": "Start from the lane index."},
-                "system": {"grants": {"outfits": ["fast"]}}}, lead
+                "system": {"grants": {"outfits": ["fast"]}, "fanout": {"max_children": 2, "quota": 4}}}, lead
             inspector = tomllib.load(open("${files."figaro/outfits/role-inspector.toml".source}", "rb"))
             assert inspector["charter"].startswith("## Work orders\n\n") and "minted here at runtime" in inspector["charter"], inspector["charter"]
             assert inspector["queue-contract"]["priority"] is True and inspector["queue-contract"]["kinds"] == ["review"], inspector
             clerk = tomllib.load(open("${files."figaro/outfits/role-clerk.toml".source}", "rb"))
             assert clerk["standing"] == {"patrol": "Walk the walls."} and "succession-policy" not in clerk, clerk
             for r in m["roles"]:
-                assert not any(k.startswith(("system.fanout", "system.model", "system.provider", "succession-policy")) for k in r["managed"]), r
+                assert not any(k.startswith(("system.model", "system.provider", "succession-policy")) for k in r["managed"]), r
+                assert not any("min_children" in k for k in r["managed"]), (r, "figaro has no min_children primitive yet")
             import os
             rendered = json.loads(os.environ["roleOutfits"])
             assert not [n for n in rendered if n.endswith("-grants.toml")], ("the daemon holds holder grants; no role-*-grants outfit", rendered)

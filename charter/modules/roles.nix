@@ -32,6 +32,11 @@
                 r.queue.priority && !lib.elem "review" r.queue.kinds
               ) "${name}: only the review queue is a priority map"
             )
+            ++ lib.optional (
+              r.fanout.min_children != null
+              && r.fanout.max_children != null
+              && r.fanout.min_children > r.fanout.max_children
+            ) "${name}: fanout.min_children is above max_children"
             ++ lib.optional (lib.hasPrefix "reviewer" name) "${name}: reviewer roles are minted at runtime by the Inspector, never declared"
           ) cfg.roles
         )
@@ -87,7 +92,14 @@
           inherit (r) index;
           standing = if cfg.standing // r.standing == { } then null else cfg.standing // r.standing;
           orchestration = if cfg.orchestration == null then null else { policy = cfg.orchestration; };
-          system = if r.outfits == null then null else { grants.outfits = r.outfits; };
+          system =
+            let
+              fanout = lib.filterAttrs (_: v: v != null) { inherit (r.fanout) max_children quota; };
+              sys =
+                lib.optionalAttrs (r.outfits != null) { grants.outfits = r.outfits; }
+                // lib.optionalAttrs (fanout != { }) { inherit fanout; };
+            in
+            if sys == { } then null else sys;
         };
 
       managedOf =
@@ -96,7 +108,12 @@
           k:
           if builtins.isAttrs keys.${k} then
             map (sub: "${k}.${sub}") (
-              if k == "system" then [ "grants.outfits" ] else builtins.attrNames keys.${k}
+              if k == "system" then
+                lib.concatLists (
+                  lib.mapAttrsToList (g: v: map (leaf: "${g}.${leaf}") (builtins.attrNames v)) keys.system
+                )
+              else
+                builtins.attrNames keys.${k}
             )
           else
             [ k ]
@@ -144,6 +161,23 @@
                 standing = lib.mkOption {
                   type = lib.types.attrsOf lib.types.str;
                   default = { };
+                };
+                fanout = {
+                  min_children = lib.mkOption {
+                    type = lib.types.nullOr lib.types.ints.unsigned;
+                    default = null;
+                    description = "Fewest live children the seat keeps. Declared here; figaro has no primitive for it yet, so nothing is written.";
+                  };
+                  max_children = lib.mkOption {
+                    type = lib.types.nullOr lib.types.ints.unsigned;
+                    default = null;
+                    description = "system.fanout.max_children on the role: its holder is bound by it across succession.";
+                  };
+                  quota = lib.mkOption {
+                    type = lib.types.nullOr lib.types.ints.unsigned;
+                    default = null;
+                    description = "system.fanout.quota on the role: a ceiling on its holder's whole subtree.";
+                  };
                 };
                 queue = lib.mkOption {
                   default = null;
