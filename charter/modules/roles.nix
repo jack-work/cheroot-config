@@ -62,6 +62,8 @@
           contract = cfg.queueContract;
           inherit (r.queue) kinds priority;
           entries = "queue.<id>";
+          id = "two hyphenated lowercase words, unique on the form";
+          order = "priority, then state_at";
           posters-write = "queue.**";
           grant = "write:role:${r.form}#queue.**";
           states = [
@@ -196,6 +198,7 @@
           type = lib.types.either lib.types.str lib.types.path;
           default = ''
             Work orders live on this form under queue.<id>, about 1 KB each; queue-contract names the fields.
+            - An id is a handcrafted codename: two hyphenated lowercase words, unique on this form (queue.amber-falcon). Order is by priority, then state_at.
             - Anyone may post: one new queue.<id> with state posted, source, requested_by and owner. A poster writes nothing outside queue.**.
             - Only a holder of the owner role claims: one write of claimed_by {role, aria, at, lease_until} and state claimed, conditional on the version it read. If the version moved, read again and never overwrite another claim.
             - Renew the lease before lease_until. An expired lease may be claimed again.

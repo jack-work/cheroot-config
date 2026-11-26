@@ -434,7 +434,7 @@
             m = json.load(open("${files."figaro/roles.json".source}"))
             roles = {r["name"]: r for r in m["roles"]}
             assert set(roles) == {"lead", "clerk", "inspector"}, roles
-            contract = ["queue-contract." + k for k in ["contract", "entries", "grant", "kinds", "posters-write", "priority", "states", "version"]]
+            contract = ["queue-contract." + k for k in ["contract", "entries", "grant", "id", "kinds", "order", "posters-write", "priority", "states", "version"]]
             assert roles["lead"] == {"name": "lead", "form": "@0123456789abcdef0123456789abcdef", "outfits": ["role-lead"],
                 "managed": ["charter", "lanes.gate", "name", "orchestration.policy"] + contract + ["role-name", "standing.patrol", "system.grants.outfits"]}, roles["lead"]
             assert roles["clerk"]["managed"] == ["index", "name", "orchestration.policy", "role-name", "standing.patrol"], roles["clerk"]
@@ -443,9 +443,10 @@
             charter = lead.pop("charter")
             assert charter.startswith("Holds the order.\n\n## Work orders\n\n"), charter
             assert "conditional on the version it read" in charter and "priority map" not in charter, charter
+            assert "handcrafted codename" in charter, charter
             q = lead.pop("queue-contract")
             assert q == {"version": "v0", "contract": "https://contract.example.invalid/work-orders", "kinds": ["work", "handoff"], "priority": False,
-                "entries": "queue.<id>", "posters-write": "queue.**", "grant": "write:role:@0123456789abcdef0123456789abcdef#queue.**",
+                "entries": "queue.<id>", "id": "two hyphenated lowercase words, unique on the form", "order": "priority, then state_at", "posters-write": "queue.**", "grant": "write:role:@0123456789abcdef0123456789abcdef#queue.**",
                 "states": ["posted", "claimed", "blocked", "review", "done", "cancelled"]}, q
             assert lead == {"name": "Lead", "role-name": "Lead", "lanes": {"gate": "fleet.lane.lead.gate"},
                 "standing": {"patrol": "Hold the gate."}, "orchestration": {"policy": "Start from the lane index."},
