@@ -259,6 +259,19 @@
                   title = "Clerk";
                   index = "fleet.clerk";
                 };
+                roles.inspector = {
+                  form = "@fedcba98";
+                  title = "Inspector";
+                  queue = {
+                    kinds = [ "review" ];
+                    priority = true;
+                  };
+                };
+                roles.lead.queue.kinds = [
+                  "work"
+                  "handoff"
+                ];
+                queueContract = "https://contract.example.invalid/work-orders";
               };
             }
           ];
@@ -371,6 +384,41 @@
                 lanes.c = "fleet.lane.b.c";
               };
             });
+          assert refused {
+            a = {
+              form = "@01234567";
+              title = "A";
+              queue.kinds = [ ];
+            };
+          };
+          assert refused {
+            a = {
+              form = "@01234567";
+              title = "A";
+              queue = {
+                kinds = [ "work" ];
+                priority = true;
+              };
+            };
+          };
+          assert refused {
+            a = {
+              form = "@01234567";
+              title = "A";
+              queue.kinds = [ "review" ];
+            };
+            b = {
+              form = "@11234567";
+              title = "B";
+              queue.kinds = [ "review" ];
+            };
+          };
+          assert refused {
+            reviewer-a = {
+              form = "@01234567";
+              title = "Reviewer";
+            };
+          };
           pkgs.runCommand "charter-roles"
             {
               nativeBuildInputs = [ pkgs.python3 ];
@@ -385,14 +433,26 @@
             import json, tomllib
             m = json.load(open("${files."figaro/roles.json".source}"))
             roles = {r["name"]: r for r in m["roles"]}
-            assert set(roles) == {"lead", "clerk"}, roles
+            assert set(roles) == {"lead", "clerk", "inspector"}, roles
+            contract = ["queue-contract." + k for k in ["contract", "entries", "grant", "kinds", "posters-write", "priority", "states", "version"]]
             assert roles["lead"] == {"name": "lead", "form": "@0123456789abcdef0123456789abcdef", "outfits": ["role-lead"],
-                "managed": ["charter", "lanes.gate", "name", "orchestration.policy", "role-name", "standing.patrol", "system.grants.outfits"]}, roles["lead"]
+                "managed": ["charter", "lanes.gate", "name", "orchestration.policy"] + contract + ["role-name", "standing.patrol", "system.grants.outfits"]}, roles["lead"]
             assert roles["clerk"]["managed"] == ["index", "name", "orchestration.policy", "role-name", "standing.patrol"], roles["clerk"]
+            assert not any(k == "queue" or k.startswith("queue.") for r in m["roles"] for k in r["managed"]), "the charter never manages queue entries"
             lead = tomllib.load(open("${files."figaro/outfits/role-lead.toml".source}", "rb"))
-            assert lead == {"charter": "Holds the order.", "name": "Lead", "role-name": "Lead", "lanes": {"gate": "fleet.lane.lead.gate"},
+            charter = lead.pop("charter")
+            assert charter.startswith("Holds the order.\n\n## Work orders\n\n"), charter
+            assert "conditional on the version it read" in charter and "priority map" not in charter, charter
+            q = lead.pop("queue-contract")
+            assert q == {"version": "v0", "contract": "https://contract.example.invalid/work-orders", "kinds": ["work", "handoff"], "priority": False,
+                "entries": "queue.<id>", "posters-write": "queue.**", "grant": "write:role:@0123456789abcdef0123456789abcdef#queue.**",
+                "states": ["posted", "claimed", "blocked", "review", "done", "cancelled"]}, q
+            assert lead == {"name": "Lead", "role-name": "Lead", "lanes": {"gate": "fleet.lane.lead.gate"},
                 "standing": {"patrol": "Hold the gate."}, "orchestration": {"policy": "Start from the lane index."},
                 "system": {"grants": {"outfits": ["fast"]}}}, lead
+            inspector = tomllib.load(open("${files."figaro/outfits/role-inspector.toml".source}", "rb"))
+            assert inspector["charter"].startswith("## Work orders\n\n") and "minted here at runtime" in inspector["charter"], inspector["charter"]
+            assert inspector["queue-contract"]["priority"] is True and inspector["queue-contract"]["kinds"] == ["review"], inspector
             clerk = tomllib.load(open("${files."figaro/outfits/role-clerk.toml".source}", "rb"))
             assert clerk["standing"] == {"patrol": "Walk the walls."} and "succession-policy" not in clerk, clerk
             for r in m["roles"]:
