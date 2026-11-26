@@ -170,7 +170,7 @@ in
         };
         handoff.form = "@3a187137300c27daac0e2f8c3a3cf0cd";
         strategist = {
-          form = "@581b64cf";
+          form = "@581b64cf67e173c530197a6c77f383f9";
           title = "Frontend Strategist";
           outfits = seat;
           fanout.max_children = 1;
