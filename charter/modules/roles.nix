@@ -137,11 +137,8 @@
           ];
         };
 
-      shortHistory.system.history = "short";
-
       formKeysOf = f: {
         name = f.title;
-        inherit (shortHistory) system;
         queue-contract = contractOf f;
         chartered = lib.filterAttrs (_: v: v != null) {
           kind = "queue-form";
@@ -173,10 +170,11 @@
           system =
             let
               fanout = lib.filterAttrs (_: v: v != null) { inherit (r.fanout) min_children max_children quota; };
+              sys =
+                lib.optionalAttrs (r.outfits != null) { grants.outfits = r.outfits; }
+                // lib.optionalAttrs (fanout != { }) { inherit fanout; };
             in
-            shortHistory.system
-            // lib.optionalAttrs (r.outfits != null) { grants.outfits = r.outfits; }
-            // lib.optionalAttrs (fanout != { }) { inherit fanout; };
+            if sys == { } then null else sys;
         };
 
       managedOf =
@@ -187,9 +185,7 @@
             map (sub: "${k}.${sub}") (
               if k == "system" then
                 lib.concatLists (
-                  lib.mapAttrsToList (
-                    g: v: if builtins.isAttrs v then map (leaf: "${g}.${leaf}") (builtins.attrNames v) else [ g ]
-                  ) keys.system
+                  lib.mapAttrsToList (g: v: map (leaf: "${g}.${leaf}") (builtins.attrNames v)) keys.system
                 )
               else
                 builtins.attrNames keys.${k}

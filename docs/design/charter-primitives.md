@@ -68,6 +68,8 @@ The charter exports `lib.kingdom` and one home-manager module, `kingdom`, with a
 
 Rules the constructors enforce at evaluation, before anything builds (moved out of `kingdom-seats.py` where they are value checks): exact role ids, unknown leader, leader cycles, an alias never declared as a seat, an alias never limited, quota >= children, forward names unique and dated, reserved form keys refused in `fields`.
 
+`system.history` is owner-set, not charter-managed: form apply refuses it as a reserved key, so the King sets it on a form through the owner path and the charter never declares it. 39d8273 tried to declare it and was reverted.
+
 `leader = "@root"` means the roster's root seat, so most seats need no leader line.
 
 ## 4. The real roster in the new form

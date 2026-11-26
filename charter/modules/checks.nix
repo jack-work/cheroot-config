@@ -552,9 +552,9 @@
             chartered = ["chartered." + k for k in ["regiment", "reports-to", "root", "seat", "studies", "succession-abdication", "succession-ttl"]]
             assert roles["lead"] == {"name": "lead", "form": "@0123456789abcdef0123456789abcdef", "outfits": ["role-lead"],
                 "managed": ["charter"] + chartered + ["lanes.gate", "name", "orchestration.policy", "role-name", "standing.patrol",
-                "system.fanout.max_children", "system.fanout.min_children", "system.fanout.quota", "system.grants.outfits", "system.history"]}, roles["lead"]
+                "system.fanout.max_children", "system.fanout.min_children", "system.fanout.quota", "system.grants.outfits"]}, roles["lead"]
             assert roles["clerk"]["managed"] == ["chartered.regiment", "chartered.root", "chartered.seat", "chartered.succession-abdication", "chartered.succession-ttl",
-                "index", "name", "orchestration.policy", "role-name", "standing.patrol", "system.history"], roles["clerk"]
+                "index", "name", "orchestration.policy", "role-name", "standing.patrol"], roles["clerk"]
             assert not any(k == "queue" or k.startswith("queue.") for r in m["roles"] for k in r["managed"]), "the charter never manages queue entries"
             assert not any(k.startswith("queue-contract") for n, r in roles.items() if not n.startswith("form-") for k in r["managed"]), "queues live on queue forms, not role forms"
             out = lambda n: tomllib.load(open(json.loads(os.environ["roleOutfits"])["figaro/outfits/role-" + n + ".toml"], "rb"))
@@ -566,7 +566,7 @@
                 "studies": ["@cccccccc"], "succession-abdication": "retire", "succession-ttl": "5m"}
             assert lead == {"name": "Lead", "role-name": "Lead", "lanes": {"gate": "fleet.lane.lead.gate"},
                 "standing": {"patrol": "Hold the gate."}, "orchestration": {"policy": "Start from the lane index."},
-                "system": {"history": "short", "grants": {"outfits": ["fast"]}, "fanout": {"min_children": 1, "max_children": 2, "quota": 4}}}, lead
+                "system": {"grants": {"outfits": ["fast"]}, "fanout": {"min_children": 1, "max_children": 2, "quota": 4}}}, lead
             crown = out("crown")
             assert crown["chartered"] == {"seat": "king", "root": "@aaaaaaaa", "central-command": True, "studies": ["@dddddddd"],
                 "succession-abdication": "retire", "succession-ttl": "5m"}, crown
@@ -578,12 +578,9 @@
             assert handoff == {"name": "Handoff", "chartered": {"kind": "queue-form", "root": "@aaaaaaaa", "under": "@0123456789abcdef0123456789abcdef"},
                 "queue-contract": {"version": "v0", "contract": "https://contract.example.invalid/work-orders", "kinds": ["work", "handoff"], "priority": False,
                 "entries": "queue.<id>", "id": "two hyphenated lowercase words, unique on the form", "order": "priority, then state_at", "posters-write": "queue.**",
-                "states": ["posted", "claimed", "blocked", "review", "done", "cancelled"]}, "system": {"history": "short"}}, handoff
+                "states": ["posted", "claimed", "blocked", "review", "done", "cancelled"]}}, handoff
             reviews = out("form-reviews")
             assert reviews["queue-contract"]["priority"] is True and reviews["queue-contract"]["kinds"] == ["review"] and reviews["chartered"]["under"] == "@fedcba98", reviews
-            for n in roles:
-                assert out(n)["system"]["history"] == "short", (n, "every chartered role and queue form carries short history")
-                assert "system.history" in roles[n]["managed"], (n, "figaro-apply manages system.history")
             clerk = out("clerk")
             assert clerk["standing"] == {"patrol": "Walk the walls."} and "succession-policy" not in clerk, clerk
             for r in m["roles"]:
