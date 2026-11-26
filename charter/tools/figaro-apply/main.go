@@ -27,8 +27,9 @@ var (
 )
 
 type manifest struct {
-	Figaro string `json:"figaro"`
-	Roles  []role `json:"roles"`
+	Figaro   string   `json:"figaro"`
+	Roles    []role   `json:"roles"`
+	Unminted []string `json:"unminted"`
 }
 
 type role struct {

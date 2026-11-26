@@ -153,6 +153,16 @@ func TestManifestParsesTheCharterContract(t *testing.T) {
 	}
 }
 
+func TestManifestCarriesTheSeatsNotYetMinted(t *testing.T) {
+	m, err := loadManifest(writeManifest(t, `{"figaro": "/nix/store/x/bin/figaro", "roles": [], "unminted": ["inspector", "form-deploy"]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if fmt.Sprint(m.Unminted) != "[inspector form-deploy]" {
+		t.Fatalf("unminted %v", m.Unminted)
+	}
+}
+
 func TestManifestRejectsWhatFigaroWouldMisread(t *testing.T) {
 	r := func(name, form, outfits, managed string) string {
 		return fmt.Sprintf(`{"name": %q, "form": %q, "outfits": %s, "managed": %s}`, name, form, outfits, managed)
