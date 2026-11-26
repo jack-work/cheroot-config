@@ -104,6 +104,7 @@ in
         form = "@96447061";
         title = "King of Spain";
         charter = ../duties/king-of-spain.md;
+        fanout.max_children = 6;
         outfits = command ++ fable ++ copilot;
         standing.handoff-warm = "Gluck 11-19 ~11:20: (1) seats near their handover line (about 50 percent context and idle) succeed NOW, not later on a cold cache: the King sweeps the roster and nudges each; (2) every seat keeps its handoff document warm in captains-log (a short dated entry per event) so succession needs only a final delta. Put it in the charter plan and each seat's brief.";
       };
@@ -111,6 +112,7 @@ in
         form = "@4f6f262b6205e70f7e27a38440872c40";
         title = "Backend Engineer";
         charter = ../duties/backend-engineer.md;
+        fanout.max_children = 1;
         queue.kinds = [
           "work"
           "handoff"
@@ -137,6 +139,7 @@ in
         form = "@62c5c9bf8794ec5b8d1d00d05dd26c69";
         title = "Frontend Engineer";
         charter = ../duties/frontend-engineer.md;
+        fanout.max_children = 1;
         queue.kinds = [
           "work"
           "handoff"
@@ -154,6 +157,7 @@ in
         form = "@ee9271497f3823d7f50922bec4899818";
         title = "Figaro Engineer";
         charter = ../duties/figaro-engineer.md;
+        fanout.max_children = 1;
         queue.kinds = [
           "work"
           "handoff"
@@ -172,6 +176,7 @@ in
         form = "@2c1645942f894dd40d9dfcfb97619c58";
         title = "Herald";
         charter = ../duties/herald.md;
+        fanout.max_children = 1;
         queue.kinds = [
           "work"
           "handoff"
@@ -179,10 +184,21 @@ in
         outfits = kic ++ copilot;
         lanes.threads = "fleet.lane.herald.threads";
       };
+      backend-strategist = {
+        form = "@db5727fe69feb38e67959086ecabcad3";
+        title = "Backend Strategist";
+        fanout.max_children = 1;
+      };
+      frontend-strategist = {
+        form = "@581b64cf";
+        title = "Frontend Strategist";
+        fanout.max_children = 1;
+      };
       release-engineer = {
         form = "@460d7227d652f5af0603f96290376b01";
         title = "Release Engineer";
         charter = ../duties/release-engineer.md;
+        fanout.max_children = 1;
         queue.kinds = [ "deploy" ];
         outfits = kic ++ copilot;
         index = "fleet.release";
