@@ -98,18 +98,18 @@
       },
       "locked": {
         "dir": "charter",
-        "lastModified": 1795412627,
-        "narHash": "sha256-6RL+1YeYjfzXDJIBDeNbjX87Brm855c68f4P2jB7WO4=",
+        "lastModified": 1795651450,
+        "narHash": "sha256-19Q3T/zeWX1ZpDgLvhnMn1aG+Voay/HF+wjC9sqAy18=",
         "owner": "jack-work",
         "repo": "cheroot-config",
-        "rev": "16b5d1c3f6d6d75c7976dc8eb0abdc967fff8b21",
+        "rev": "b35bf074369f2c848eea980589b0c4fcd319a64a",
         "type": "github"
       },
       "original": {
         "dir": "charter",
         "owner": "jack-work",
         "repo": "cheroot-config",
-        "rev": "16b5d1c3f6d6d75c7976dc8eb0abdc967fff8b21",
+        "rev": "b35bf074369f2c848eea980589b0c4fcd319a64a",
         "type": "github"
       }
     },

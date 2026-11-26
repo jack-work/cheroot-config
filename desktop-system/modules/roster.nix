@@ -98,6 +98,7 @@ in
     my.roles.orchestration = "Classify every dispatched child as one-off tail fork or continuing owner. One-offs need an explicit bounded deliverable, parent, completion criterion and finite TTL. Preserve outcomes/evidence/open obligations in dated captains-log entries, then retire with a short TTL, normally 10m, after accepted handoff. Do not retire active work or current role holders blindly. Parent owns child inventory and integration: keep active forks manageable, avoid duplicate owners and unbounded recursive fan-out, but delegate independent work when it removes a real bottleneck. Include this rule in handoffs, successors and child prompts. No standing role for a one-off. Every lane is a captains-log index, listed under lanes on its lead's role form (fleet.lane.<lead>.<lane>): a child fanned out on a lane gets that index in its brief and resolves it with cl cite and cl show before acting.";
     my.roles.standing.handoff-warm = "Gluck 11-19: (1) at about 50 percent context and idle, succeed NOW on a warm cache (finish any open Spain window or Inspector read first). (2) Keep the handoff warm: a short dated captains-log entry per event, handle spain.seats.<seat>, kind handoff; the handoff doc indexes them; at succession write only the delta. Rule: ~/.captains-log/2026/11/19/warm-handoffs-and-early-succession.md";
 
+    my.roles.queueContract = "https://keel.kelliher.info/_keel/jack-captains-log-entries/blob/3201b21b3bc6f65758d653e45544d11969136ecd/2026/11/25/work-orders-contract.md";
     my.roles.roles = {
       king-of-spain = {
         form = "@96447061";
@@ -110,6 +111,10 @@ in
         form = "@4f6f262b6205e70f7e27a38440872c40";
         title = "Backend Engineer";
         charter = ../duties/backend-engineer.md;
+        queue.kinds = [
+          "work"
+          "handoff"
+        ];
         outfits =
           kic
           ++ [
@@ -132,6 +137,10 @@ in
         form = "@62c5c9bf8794ec5b8d1d00d05dd26c69";
         title = "Frontend Engineer";
         charter = ../duties/frontend-engineer.md;
+        queue.kinds = [
+          "work"
+          "handoff"
+        ];
         outfits = kic ++ [ "opus5" ] ++ fable ++ copilot;
         lanes = lanesOf "frontend" [
           "scope-ui"
@@ -145,6 +154,10 @@ in
         form = "@ee9271497f3823d7f50922bec4899818";
         title = "Figaro Engineer";
         charter = ../duties/figaro-engineer.md;
+        queue.kinds = [
+          "work"
+          "handoff"
+        ];
         outfits = command ++ copilot;
         lanes = lanesOf "figaro" [
           "daemon-releases"
@@ -159,6 +172,10 @@ in
         form = "@2c1645942f894dd40d9dfcfb97619c58";
         title = "Herald";
         charter = ../duties/herald.md;
+        queue.kinds = [
+          "work"
+          "handoff"
+        ];
         outfits = kic ++ copilot;
         lanes.threads = "fleet.lane.herald.threads";
       };
@@ -166,6 +183,7 @@ in
         form = "@460d7227d652f5af0603f96290376b01";
         title = "Release Engineer";
         charter = ../duties/release-engineer.md;
+        queue.kinds = [ "deploy" ];
         outfits = kic ++ copilot;
         index = "fleet.release";
       };
