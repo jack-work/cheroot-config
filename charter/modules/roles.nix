@@ -234,7 +234,11 @@
             Work orders live on this form under queue.<id>, about 1 KB each; queue-contract names the fields.
             - An id is a handcrafted codename: two hyphenated lowercase words, unique on this form (queue.amber-falcon). Order is by priority, then state_at.
             - Anyone may post: one new queue.<id> with state posted, source, requested_by and owner. A poster writes nothing outside queue.**.
-            - Only a holder of the owner role claims: one write of claimed_by {role, aria, at, lease_until} and state claimed, conditional on the version it read. If the version moved, read again and never overwrite another claim.
+            - Only a holder of the owner role claims: one write of claimed_by {role, aria, at, lease_until} and state claimed, conditional on the version it read. If the version moved, read again and never overwrite another claim:
+                v=$(figaro state show --id @<role> --version)
+                figaro state show --id @<role> -j   (queue.<id>.claimed_by must be empty)
+                figaro set --id @<role> --if-version "$v" queue.<id>.claimed_by '{"role": ..., "aria": ..., "at": ..., "lease_until": ...}'
+              A refused write means someone else wrote first.
             - Renew the lease before lease_until. An expired lease may be claimed again.
             - The claimant alone moves the state on (blocked, review, done, cancelled) and stamps state_at.
             - The lead owns the tree: it alone writes parent, children and amendments, and amends the plan as work lands.
