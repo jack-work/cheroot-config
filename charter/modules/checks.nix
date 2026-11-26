@@ -590,7 +590,7 @@
             for n, f in rendered.items():
                 assert "succession-policy" not in tomllib.load(open(f, "rb")), (n, "the daemon holds succession-policy")
             t = json.loads(os.environ["templatedRoles"])
-            assert set(t) == {"central-command", "north-lead", "north-strategist", "north-knight", "south-lead", "south-strategist", "south-knight", "inspector", "edge"}, t
+            assert set(t) == {"central-command", "north-lead", "north-strategist", "north-knight", "south-lead", "south-strategist", "south-knight", "inspector", "edge-engineer"}, t
             assert t["central-command"]["seat"] == "king" and t["central-command"]["reportsTo"] is None, t
             for r in ("north", "south"):
                 assert t[r + "-lead"] == {"form": None, "seat": "lead", "regiment": r, "reportsTo": "central-command", "max": None}, t
@@ -598,12 +598,12 @@
                 assert t[r + "-knight"]["reportsTo"] == r + "-lead" and t[r + "-knight"]["max"] == 1, t
             assert t["north-knight"]["form"] == "@bbbbbbbb", t
             assert t["inspector"]["reportsTo"] == "central-command" and t["inspector"]["max"] is None, t
-            assert t["edge"] == {"form": "@eeeeeeee", "seat": "edge", "regiment": None, "reportsTo": "central-command", "max": 1}, t
+            assert t["edge-engineer"] == {"form": "@eeeeeeee", "seat": "edge", "regiment": None, "reportsTo": "central-command", "max": 1}, t
             f = json.loads(os.environ["templatedForms"])
             assert set(f) == {"north-handoff", "south-handoff", "inspector", "deploy"}, f
             assert f["north-handoff"] == {"form": "@cccccccc", "under": "north-lead", "studiedBy": ["north-knight"], "kinds": ["work", "handoff"], "priority": False}, f
             assert f["inspector"]["studiedBy"] == ["inspector", "central-command"] and f["inspector"]["priority"] is True, f
-            assert f["deploy"] == {"form": "@dddddddd", "under": "edge", "studiedBy": ["edge"], "kinds": ["deploy"], "priority": False}, f
+            assert f["deploy"] == {"form": "@dddddddd", "under": "edge-engineer", "studiedBy": ["edge-engineer"], "kinds": ["deploy"], "priority": False}, f
             PY
             touch $out
           '';

@@ -208,7 +208,7 @@
             };
           }
           // lib.optionalAttrs (cfg.edge != null) {
-            edge = roleOf cfg.edge.seat {
+            edge-engineer = roleOf cfg.edge.seat {
               seat = "edge";
               reportsTo = kingName;
               inherit (cfg.edge.seat) fanout;
@@ -232,8 +232,8 @@
           // lib.optionalAttrs (cfg.edge != null) {
             deploy = {
               inherit (cfg.edge.deploy) form title;
-              under = "edge";
-              studiedBy = [ "edge" ];
+              under = "edge-engineer";
+              studiedBy = [ "edge-engineer" ];
               kinds = [ "deploy" ];
             };
           };
