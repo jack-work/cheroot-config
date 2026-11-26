@@ -1,5 +1,10 @@
 { ... }:
 let
+  max = [
+    "opus5-max"
+    "sonn5-max"
+  ];
+  seat = max ++ kic ++ copilot;
   kic = [
     "opus5-kic"
     "opus5-kic2"
@@ -51,6 +56,16 @@ in
           model = "claude-opus-5.5";
         };
       };
+      "model/opus5-max".layers = [
+        "house"
+        "via-rou2"
+      ];
+      "model/opus5-max".system.model = "anthropic-max/claude-opus-5-5";
+      "model/sonn5-max".layers = [
+        "house"
+        "via-rou2"
+      ];
+      "model/sonn5-max".system.model = "anthropic-max/claude-sonnet-5-5";
       "model/opus5-kic".layers = [
         "house"
         "via-rou2"
@@ -104,14 +119,20 @@ in
         form = "@96447061";
         title = "King of Spain";
         charter = ../duties/king-of-spain.md;
-        outfits = command ++ fable ++ copilot;
+        outfits = max ++ command ++ fable ++ copilot;
         standing.handoff-warm = "Gluck 11-19 ~11:20: (1) seats near their handover line (about 50 percent context and idle) succeed NOW, not later on a cold cache: the King sweeps the roster and nudges each; (2) every seat keeps its handoff document warm in captains-log (a short dated entry per event) so succession needs only a final delta. Put it in the charter plan and each seat's brief.";
       };
       regiments.backend = {
-        lead.title = "Backend Lead";
+        lead = {
+          form = "@86e182fcf2629937d3a5928dd5701a6d";
+          title = "Backend Lead";
+          outfits = seat;
+        };
+        handoff.form = "@b209cbd770c316f06f4ca504fcad3d7b";
         strategist = {
           form = "@db5727fe69feb38e67959086ecabcad3";
           title = "Backend Strategist";
+          outfits = seat;
           fanout.max_children = 1;
           lanes = lanesOf "backend" [
             "rou2"
@@ -132,7 +153,8 @@ in
           charter = ../duties/backend-knight.md;
           fanout.max_children = 1;
           outfits =
-            kic
+            max
+            ++ kic
             ++ [
               "opus5"
               "short"
@@ -141,10 +163,16 @@ in
         };
       };
       regiments.frontend = {
-        lead.title = "Frontend Lead";
+        lead = {
+          form = "@174f1c5bfcf0e42ee7d94d11b2d69df4";
+          title = "Frontend Lead";
+          outfits = seat;
+        };
+        handoff.form = "@3a187137300c27daac0e2f8c3a3cf0cd";
         strategist = {
           form = "@581b64cf";
           title = "Frontend Strategist";
+          outfits = seat;
           fanout.max_children = 1;
           lanes = lanesOf "frontend" [
             "scope-ui"
@@ -159,7 +187,7 @@ in
           title = "Frontend Knight";
           charter = ../duties/frontend-knight.md;
           fanout.max_children = 1;
-          outfits = kic ++ [ "opus5" ] ++ fable ++ copilot;
+          outfits = max ++ kic ++ [ "opus5" ] ++ fable ++ copilot;
         };
       };
       regiments.figaro = {
@@ -167,7 +195,7 @@ in
           form = "@ee9271497f3823d7f50922bec4899818";
           title = "Figaro Engineer";
           charter = ../duties/figaro-engineer.md;
-          outfits = command ++ copilot;
+          outfits = max ++ command ++ copilot;
           lanes = lanesOf "figaro" [
             "daemon-releases"
             "authz-carve"
@@ -177,17 +205,27 @@ in
             "review-pool"
           ];
         };
+        handoff.form = "@3f92d344e95b342ed9e42ced7b71e817";
         strategist = {
+          form = "@5940d8060feee07aa39a076965e2ed1a";
           title = "Figaro Strategist";
+          outfits = seat;
           fanout.max_children = 1;
         };
         knight = {
+          form = "@563062e9582afc2589b4379f9ee8ad63";
           title = "Figaro Knight";
+          outfits = seat;
           fanout.max_children = 1;
         };
       };
       inspector = {
-        seat.title = "Inspector";
+        seat = {
+          form = "@a9243cc34e95162e82f0f51c06ef7eb4";
+          title = "Inspector";
+          outfits = seat;
+        };
+        form.form = "@c27bc995e86adc157b02d8c06a6e7ba6";
         reviewers.max_children = 1;
       };
       edge = {
@@ -196,9 +234,10 @@ in
           title = "Edge Engineer";
           charter = ../duties/edge-engineer.md;
           fanout.max_children = 1;
-          outfits = kic ++ copilot;
+          outfits = max ++ kic ++ copilot;
           index = "fleet.release";
         };
+        deploy.form = "@e954982f39b57de82e5cb0404afb7310";
       };
     };
   };
