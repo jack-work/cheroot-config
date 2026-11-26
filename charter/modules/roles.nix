@@ -9,6 +9,18 @@
       text = d: if builtins.isPath d then lib.removeSuffix "\n" (builtins.readFile d) else d;
 
       queueRoles = lib.filterAttrs (_: r: r.queue != null) cfg.roles;
+      minted = lib.filterAttrs (_: r: r.form != null) cfg.roles;
+      limited = [
+        "strategist"
+        "knight"
+        "edge"
+      ];
+      ofSeat = seat: lib.attrNames (lib.filterAttrs (_: r: r.seat == seat) cfg.roles);
+      rootForm =
+        let
+          kings = ofSeat "king";
+        in
+        if kings == [ ] then null else cfg.roles.${builtins.head kings}.form;
       takes = kind: lib.attrNames (lib.filterAttrs (_: r: lib.elem kind r.queue.kinds) queueRoles);
 
       faults =
@@ -16,7 +28,7 @@
           lib.mapAttrsToList (
             name: r:
             lib.optional (
-              builtins.match "@([0-9a-f]{8}|[0-9a-f]{32})" r.form == null
+              r.form != null && builtins.match "@([0-9a-f]{8}|[0-9a-f]{32})" r.form == null
             ) "${name}: form '${r.form}' must be @ and 8 or 32 hex digits"
             ++ map (l: "${name}: lane ${l} is a role; a lane is never a role") (
               builtins.filter (l: cfg.roles ? ${l}) (builtins.attrNames r.lanes)
@@ -38,8 +50,39 @@
               && r.fanout.min_children > r.fanout.max_children
             ) "${name}: fanout.min_children is above max_children"
             ++ lib.optional (lib.hasPrefix "reviewer" name) "${name}: reviewer roles are minted at runtime by the Inspector, never declared"
+            ++
+              lib.optional ((r.fanout.max_children != null || r.fanout.quota != null) && !lib.elem r.seat limited)
+                "${name}: fan-out limits sit only on Knights, Strategists, reviewers and the Edge Engineer, not on a ${r.seat} seat"
+            ++ lib.optional (
+              r.reviewers.max_children != null && r.seat != "inspector"
+            ) "${name}: only the Inspector sets the fan-out of the reviewers it mints"
+            ++ lib.optional (
+              lib.elem r.seat [
+                "strategist"
+                "knight"
+                "lead"
+              ]
+              && r.regiment == null
+            ) "${name}: a ${r.seat} belongs to a regiment"
+            ++ lib.optional (
+              r.reportsTo != null && !(cfg.roles ? ${r.reportsTo})
+            ) "${name}: reports to ${r.reportsTo}, which the charter does not declare"
+            ++ lib.optional (r.form == null && r.queue != null) "${name}: a queue needs a minted role form"
           ) cfg.roles
         )
+        ++
+          lib.concatMap
+            (
+              seat:
+              lib.optional (
+                builtins.length (ofSeat seat) > 1
+              ) "one ${seat} seat only; declared by ${lib.concatStringsSep ", " (ofSeat seat)}"
+            )
+            [
+              "king"
+              "inspector"
+              "edge"
+            ]
         ++
           lib.optional (builtins.length (takes "review") > 1)
             "review requests have one home, the Inspector; taken by ${lib.concatStringsSep ", " (takes "review")}";
@@ -92,9 +135,18 @@
           inherit (r) index;
           standing = if cfg.standing // r.standing == { } then null else cfg.standing // r.standing;
           orchestration = if cfg.orchestration == null then null else { policy = cfg.orchestration; };
+          chartered = lib.filterAttrs (_: v: v != null) {
+            inherit (r) seat regiment;
+            root = rootForm;
+            central-command = if r.seat == "king" then true else null;
+            reports-to = if r.reportsTo == null then null else cfg.roles.${r.reportsTo}.form;
+            succession-abdication = cfg.succession.abdication;
+            succession-ttl = cfg.succession.ttl;
+            reviewer-max-children = r.reviewers.max_children;
+          };
           system =
             let
-              fanout = lib.filterAttrs (_: v: v != null) { inherit (r.fanout) max_children quota; };
+              fanout = lib.filterAttrs (_: v: v != null) { inherit (r.fanout) min_children max_children quota; };
               sys =
                 lib.optionalAttrs (r.outfits != null) { grants.outfits = r.outfits; }
                 // lib.optionalAttrs (fanout != { }) { inherit fanout; };
@@ -126,7 +178,8 @@
           inherit (r) form;
           outfits = [ "role-${name}" ];
           managed = managedOf (keysOf r);
-        }) cfg.roles;
+        }) minted;
+        unminted = lib.attrNames (lib.filterAttrs (_: r: r.form == null) cfg.roles);
       };
     in
     {
@@ -137,7 +190,43 @@
           type = lib.types.attrsOf (
             lib.types.submodule {
               options = {
-                form = lib.mkOption { type = lib.types.str; };
+                form = lib.mkOption {
+                  type = lib.types.nullOr lib.types.str;
+                  default = null;
+                  description = "The role form. A seat the charter declares before its form is minted has none; figaro-apply skips it and roles.json lists it as unminted.";
+                };
+                seat = lib.mkOption {
+                  type = lib.types.enum [
+                    "king"
+                    "strategist"
+                    "knight"
+                    "lead"
+                    "inspector"
+                    "edge"
+                    "herald"
+                  ];
+                  description = "What kind of seat this is; fan-out limits are allowed only on strategist, knight and edge seats.";
+                };
+                regiment = lib.mkOption {
+                  type = lib.types.nullOr (
+                    lib.types.enum [
+                      "frontend"
+                      "backend"
+                      "figaro"
+                    ]
+                  );
+                  default = null;
+                };
+                reportsTo = lib.mkOption {
+                  type = lib.types.nullOr lib.types.str;
+                  default = null;
+                  description = "The declared role this seat reports to, written as chartered.reports-to (its form).";
+                };
+                reviewers.max_children = lib.mkOption {
+                  type = lib.types.nullOr lib.types.ints.unsigned;
+                  default = null;
+                  description = "The Inspector's limit for each reviewer role it mints at runtime.";
+                };
                 title = lib.mkOption { type = lib.types.str; };
                 charter = lib.mkOption {
                   type = lib.types.nullOr (lib.types.either lib.types.str lib.types.path);
@@ -166,7 +255,7 @@
                   min_children = lib.mkOption {
                     type = lib.types.nullOr lib.types.ints.unsigned;
                     default = null;
-                    description = "Fewest live children the seat keeps. Declared here; figaro has no primitive for it yet, so nothing is written.";
+                    description = "system.fanout.min_children on the role: the floor its holder is meant to keep (reported short, never refused; 2026/11/26/min-children-proposal.md).";
                   };
                   max_children = lib.mkOption {
                     type = lib.types.nullOr lib.types.ints.unsigned;
@@ -222,6 +311,18 @@
           type = lib.types.nullOr lib.types.str;
           default = null;
           description = "orchestration.policy on every role.";
+        };
+        succession = {
+          abdication = lib.mkOption {
+            type = lib.types.enum [ "retire" ];
+            default = "retire";
+            description = "Only a succession that retires its predecessor in the same step may exceed child limits; linger never does.";
+          };
+          ttl = lib.mkOption {
+            type = lib.types.str;
+            default = "5m";
+            description = "The retiring predecessor's ttl in such a succession.";
+          };
         };
         queueContract = lib.mkOption {
           type = lib.types.nullOr lib.types.str;
@@ -292,7 +393,7 @@
           lib.nameValuePair "figaro/outfits/role-${name}.toml" {
             source = toml.generate "outfit-role-${name}.toml" (keysOf r);
           }
-        ) cfg.roles;
+        ) minted;
       };
     };
 }

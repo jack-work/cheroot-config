@@ -246,9 +246,23 @@
               my.roles = {
                 standing.patrol = "Walk the walls.";
                 orchestration = "Start from the lane index.";
+                roles.crown = {
+                  form = "@aaaaaaaa";
+                  title = "Crown";
+                  seat = "king";
+                };
+                roles.planner = {
+                  title = "Planner";
+                  seat = "strategist";
+                  regiment = "backend";
+                  reportsTo = "lead";
+                };
                 roles.lead = {
                   form = "@0123456789abcdef0123456789abcdef";
                   title = "Lead";
+                  seat = "knight";
+                  regiment = "backend";
+                  reportsTo = "crown";
                   charter = "Holds the order.";
                   outfits = [ "fast" ];
                   lanes.gate = "fleet.lane.lead.gate";
@@ -257,11 +271,14 @@
                 roles.clerk = {
                   form = "@89abcdef";
                   title = "Clerk";
+                  seat = "herald";
                   index = "fleet.clerk";
                 };
                 roles.inspector = {
                   form = "@fedcba98";
                   title = "Inspector";
+                  seat = "inspector";
+                  reviewers.max_children = 1;
                   queue = {
                     kinds = [ "review" ];
                     priority = true;
@@ -361,23 +378,27 @@
             a = {
               form = "@xyz";
               title = "A";
+              seat = "herald";
             };
           };
           assert refused {
             a = {
               form = "@01234567";
               title = "A";
+              seat = "herald";
               lanes.b = "fleet.lane.a.b";
             };
             b = {
               form = "@11234567";
               title = "B";
+              seat = "herald";
             };
           };
           assert refused {
             b = {
               form = "@01234567";
               title = "B";
+              seat = "herald";
               lanes.c = "fleet.lane.b.d";
             };
           };
@@ -386,6 +407,7 @@
               b = {
                 form = "@01234567";
                 title = "B";
+                seat = "herald";
                 lanes.c = "fleet.lane.b.c";
               };
             });
@@ -393,6 +415,7 @@
             a = {
               form = "@01234567";
               title = "A";
+              seat = "herald";
               queue.kinds = [ ];
             };
           };
@@ -400,6 +423,7 @@
             a = {
               form = "@01234567";
               title = "A";
+              seat = "herald";
               queue = {
                 kinds = [ "work" ];
                 priority = true;
@@ -410,11 +434,13 @@
             a = {
               form = "@01234567";
               title = "A";
+              seat = "herald";
               queue.kinds = [ "review" ];
             };
             b = {
               form = "@11234567";
               title = "B";
+              seat = "herald";
               queue.kinds = [ "review" ];
             };
           };
@@ -422,6 +448,7 @@
             a = {
               form = "@01234567";
               title = "A";
+              seat = "edge";
               fanout = {
                 min_children = 3;
                 max_children = 2;
@@ -432,6 +459,50 @@
             reviewer-a = {
               form = "@01234567";
               title = "Reviewer";
+              seat = "herald";
+            };
+          };
+          assert refused {
+            a = {
+              form = "@01234567";
+              title = "A";
+              seat = "herald";
+              fanout.max_children = 1;
+            };
+          };
+          assert refused {
+            a = {
+              form = "@01234567";
+              title = "A";
+              seat = "edge";
+              reviewers.max_children = 1;
+            };
+          };
+          assert refused {
+            a = {
+              form = "@01234567";
+              title = "A";
+              seat = "king";
+            };
+            b = {
+              form = "@11234567";
+              title = "B";
+              seat = "king";
+            };
+          };
+          assert refused {
+            a = {
+              form = "@01234567";
+              title = "A";
+              seat = "knight";
+            };
+          };
+          assert refused {
+            a = {
+              form = "@01234567";
+              title = "A";
+              seat = "herald";
+              reportsTo = "nobody";
             };
           };
           pkgs.runCommand "charter-roles"
@@ -448,11 +519,13 @@
             import json, tomllib
             m = json.load(open("${files."figaro/roles.json".source}"))
             roles = {r["name"]: r for r in m["roles"]}
-            assert set(roles) == {"lead", "clerk", "inspector"}, roles
+            assert set(roles) == {"lead", "clerk", "inspector", "crown"}, roles
+            assert m["unminted"] == ["planner"], m["unminted"]
+            chartered = ["chartered." + k for k in ["regiment", "reports-to", "root", "seat", "succession-abdication", "succession-ttl"]]
             contract = ["queue-contract." + k for k in ["contract", "entries", "grant", "id", "kinds", "order", "posters-write", "priority", "states", "version"]]
             assert roles["lead"] == {"name": "lead", "form": "@0123456789abcdef0123456789abcdef", "outfits": ["role-lead"],
-                "managed": ["charter", "lanes.gate", "name", "orchestration.policy"] + contract + ["role-name", "standing.patrol", "system.fanout.max_children", "system.fanout.quota", "system.grants.outfits"]}, roles["lead"]
-            assert roles["clerk"]["managed"] == ["index", "name", "orchestration.policy", "role-name", "standing.patrol"], roles["clerk"]
+                "managed": ["charter"] + chartered + ["lanes.gate", "name", "orchestration.policy"] + contract + ["role-name", "standing.patrol", "system.fanout.max_children", "system.fanout.min_children", "system.fanout.quota", "system.grants.outfits"]}, roles["lead"]
+            assert roles["clerk"]["managed"] == ["chartered.root", "chartered.seat", "chartered.succession-abdication", "chartered.succession-ttl", "index", "name", "orchestration.policy", "role-name", "standing.patrol"], roles["clerk"]
             assert not any(k == "queue" or k.startswith("queue.") for r in m["roles"] for k in r["managed"]), "the charter never manages queue entries"
             lead = tomllib.load(open("${files."figaro/outfits/role-lead.toml".source}", "rb"))
             charter = lead.pop("charter")
@@ -463,17 +536,21 @@
             assert q == {"version": "v0", "contract": "https://contract.example.invalid/work-orders", "kinds": ["work", "handoff"], "priority": False,
                 "entries": "queue.<id>", "id": "two hyphenated lowercase words, unique on the form", "order": "priority, then state_at", "posters-write": "queue.**", "grant": "write:role:@0123456789abcdef0123456789abcdef#queue.**",
                 "states": ["posted", "claimed", "blocked", "review", "done", "cancelled"]}, q
+            assert lead.pop("chartered") == {"seat": "knight", "regiment": "backend", "root": "@aaaaaaaa", "reports-to": "@aaaaaaaa",
+                "succession-abdication": "retire", "succession-ttl": "5m"}
+            crown = tomllib.load(open("${files."figaro/outfits/role-crown.toml".source}", "rb"))
+            assert crown["chartered"] == {"seat": "king", "root": "@aaaaaaaa", "central-command": True, "succession-abdication": "retire", "succession-ttl": "5m"}, crown
             assert lead == {"name": "Lead", "role-name": "Lead", "lanes": {"gate": "fleet.lane.lead.gate"},
                 "standing": {"patrol": "Hold the gate."}, "orchestration": {"policy": "Start from the lane index."},
-                "system": {"grants": {"outfits": ["fast"]}, "fanout": {"max_children": 2, "quota": 4}}}, lead
+                "system": {"grants": {"outfits": ["fast"]}, "fanout": {"min_children": 1, "max_children": 2, "quota": 4}}}, lead
             inspector = tomllib.load(open("${files."figaro/outfits/role-inspector.toml".source}", "rb"))
             assert inspector["charter"].startswith("## Work orders\n\n") and "minted here at runtime" in inspector["charter"], inspector["charter"]
+            assert inspector["chartered"]["reviewer-max-children"] == 1, inspector
             assert inspector["queue-contract"]["priority"] is True and inspector["queue-contract"]["kinds"] == ["review"], inspector
             clerk = tomllib.load(open("${files."figaro/outfits/role-clerk.toml".source}", "rb"))
             assert clerk["standing"] == {"patrol": "Walk the walls."} and "succession-policy" not in clerk, clerk
             for r in m["roles"]:
                 assert not any(k.startswith(("system.model", "system.provider", "succession-policy")) for k in r["managed"]), r
-                assert not any("min_children" in k for k in r["managed"]), (r, "figaro has no min_children primitive yet")
             import os
             rendered = json.loads(os.environ["roleOutfits"])
             assert not [n for n in rendered if n.endswith("-grants.toml")], ("the daemon holds holder grants; no role-*-grants outfit", rendered)
