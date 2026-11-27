@@ -369,7 +369,8 @@
         "llm-agents": "llm-agents",
         "merlin-figaro": "merlin-figaro",
         "nixpkgs": "nixpkgs",
-        "rou2": "rou2"
+        "rou2": "rou2",
+        "tuiz": "tuiz"
       }
     },
     "rou2": {
@@ -428,6 +429,27 @@
       "original": {
         "owner": "numtide",
         "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
+    "tuiz": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792288857,
+        "narHash": "sha256-g8CvKPrEWopyLC8uQ8tZv4IBcbDPRYSY47G5NNhx+ZY=",
+        "owner": "jack-work",
+        "repo": "tuiz",
+        "rev": "10b6f8938b35c869a38e2dad5b8ee64558519c5b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jack-work",
+        "ref": "v0.1.0",
+        "repo": "tuiz",
         "type": "github"
       }
     }

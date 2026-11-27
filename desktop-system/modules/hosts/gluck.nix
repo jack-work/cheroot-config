@@ -8,6 +8,7 @@
       "muse-code"
       "audio"
       "zig"
+      "school-tools"
       "helium"
       "greeter"
       "splash"

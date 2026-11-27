@@ -21,6 +21,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    tuiz = {
+      url = "github:jack-work/tuiz/v0.1.0";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     merlin-figaro = {
       url = "github:jack-work/figaro/v0.72.1";
       inputs.nixpkgs.follows = "nixpkgs";
