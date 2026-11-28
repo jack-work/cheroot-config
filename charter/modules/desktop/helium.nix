@@ -21,6 +21,8 @@
           origin_override = cfg.originOverride;
         };
         helium.browser.layout = 2;
+        devtools.synced_preferences_sync_disabled."network.show-options-to-generate-har-with-sensitive-data" =
+          "true";
       };
 
       jq = lib.getExe pkgs.jq;
